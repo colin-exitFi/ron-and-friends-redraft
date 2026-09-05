@@ -112,6 +112,16 @@ function DashboardHeader({
               alt={`${LEAGUE.name} crest`}
               width={464}
               height={512}
+              /* Without this the browser has no idea the crest tops out at
+               * 224px and preloads the 1080-wide encode — 138 KB of a 1 MB
+               * master, on the page the league opens first.
+               *
+               * The last three widths are the `h-`/`w-` steps below. The first
+               * is not a size, it is a way of saying "do not bother": `priority`
+               * emits a preload that fires whatever CSS does, and below `sm`
+               * this span is `hidden`, so a phone was paying 84 KB for a crest
+               * it never draws. */
+              sizes="(max-width: 639px) 32px, (min-width: 1280px) 224px, (min-width: 768px) 184px, 146px"
               priority
               className="crest-lift relative h-[146px] w-[146px] object-contain md:h-[184px] md:w-[184px] xl:h-[224px] xl:w-[224px]"
             />
