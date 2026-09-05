@@ -391,8 +391,39 @@ export function draftedFromView(view: DraftRoomView): DraftedBy {
   return drafted;
 }
 
-/** Sort keys the header offers. */
-export type SortKey = "rank" | "adp" | "points" | "lastSeason" | "position" | "name";
+/**
+ * The projected-stat columns the sheet shows, in the order they appear.
+ *
+ * A SPREADSHEET, WHICH MEANS EVERY ROW HAS EVERY COLUMN. A quarterback's
+ * receptions cell is blank rather than absent, because the uniform grid is what
+ * makes reading down a column mean anything — and reading down a column is what
+ * a manager does with this.
+ */
+export const STAT_COLUMNS = [
+  "passYards",
+  "passTd",
+  "interceptions",
+  "rushYards",
+  "rushTd",
+  "receptions",
+  "recYards",
+  "recTd",
+  "fumblesLost",
+] as const;
+
+export type StatColumn = (typeof STAT_COLUMNS)[number];
+
+/** Sort keys the header offers — one per column, including every stat column. */
+export type SortKey =
+  | "rank"
+  | "adp"
+  | "points"
+  | "lastSeason"
+  | "position"
+  | "name"
+  | StatColumn;
+
+const STAT_KEYS = new Set<string>(STAT_COLUMNS);
 export type Availability = "available" | "all" | "drafted";
 
 export type CheatSheetQuery = {
@@ -521,6 +552,16 @@ export function applyCheatSheet(
         (b.lastSeasonPerGame ?? -Infinity) - (a.lastSeasonPerGame ?? -Infinity) ||
         byAdp(a, b),
     );
+  } else if (STAT_KEYS.has(sort)) {
+    /*
+     * A stat column, sorted the way a spreadsheet sorts: biggest first, blanks
+     * at the bottom. Descending even for interceptions and fumbles — "most
+     * turnovers" is a real question and a column that reversed its own
+     * direction depending on which one you tapped would be a surprise.
+     */
+    const stat = (row: CheatSheetRow) =>
+      row.projectedStats?.[sort as StatColumn] ?? -Infinity;
+    sorted.sort((a, b) => stat(b) - stat(a) || byAdp(a, b));
   } else if (sort === "position") {
     sorted.sort((a, b) => {
       const pa = POSITION_ORDER.indexOf(a.position);

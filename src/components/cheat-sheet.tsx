@@ -1,15 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import {
-  ArrowDown,
-  ChevronDown,
-  Radio,
-  RotateCw,
-  Search,
-  Sigma,
-  WifiOff,
-} from "lucide-react";
+import { ArrowDown, ArrowLeftRight, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDraftLiveSync } from "@/components/use-draft-live-sync";
@@ -18,17 +10,59 @@ import { positionStyle } from "@/lib/positions";
 import { DRAFTABLE_POSITIONS } from "@/lib/board-types";
 import {
   applyCheatSheet,
-  projectedStatLine,
-  projectionBreakdown,
   valueGap,
   FLEX_FILTER,
   FLEX_POSITIONS,
+  type StatColumn,
   type Availability,
   type CheatSheetMeta,
   type CheatSheetRow,
   type DraftedBy,
   type SortKey,
 } from "@/lib/cheat-sheet-view";
+
+/*
+ * ============================================================================
+ * THE FROZEN COLUMN IS ONE CELL, AND THAT IS THE POINT
+ * ============================================================================
+ * Rank, name and position pin as a single `sticky left-0` cell rather than as
+ * two or three cells at increasing offsets. Two sticky cells need the second
+ * one's offset to equal the first one's rendered width, and a table will not
+ * promise you that: under automatic layout the rank column came out wider than
+ * asked (its heading's sort arrow set the minimum), and under `table-fixed` any
+ * space left over after the declared widths gets distributed across every
+ * column — so the two numbers disagreed by 7px at one width and 11px at
+ * another, and the name slid on top of the rank on every sideways scroll.
+ *
+ * At `left-0` there is no offset to get wrong. It is also the only arrangement
+ * that cannot break when the table is wider than the sum of its columns, which
+ * is every desktop screen.
+ */
+const FROZEN_ID = "sticky left-0 w-[11.5rem] max-md:w-[10.25rem] px-2";
+
+/**
+ * The projected-stat columns, in order, with the headings that fit.
+ *
+ * Passing yards, passing touchdowns and interceptions are here despite not
+ * being on the commissioner's list, because without them every quarterback row
+ * is nine blank cells — and this league pays six points for a passing
+ * touchdown, so the quarterback column is the one where its scoring diverges
+ * most from a stock board.
+ */
+const STAT_HEADERS: { value: StatColumn; label: string }[] = [
+  { value: "passYards", label: "Pass yd" },
+  { value: "passTd", label: "Pass TD" },
+  { value: "interceptions", label: "Int" },
+  { value: "rushYards", label: "Rush yd" },
+  { value: "rushTd", label: "Rush TD" },
+  { value: "receptions", label: "Rec" },
+  { value: "recYards", label: "Rec yd" },
+  { value: "recTd", label: "Rec TD" },
+  { value: "fumblesLost", label: "Fum" },
+];
+
+/** Identity, 2025, Proj, the stats, ADP, Tier, Bye. For the empty row. */
+const COLUMN_COUNT = 3 + STAT_HEADERS.length + 3;
 
 /**
  * The live cheat sheet.
@@ -98,28 +132,6 @@ export function CheatSheet({
    */
   const [sort, setSort] = useState<SortKey>("rank");
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
-  /*
-   * Which players have their projection breakdown open.
-   *
-   * A SET, so more than one can be open at once — the question this panel
-   * answers is usually comparative ("is Bowers' catch volume really worth the
-   * reach over McBride"), and a panel that closes the last one every time
-   * forces a manager to hold two numbers in his head under a clock.
-   *
-   * TAP, NOT HOVER. This lives in state and is driven by a real `<button>`
-   * rather than by a `:hover` or a `title`, because the people this page was
-   * built for are on phones and hover does not exist there. A breakdown that
-   * only appears under a mouse pointer would be invisible to every one of them.
-   */
-  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
-  const toggle = useCallback((id: string) => {
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(id)) next.add(id);
-      return next;
-    });
-  }, []);
-
   /**
    * Re-read who is off the board.
    *
@@ -354,73 +366,131 @@ export function CheatSheet({
             catches at {meta.tePremiumReception} and a passing touchdown is worth{" "}
             {meta.passTd} — so it will disagree with generic cheat sheets, printed
             rankings and standard half-PPR boards.{" "}
-            <span className="text-foreground/80">Tap a player</span> for the categories
-            behind his number.
+            Every column below is his projected {meta.projectionSeason ?? ""} stat line.
           </span>
         </p>
       )}
 
-      <div className="border-border bg-card/40 overflow-hidden rounded-xl border">
-        <div className="max-h-[calc(100vh-380px)] overflow-auto max-md:max-h-[68dvh]">
-          <table className="w-full border-collapse text-sm">
-            <thead className="bg-card/95 sticky top-0 z-10 backdrop-blur">
+      {/*
+        THE SWIPE, SAID IN WORDS AS WELL AS SHOWN.
+        The edge fade is the visual cue; this is the one that survives somebody
+        glancing at the page for four seconds before the clock starts. It also
+        says the identity column stays put, which is the fact that makes swiping
+        feel safe rather than like losing your place.
+      */}
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <ArrowLeftRight className="text-primary h-3.5 w-3.5 shrink-0" />
+        Scroll the table sideways for the rest of the columns — the rank, name and
+        position stay put. Tap any heading to sort the whole pool by it.
+      </p>
+
+      {/*
+        THE SPREADSHEET.
+
+        ============================================================================
+        WHY THIS IS A SIDEWAYS-SCROLLING GRID AND NOT A PANEL
+        ============================================================================
+        The commissioner asked for "a spreadsheet you can scroll left and right",
+        and the first attempt at showing the stats gave him a tap-to-expand panel
+        with the scoring arithmetic in it instead. He did not want the arithmetic
+        — he wanted columns of numbers he can swipe across and read down. So the
+        panel is gone and this is plain columns.
+
+        EVERY ROW HAS EVERY COLUMN. A quarterback's receptions cell is blank, not
+        missing. Varying the columns by position would break the one thing that
+        makes a spreadsheet worth having: that a column means the same thing all
+        the way down it, so sorting by it and comparing across rows both work.
+
+        THE IDENTITY COLUMN IS FROZEN, which is the requirement everything else
+        depends on. Rank, name and position stay pinned under `sticky left-0`
+        while the numbers scroll beneath the thumb; a column of figures with no
+        name attached to it is useless, and on a 375px screen the name is off the
+        left edge within two swipes without this.
+      */}
+      <div className="border-border bg-card/40 relative overflow-hidden rounded-xl border">
+        <div
+          data-sheet-scroll
+          className="max-h-[calc(100vh-380px)] overflow-auto max-md:max-h-[68dvh]"
+        >
+          {/*
+            `w-max` rather than `w-full`: the table is allowed to be wider than
+            the box, which is what gives the container something to scroll.
+            `min-w-full` keeps it filling a desktop screen.
+          */}
+          {/*
+            `table-fixed` IS LOAD-BEARING, NOT TIDINESS. With automatic layout a
+            column is as wide as its widest content, so the rank column came out
+            wider than the `w-9` asked for — its heading's sort arrow set the
+            minimum — and the name column's `left-9` offset was then 11px short,
+            which slid the name over the rank on every sideways scroll. Fixed
+            layout makes the declared widths the actual widths, so the frozen
+            offset below is arithmetic rather than a guess.
+          */}
+          <table className="w-max min-w-full table-fixed border-collapse text-sm">
+            <thead className="bg-card sticky top-0 z-20">
               <tr className="border-border text-muted-foreground border-b text-left text-[11px] tracking-wide uppercase">
-                {/* Rank first, because it is the league's own order and the
-                    column a manager reads down. */}
-                <SortHeader
-                  label="Rk"
-                  value="rank"
-                  sort={sort}
-                  onSort={setSort}
-                  className="w-12 text-right max-md:w-9 max-md:px-1.5"
-                />
-                <SortHeader label="Player" value="name" sort={sort} onSort={setSort} />
-                <SortHeader
-                  label="Pos"
-                  value="position"
-                  sort={sort}
-                  onSort={setSort}
-                  className="w-14 max-md:hidden"
-                />
-                <SortHeader
-                  label="Proj"
-                  value="points"
-                  sort={sort}
-                  onSort={setSort}
-                  className="w-20 text-right max-md:w-14 max-md:px-1.5"
-                />
-                {/* Last season, next to the projection on purpose: the whole
-                    point is reading a forecast against what actually happened.
-                    Hidden on a phone, where it folds under the name instead. */}
+                {/* Both sorts the identity column offers, in the one frozen
+                    cell: the league's own order, which is the column a manager
+                    reads down, and alphabetical for looking somebody up. */}
+                <th className={cn(FROZEN_ID, "bg-card z-30 py-2.5 font-medium")}>
+                  <span className="flex items-center gap-2.5">
+                    <SortButton label="Rk" value="rank" sort={sort} onSort={setSort} />
+                    <SortButton
+                      label="Player"
+                      value="name"
+                      sort={sort}
+                      onSort={setSort}
+                    />
+                  </span>
+                </th>
+                {/* THE TWO FIGURES PEOPLE ACTUALLY DECIDE ON, immediately right
+                    of the frozen block so they are readable without a swipe:
+                    what he scored last season and what he is projected for, both
+                    in this league's points. */}
                 {meta.lastSeason && (
                   <SortHeader
                     label={`${meta.lastSeason.season}`}
                     value="lastSeason"
                     sort={sort}
                     onSort={setSort}
-                    className="w-20 text-right max-md:hidden"
+                    className="w-16 text-right"
                   />
                 )}
+                <SortHeader
+                  label="Proj"
+                  value="points"
+                  sort={sort}
+                  onSort={setSort}
+                  className="w-16 text-right"
+                />
+                {STAT_HEADERS.map((c) => (
+                  <SortHeader
+                    key={c.value}
+                    label={c.label}
+                    value={c.value}
+                    sort={sort}
+                    onSort={setSort}
+                    className="w-16 text-right"
+                  />
+                ))}
                 <SortHeader
                   label="ADP"
                   value="adp"
                   sort={sort}
                   onSort={setSort}
-                  className="w-20 text-right max-md:hidden"
+                  className="w-16 text-right"
                 />
-                <th className="w-12 px-3 py-2.5 text-right font-medium max-md:hidden">
-                  Tier
-                </th>
-                <th className="w-14 px-3 py-2.5 text-right font-medium max-md:hidden">
-                  Bye
-                </th>
-                <th className="w-32 px-3 py-2.5 font-medium max-md:hidden">Status</th>
+                <th className="w-12 px-2 py-2.5 text-right font-medium">Tier</th>
+                <th className="w-12 px-2 py-2.5 text-right font-medium">Bye</th>
               </tr>
             </thead>
             <tbody>
               {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-muted-foreground py-12 text-center">
+                  <td
+                    colSpan={COLUMN_COUNT}
+                    className="text-muted-foreground py-12 text-center"
+                  >
                     {availability === "available" && draftedCount > 0
                       ? "Nobody left matching that. Try “All”."
                       : "No players match your search."}
@@ -433,10 +503,6 @@ export function CheatSheet({
                     row={p}
                     taken={drafted[p.id] ?? null}
                     showLastSeason={meta.lastSeason != null}
-                    expanded={open.has(p.id)}
-                    onToggle={toggle}
-                    columns={meta.lastSeason ? 9 : 8}
-                    meta={meta}
                     mixedPositions={position === FLEX_FILTER}
                   />
                 ))
@@ -444,6 +510,14 @@ export function CheatSheet({
             </tbody>
           </table>
         </div>
+        {/*
+          THE EDGE FADE, WHICH IS THE ONLY THING THAT TELLS ANYBODY TO SWIPE.
+          A row that appears to end at the right edge of the card reads as
+          finished, and nobody drags a table they think they can already see all
+          of. Outside the scroll container so it stays put, and
+          `pointer-events-none` so it does not eat the drag it exists to invite.
+        */}
+        <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent" />
       </div>
 
       <div className="text-muted-foreground grid max-w-prose gap-1.5 text-xs">
@@ -509,144 +583,37 @@ export function CheatSheet({
 }
 
 /**
- * One player's 2026 projection, broken out by category with the arithmetic.
+ * The sorting control on its own, without a `<th>` around it.
  *
- * ============================================================================
- * IT STACKS ON A PHONE RATHER THAN SHRINKING
- * ============================================================================
- * The layout is a two-column list — category on the left, points on the right —
- * with the rate underneath the category rather than in a third column. On a
- * 390px screen a three-column numeric grid would put four characters per cell
- * and wrap every label; this reads as a list at any width and is why the
- * breakdown went behind a tap instead of into the table.
- *
- * ============================================================================
- * WHAT IT REFUSES TO CLAIM
- * ============================================================================
- * A team defence carries FantasyPros' own total — `basis` is `"vendor"` — and
- * this panel says so plainly instead of presenting it as league-scored. Team
- * defence scoring here is dominated by a per-game points-allowed ladder that no
- * feed projects, so there is nothing to break out and pretending otherwise
- * would be inventing precision.
- *
- * It also states that the yardage and explosive bonuses are NOT in the figure.
- * They are real rules of this league and `pointsFromStats` cannot apply them to
- * a projection — there is no way to know how many 100-yard games are inside a
- * 1,400-yard season — so the total is a few points light for everybody. Saying
- * that is cheaper than having a manager find it.
+ * Exists because the frozen identity cell has to offer two sorts — the league's
+ * rank order and alphabetical — out of a single table cell, and a `<th>` per
+ * sort is exactly what the frozen column cannot have.
  */
-function ProjectionPanel({ row, meta }: { row: CheatSheetRow; meta: CheatSheetMeta }) {
-  const lines = projectionBreakdown(row);
-
-  // A vendor total, or nothing at all. Either way there is no breakdown, and
-  // the panel's job becomes saying WHY rather than showing numbers.
-  if (lines.length === 0) {
-    return (
-      <p className="text-muted-foreground max-w-prose text-xs">
-        {row.points == null ? (
-          <>
-            Nobody projects {row.name} this season, so there is no figure to break
-            down. He is on the sheet because he carries an ADP or a league rank.
-          </>
-        ) : (
-          <>
-            <span className="text-foreground font-medium">
-              {row.points.toFixed(1)}
-            </span>{" "}
-            is FantasyPros&apos; own projected total, on their scoring rather than
-            this league&apos;s — the one column on this page that is not re-scored
-            here. Team defence scoring in Ron and Friends is mostly a per-game
-            points-allowed ladder, and no feed projects the bands it reads, so
-            there is nothing to break out and no honest way to re-score it.
-          </>
-        )}
-      </p>
-    );
-  }
-
-  const total = lines.reduce((sum, l) => sum + l.points, 0);
-
+function SortButton({
+  label,
+  value,
+  sort,
+  onSort,
+}: {
+  label: string;
+  value: SortKey;
+  sort: SortKey;
+  onSort: (s: SortKey) => void;
+}) {
+  const active = sort === value;
   return (
-    <div className="grid gap-2.5">
-      <div className="text-muted-foreground text-[11px] tracking-wide uppercase">
-        Projected {meta.projectionSeason ?? ""}, scored in {meta.scoringFormat}
-      </div>
-
-      <dl className="grid gap-px sm:max-w-md">
-        {lines.map((line) => (
-          <div
-            key={line.label}
-            className={cn(
-              "flex items-baseline justify-between gap-3 rounded px-2 py-1.5",
-              // The premium line is tinted, because it is the one line that
-              // explains why this league's board disagrees with every other.
-              line.premium ? "bg-primary/10" : "odd:bg-card/40",
-            )}
-          >
-            <dt className="min-w-0 text-xs">
-              <span className="text-foreground/90">{line.display}</span>{" "}
-              <span className="text-muted-foreground">{line.label}</span>
-              <span
-                className={cn(
-                  "mt-px block font-mono text-[10px]",
-                  line.premium ? "text-primary" : "text-muted-foreground/60",
-                )}
-              >
-                {line.rate}
-              </span>
-            </dt>
-            <dd
-              className={cn(
-                "shrink-0 font-mono text-xs tabular-nums",
-                line.points < 0 ? "text-destructive/80" : "text-foreground/80",
-              )}
-            >
-              {line.points > 0 ? "+" : ""}
-              {line.points.toFixed(1)}
-            </dd>
-          </div>
-        ))}
-        <div className="border-border/60 mt-0.5 flex items-baseline justify-between gap-3 border-t px-2 pt-2">
-          <dt className="text-foreground text-xs font-medium">
-            Projected total
-            {row.pointsPositionRank != null && (
-              <span className="text-muted-foreground ml-1.5 font-mono text-[10px]">
-                {row.position}
-                {row.pointsPositionRank} in this league
-              </span>
-            )}
-          </dt>
-          <dd className="text-foreground shrink-0 font-mono text-xs font-medium tabular-nums">
-            {total.toFixed(1)}
-          </dd>
-        </div>
-      </dl>
-
-      {/* The season-over-season contrast, where there is one to draw. */}
-      {row.lastSeasonPoints != null && meta.lastSeason && (
-        <p className="text-muted-foreground max-w-prose text-[11px]">
-          For contrast, he actually scored{" "}
-          <span className="text-foreground/80 font-mono">
-            {row.lastSeasonPoints.toFixed(1)}
-          </span>{" "}
-          in {meta.lastSeason.season}
-          {row.lastSeasonPerGame != null && (
-            <> ({row.lastSeasonPerGame.toFixed(1)} a game)</>
-          )}
-          {row.lastSeasonGames != null && <> across {row.lastSeasonGames} games</>}
-          {row.lastSeasonLine && <> — {row.lastSeasonLine}</>}. That figure does
-          include the yardage and explosive bonuses; the projection above cannot.
-        </p>
+    <button
+      type="button"
+      onClick={() => onSort(value)}
+      aria-pressed={active}
+      className={cn(
+        "hover:text-foreground inline-flex items-center gap-1 uppercase transition-colors touch:min-h-11",
+        active && "text-foreground",
       )}
-
-      <p className="text-muted-foreground/70 max-w-prose text-[11px]">
-        Components are FantasyPros&apos; projected stat lines. The points are
-        computed here under this league&apos;s settings, so they are not
-        FantasyPros&apos; own totals. The yardage and explosive-play bonuses are not
-        included — they are per-game events a season projection cannot break out —
-        so every player is a few points light and the order is unaffected.
-      </p>
-    </div>
+    >
+      {label}
+      <ArrowDown className={cn("h-3 w-3 shrink-0", !active && "opacity-0")} />
+    </button>
   );
 }
 
@@ -685,127 +652,138 @@ function SortHeader({
 }
 
 /**
- * One player.
+ * One numeric cell.
+ *
+ * RIGHT-ALIGNED, TABULAR, AND FIXED TO THE DECIMAL PLACE ITS COLUMN USES, which
+ * together are what let somebody read straight down a column instead of
+ * comparing digits. Yardage is whole numbers, touchdowns and receptions are one
+ * decimal, and a column never mixes the two.
+ *
+ * A MISSING FIGURE IS AN EM DASH, NOT AN EMPTY CELL. A blank cell reads as a
+ * rendering failure and invites a manager to distrust the rest of the row; a
+ * dash reads as "there is no number for this", which is the truth for a rookie,
+ * a team defence, or anybody the feed does not project.
+ */
+function Num({
+  value,
+  decimals = 0,
+  className,
+}: {
+  value: number | null | undefined;
+  decimals?: number;
+  className?: string;
+}) {
+  return (
+    <td
+      className={cn(
+        "text-foreground/80 px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]",
+        className,
+      )}
+    >
+      {value == null ? (
+        <span className="text-muted-foreground/30">—</span>
+      ) : (
+        value.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        })
+      )}
+    </td>
+  );
+}
+
+/**
+ * One player, as a spreadsheet row.
  *
  * A drafted player is struck through and dimmed rather than merely greyed —
  * the complaint that produced this page was "I cannot tell who is gone", and a
  * line through the name is legible at arm's length on a phone in a room with
- * the lights down, which a colour change is not.
+ * the lights down, which a colour change is not. The strikethrough lives on the
+ * name's own element rather than on a wrapper, because `text-decoration` paints
+ * over descendants and moving it up looked identical on screen while leaving the
+ * name's computed style at `none` — `verify:cheat-sheet:browser` asserts the
+ * name element itself, so the one visual signal for "gone" cannot quietly go.
  */
 function PlayerRow({
   row,
   taken,
   showLastSeason,
-  expanded,
-  onToggle,
-  columns,
-  meta,
   mixedPositions,
 }: {
   row: CheatSheetRow;
   taken: { by: string; label: string } | null;
   /** False when there is no snapshot, so the column is not drawn at all. */
   showLastSeason: boolean;
-  expanded: boolean;
-  onToggle: (id: string) => void;
-  /** How many cells the breakdown panel has to span. */
-  columns: number;
-  meta: CheatSheetMeta;
   /**
    * Whether the list this row sits in holds more than one position — the FLEX
-   * filter.
-   *
-   * In a single-position view the badge is a restatement of the filter and can
-   * afford to be the smallest thing on the row. In FLEX it is the ONLY thing
-   * distinguishing two adjacent names, so the phone layout gives it the same
-   * text size as the meta line around it rather than a size smaller.
+   * filter. In a single-position view the badge restates the filter and can be
+   * the smallest thing on the row; in a mixed one it is the only thing telling
+   * two adjacent names apart, so it gets the same size as the text beside it.
    */
   mixedPositions: boolean;
 }) {
   const gap = valueGap(row);
-  const statLine = projectedStatLine(row);
+  const s = row.projectedStats;
+  /*
+   * A PROJECTED ZERO AND NO PROJECTION AT ALL ARE DIFFERENT FACTS, and the grid
+   * shows them differently. If the feed projects this player, a category he does
+   * not register in is a real zero — a quarterback catches no passes, and "0" is
+   * the honest cell. If it projects him not at all, every stat cell is a dash.
+   */
+  const stat = (key: StatColumn) => (s ? (s[key] ?? 0) : null);
+
   return (
-    <>
     <tr
       // Named the way the board names its cells, so a verification script can
-      // point at one player rather than at "the third row".
+      // point at one player rather than at "the third row". The name is an
+      // attribute because it is no longer the whole of any cell's text.
       data-player-id={row.id}
+      data-player-name={row.name}
+      data-league-rank={row.leagueRank ?? ""}
       data-taken={taken ? "true" : "false"}
       className={cn(
-        "border-border/50 hover:bg-accent/40 border-b transition-colors last:border-0",
+        "border-border/50 border-b transition-colors last:border-0",
         taken && "opacity-55",
       )}
     >
-      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-1.5 max-md:text-[10px]">
-        <span className={cn(taken ? "text-muted-foreground/50" : "text-foreground/80")}>
-          {row.leagueRank ?? "—"}
-        </span>
-      </td>
-      <td className="px-3 py-2 font-medium max-md:px-2">
-        {/*
-          THE NAME IS THE TAP TARGET, and it is the biggest thing on the row —
-          which is what makes this work with a thumb. A chevron on its own at
-          this text size would be a 12px target on a phone; the name gives it
-          the full width of the column and `touch:min-h-11` gives it the 44px
-          height the rest of this app settled on.
-        */}
-        <button
-          type="button"
-          onClick={() => onToggle(row.id)}
-          aria-expanded={expanded}
-          aria-label={`${row.name} — show projected stat breakdown`}
+      {/*
+        THE FROZEN BLOCK. `bg-card` rather than a tint, because these two cells
+        sit ON TOP of the numeric columns as they scroll past underneath and a
+        translucent fill would show the digits through the player's name.
+      */}
+      <td data-name-cell className={cn(FROZEN_ID, "bg-card z-10 py-2 align-top")}>
+        <span className="flex items-start gap-2">
+          <span
+            className={cn(
+              "w-5 shrink-0 text-right font-mono text-[10px] tabular-nums",
+              taken ? "text-muted-foreground/50" : "text-foreground/80",
+            )}
+          >
+            {row.leagueRank ?? "—"}
+          </span>
+          <span className="min-w-0 flex-1">
+        <span
+          data-name-text
           className={cn(
-            "flex w-full items-center gap-1.5 text-left max-md:text-[13px] touch:min-h-11",
+            "block truncate text-[13px] font-medium",
             taken && "text-muted-foreground line-through decoration-2",
           )}
         >
-          {/*
-            THE STRIKETHROUGH LIVES ON THE NAME ITSELF, not only on the button
-            around it. `text-decoration` paints over descendants, so moving it
-            to the wrapper looked identical on screen — and
-            `verify:cheat-sheet:browser` caught that the name element's own
-            computed style had gone back to `none`. That check exists because
-            "I cannot tell who is gone" is the complaint this page was built to
-            answer, so the one visual signal for it is asserted rather than
-            eyeballed.
-          */}
-          <span
-            className={cn(
-              "min-w-0 truncate",
-              taken && "line-through decoration-2",
-            )}
-          >
-            {row.name}
-          </span>
-          {/* The injury flag rides ON THE NAME, at every width, and is the only
-              thing added here that a phone does not fold away. It is the one
-              fact on the row that can waste a pick outright, so hiding it below
-              a breakpoint would hide it from exactly the people this page was
-              built for. Only designations that mean he cannot play get this far
-              — `buildCheatSheet` drops the preseason "Questionable" that would
-              otherwise badge a fifth of the board. */}
-          {row.injuryStatus && !taken && (
-            <span
-              className="text-destructive ring-destructive/40 bg-destructive/10 inline-flex shrink-0 items-center rounded px-1 py-px font-sans text-[9px] font-bold uppercase ring-1 no-underline"
-              title={`Listed as ${row.injuryStatus} — he cannot be counted on to play`}
-            >
-              {row.injuryStatus}
-            </span>
-          )}
-          {/* Only where there is something to open. A chevron on a row with no
-              projection would promise a panel that never appears. */}
-          {row.projectedStats && (
-            <ChevronDown
-              className={cn(
-                "text-muted-foreground/50 h-3 w-3 shrink-0 transition-transform",
-                expanded && "rotate-180",
-              )}
-            />
-          )}
-        </button>
-        {/* On a phone the narrow columns fold under the name rather than
-            sliding off the side — the pattern this table already used. */}
-        <span className="text-muted-foreground/70 mt-0.5 hidden flex-wrap items-center gap-x-1.5 font-mono text-[10px] max-md:flex">
+          {row.name}
+        </span>
+        {/*
+          POSITION, PINNED WITH THE NAME. It belongs in the frozen block rather
+          than in a column of its own: in the FLEX view it is the only thing
+          distinguishing two adjacent rows, and a position that scrolled off the
+          left edge with the stats would be no use there at all.
+
+          The injury flag rides here too, at every width. It is the one fact on
+          the row that can waste a pick outright, so it is not allowed behind a
+          breakpoint. Only designations that mean he cannot play get this far —
+          `buildCheatSheet` drops the preseason "Questionable" that would
+          otherwise badge a fifth of the board.
+        */}
+        <span className="text-muted-foreground/70 mt-0.5 flex flex-wrap items-center gap-x-1 font-mono text-[10px]">
           <span
             data-position-badge={row.position}
             className={cn(
@@ -820,102 +798,44 @@ function PlayerRow({
             {row.leaguePositionRank ?? ""}
           </span>
           {row.team ?? "FA"}
-          {row.bye != null && ` · bye ${row.bye}`}
-          {row.adp != null && ` · adp ${row.adp}`}
-          {/* Last season on a phone: THE PER-GAME FIGURE, not the total. There
-              is room for one number and the average is the more honest one —
-              a total ranks a healthy plodder over a star who missed a month,
-              which is the mistake this is meant to prevent. The season total
-              is a column away on a wider screen. */}
-          {row.lastSeasonPerGame != null && (
-            <span>
-              {" · "}
-              <span className="text-foreground/70">
-                {row.lastSeasonPerGame.toFixed(1)}/g
-              </span>
-              {row.lastSeasonGames != null && ` in ${row.lastSeasonGames}`}
+          {row.injuryStatus && !taken && (
+            <span
+              className="text-destructive ring-destructive/40 bg-destructive/10 inline-flex shrink-0 items-center rounded px-1 py-px font-sans text-[9px] font-bold uppercase ring-1"
+              title={`Listed as ${row.injuryStatus} — he cannot be counted on to play`}
+            >
+              {row.injuryStatus}
             </span>
           )}
           {taken && (
             <span className="text-destructive font-sans font-semibold">
-              · {taken.label === "kept" ? "kept" : `gone ${taken.label}`} {taken.by}
+              {taken.label === "kept" ? "kept" : `gone ${taken.label}`} {taken.by}
             </span>
           )}
         </span>
-        {/*
-          THE POSITIONALLY RELEVANT COMPONENTS, ON THE ROW, AT EVERY WIDTH.
+          </span>
+        </span>
+      </td>
 
-          He asked to see the categories, and this is the part that does not
-          need a tap: a receiver's receptions, yards and touchdowns; a back's
-          rushing and his catches; a quarterback's passing. Three numbers, not
-          eight columns, which is the only version of this that survives a
-          390px screen. `projectedStatLine` decides which three by position —
-          passing yards on a running back's row would be noise.
-        */}
-        {statLine && (
-          <span className="text-muted-foreground/60 mt-0.5 block font-mono text-[10px] max-md:text-[10px]">
-            {statLine}
-          </span>
-        )}
-      </td>
-      <td className="px-3 py-2 max-md:hidden">
-        <span
-          className={cn(
-            "inline-flex h-5 min-w-[2.25rem] items-center justify-center rounded px-1 text-[10px] font-bold ring-1",
-            positionStyle(row.position),
-          )}
-        >
-          {row.position}
-          {row.leaguePositionRank ?? ""}
-        </span>
-      </td>
-      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-1.5 max-md:text-[10px]">
-        {row.points != null ? (
-          <span className="inline-flex flex-col items-end leading-tight">
-            <span className={cn("text-foreground", taken && "text-muted-foreground")}>
-              {row.points.toFixed(1)}
-            </span>
-            {row.pointsPositionRank != null && (
-              <span className="text-muted-foreground/60 text-[10px] max-md:hidden">
-                {row.position}
-                {row.pointsPositionRank}
-                {/*
-                  Only flagged when this league's projection rates him at least
-                  a full round of positional places above the market's ADP.
-                  Anything smaller is inside the noise of two projection sets
-                  and would put a badge on half the table.
-                */}
-                {gap != null && gap >= 5 && (
-                  <span className="text-success ml-1 font-sans font-semibold">
-                    +{gap}
-                  </span>
-                )}
-              </span>
-            )}
-          </span>
-        ) : (
-          <span className="text-muted-foreground/40">—</span>
-        )}
-      </td>
       {/*
         LAST SEASON, AS IT ACTUALLY HAPPENED, PRICED IN THIS LEAGUE.
         The season total on top and the per-game average under it, because the
         two say different things and a manager needs both in one glance: Brock
         Bowers' 178 looks ordinary until the 14.9 a game next to it says he
-        missed five. A blank is a rookie or a defence and is styled as a dash
-        rather than a zero, since "no season" and "a bad season" must not read
-        the same.
+        missed five. A blank is a rookie or a defence and is a dash rather than a
+        zero, since "no season" and "a bad season" must not read the same.
       */}
       {showLastSeason && (
-        <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
+        <td className="px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
           {row.lastSeasonPoints != null ? (
             <span className="inline-flex flex-col items-end leading-tight">
-              <span className={cn("text-foreground/80", taken && "text-muted-foreground")}>
+              <span
+                className={cn("text-foreground/80", taken && "text-muted-foreground")}
+              >
                 {row.lastSeasonPoints.toFixed(1)}
               </span>
               {row.lastSeasonPerGame != null && (
                 <span
-                  className="text-muted-foreground/60 text-[10px]"
+                  className="text-muted-foreground/60 text-[9px]"
                   title={
                     row.lastSeasonLine
                       ? `${row.lastSeasonLine} in ${row.lastSeasonGames} games`
@@ -927,37 +847,74 @@ function PlayerRow({
                       on four hundred rows adds nothing; printing "12" on the
                       ones who got hurt is the whole signal. */}
                   {row.lastSeasonGames != null && row.lastSeasonGames < 16 && (
-                    <span className="text-warning/80 ml-1">
-                      {row.lastSeasonGames}g
-                    </span>
+                    <span className="text-warning/80 ml-0.5">{row.lastSeasonGames}g</span>
                   )}
                 </span>
               )}
             </span>
           ) : (
-            <span className="text-muted-foreground/40">—</span>
+            <span className="text-muted-foreground/30">—</span>
           )}
         </td>
       )}
-      <td className="text-muted-foreground/70 px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
+
+      <td className="px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
+        {row.points != null ? (
+          <span className="inline-flex flex-col items-end leading-tight">
+            <span className={cn("text-foreground", taken && "text-muted-foreground")}>
+              {row.points.toFixed(1)}
+            </span>
+            {row.pointsPositionRank != null && (
+              <span className="text-muted-foreground/60 text-[9px]">
+                {row.position}
+                {row.pointsPositionRank}
+                {/*
+                  Only flagged when this league's projection rates him at least
+                  a full round of positional places above the market's ADP.
+                  Anything smaller is inside the noise of two projection sets
+                  and would put a badge on half the table.
+                */}
+                {gap != null && gap >= 5 && (
+                  <span className="text-success ml-0.5 font-sans font-semibold">
+                    +{gap}
+                  </span>
+                )}
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="text-muted-foreground/30">—</span>
+        )}
+      </td>
+
+      {/* THE STAT COLUMNS, IN THE SAME ORDER ON EVERY ROW. */}
+      <Num value={stat("passYards")} />
+      <Num value={stat("passTd")} decimals={1} />
+      <Num value={stat("interceptions")} decimals={1} />
+      <Num value={stat("rushYards")} />
+      <Num value={stat("rushTd")} decimals={1} />
+      <Num value={stat("receptions")} decimals={1} />
+      <Num value={stat("recYards")} />
+      <Num value={stat("recTd")} decimals={1} />
+      <Num value={stat("fumblesLost")} decimals={1} />
+
+      <td className="text-muted-foreground/70 px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
         {row.adp != null ? (
           <span className="inline-flex flex-col items-end leading-tight">
-            <span>{row.adp}</span>
+            <span>{row.adp.toFixed(1)}</span>
             {/*
-              FANTASYPROS' OWN EXPERT-CONSENSUS-VERSUS-ADP, WHICH HAS BEEN
-              SITTING IN THE EXPORT UNRENDERED. Positive means the experts rank
-              him ahead of where he is being drafted — he is available later
-              than he should be. It is a different claim from the `+n` badge in
-              the Proj column, which is THIS LEAGUE's scoring disagreeing with
-              the market, so the two are deliberately not merged.
-
-              Only shown past a full round's worth of places. Below that it is
-              inside the noise of a consensus and would decorate every row.
+              FANTASYPROS' OWN EXPERT-CONSENSUS-VERSUS-ADP. Positive means the
+              experts rank him ahead of where he is being drafted — he is
+              available later than he should be. A different claim from the `+n`
+              badge in the Proj column, which is THIS LEAGUE's scoring
+              disagreeing with the market, so the two are deliberately not
+              merged. Only shown past a full round's worth of places; below that
+              it is inside the noise of a consensus.
             */}
             {row.ecrVsAdp != null && Math.abs(row.ecrVsAdp) >= 10 && (
               <span
                 className={cn(
-                  "text-[10px]",
+                  "text-[9px]",
                   row.ecrVsAdp > 0 ? "text-success/80" : "text-muted-foreground/50",
                 )}
                 title={
@@ -971,55 +928,11 @@ function PlayerRow({
             )}
           </span>
         ) : (
-          "—"
+          <span className="text-muted-foreground/30">—</span>
         )}
       </td>
-      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
-        {row.tier != null ? (
-          <span className="bg-secondary text-muted-foreground inline-flex h-5 min-w-[1.5rem] items-center justify-center rounded px-1 text-[10px]">
-            {row.tier}
-          </span>
-        ) : (
-          <span className="text-muted-foreground/40">—</span>
-        )}
-      </td>
-      <td className="text-muted-foreground px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
-        {row.bye ?? "—"}
-      </td>
-      <td className="px-3 py-2 max-md:hidden">
-        {taken ? (
-          <span className="text-destructive inline-flex items-center gap-1.5 text-xs">
-            {taken.label === "kept" ? "Kept" : `Gone · ${taken.label}`}
-            <span className="text-muted-foreground">{taken.by}</span>
-          </span>
-        ) : (
-          <span className="text-success/70 inline-flex items-center gap-1.5 text-xs">
-            <Radio className="h-3 w-3 shrink-0" /> Available
-          </span>
-        )}
-      </td>
+      <Num value={row.tier} className="text-muted-foreground/70" />
+      <Num value={row.bye} className="text-muted-foreground/70" />
     </tr>
-    {/*
-      THE FULL BREAKDOWN, ON TAP.
-
-      A FULL-WIDTH PANEL RATHER THAN EXTRA COLUMNS, which is the whole reason
-      this shape was chosen: eight numeric columns cannot coexist with a 390px
-      screen, and a panel that spans the row has as much space on a phone as it
-      does on a television. It stacks instead of shrinking.
-
-      IT SHOWS THE ARITHMETIC, NOT JUST THE STATS. Every line carries the
-      projected component, the rate this league pays for it, and the points it
-      contributes — so the tight end premium is visible as a line item doing its
-      work rather than asserted in a footnote. That is the difference between
-      "the app says 260" and "94 catches at a full point each".
-    */}
-    {expanded && (
-      <tr data-breakdown-for={row.id} className="border-border/50 border-b last:border-0">
-        <td colSpan={columns} className="bg-card/60 px-3 py-3 max-md:px-2">
-          <ProjectionPanel row={row} meta={meta} />
-        </td>
-      </tr>
-    )}
-    </>
   );
 }

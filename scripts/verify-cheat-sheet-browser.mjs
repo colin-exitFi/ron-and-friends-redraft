@@ -196,114 +196,322 @@ const run = async () => {
 
     /*
      * ========================================================================
-     * 1b. THE STAT BREAKDOWN, WHICH MUST WORK WITH A THUMB
+     * 1b. THE SPREADSHEET: IT SCROLLS SIDEWAYS AND THE NAME STAYS PUT
      * ========================================================================
-     * The commissioner asked for the projection broken out by category —
-     * receptions, receiving yards, touchdowns, rushing, passing. Eight numeric
-     * columns cannot coexist with a 390px screen, so it lives behind a tap.
+     * The commissioner asked for "a spreadsheet you can scroll left and right"
+     * and got, first time round, a tap-to-expand panel showing the scoring
+     * arithmetic. He did not want the arithmetic. This section is what replaced
+     * it, and it asserts the two things that separate a spreadsheet from a table
+     * that is merely too wide:
      *
-     * THIS IS ASSERTED WITH `tap()`, NOT `click()`, and the distinction is the
-     * whole point. A breakdown that opens on hover, or on a `title` attribute,
-     * is invisible on a phone — which is the only device the people this page
-     * was built for will be holding. `tap()` dispatches real touch events, so
-     * an implementation that only responds to a mouse fails here.
+     *   1. THE IDENTITY COLUMN IS FROZEN. This is the whole feature. A column of
+     *      numbers whose player name has scrolled off the left edge is worse
+     *      than no columns at all, because it is confidently wrong — you read
+     *      the wrong man's receptions. So the name cell's screen position is
+     *      measured before and after a full-width scroll and has to be the same.
+     *   2. THE LAST COLUMN IS REACHABLE AND WHOLE. "Scrolls sideways" is not
+     *      worth anything if the rightmost column stops half off the edge, so
+     *      the scroll is driven to its maximum and the final heading has to sit
+     *      entirely inside the box.
+     *
+     * It also asserts the panel is GONE rather than merely unused, since a
+     * leftover expander would be the thing he objected to still shipping.
      */
-    section("1b. The stat breakdown opens on a tap, not a hover");
+    section("1b. The spreadsheet scrolls sideways with the name pinned");
 
     {
+      const sheet = page.locator("[data-sheet-scroll]");
+      check("the table lives in a scroll region", (await sheet.count()) === 1);
+
+      const before = await sheet.evaluate((el) => ({
+        scrollLeft: el.scrollLeft,
+        scrollable: el.scrollWidth - el.clientWidth,
+        vertical: el.scrollHeight - el.clientHeight,
+      }));
+      check(
+        "there is something to the right to scroll to",
+        before.scrollable > 100,
+        `only ${before.scrollable}px of horizontal travel`,
+      );
+      check(
+        "…and it starts at the left, showing the identity and the two point columns",
+        before.scrollLeft === 0,
+      );
+
+      // The panel he objected to. Asserted absent, not merely unopened.
+      check(
+        "the tap-to-expand arithmetic panel is gone",
+        (await page.getByRole("button", { name: /stat breakdown/ }).count()) === 0 &&
+          (await page.locator("[data-breakdown-for]").count()) === 0,
+      );
+
       /*
-       * A row from the MIDDLE of what is on screen, not the first one, and
-       * centred before it is tapped.
-       *
-       * The first row is the one a `scrollIntoView` lands directly underneath
-       * the sticky `<thead>` and the sticky app header, which then swallow the
-       * tap — this harness found that the hard way. A person never hits it,
-       * because he scrolls the row he wants into the middle of the screen
-       * before reaching for it, so that is what is emulated here. The header
-       * occlusion is real but it is a scroll-position artifact rather than a
-       * defect in the control.
+       * EVERY ROW HAS EVERY COLUMN, which is what makes reading down a column
+       * mean anything. Sampled across the pool rather than on one row, because
+       * the failure this catches is a per-position variation and a quarterback
+       * and a defence are hundreds of rows apart.
        */
-      const first = page.locator("[data-player-id]").nth(3);
-      const id = await first.getAttribute("data-player-id");
-      const expander = first.getByRole("button", { name: /stat breakdown/ });
-      await first.evaluate((el) => el.scrollIntoView({ block: "center" }));
-      await page.waitForTimeout(200);
-
-      check("a player row offers a breakdown control", await expander.isVisible());
-      const box = await expander.boundingBox();
+      const shape = await page.evaluate(() => {
+        const headings = document.querySelectorAll("thead th").length;
+        const rows = [...document.querySelectorAll("[data-player-id]")];
+        const counts = new Set(
+          rows.map((tr) => tr.querySelectorAll(":scope > td").length),
+        );
+        return { headings, counts: [...counts], rows: rows.length };
+      });
       check(
-        "…and it is a thumb-sized target, not a 12px chevron",
-        (box?.height ?? 0) >= 44,
-        `${Math.round(box?.height ?? 0)}px tall`,
-      );
-      check(
-        "the breakdown starts closed, so the list stays scannable",
-        (await page.locator(`[data-breakdown-for="${id}"]`).count()) === 0,
+        `every one of the ${shape.rows} rows has the same ${shape.headings} cells`,
+        shape.counts.length === 1 && shape.counts[0] === shape.headings,
+        `cell counts seen: ${shape.counts.join(", ")} against ${shape.headings} headings`,
       );
 
-      await expander.tap();
-      const panel = page.locator(`[data-breakdown-for="${id}"]`);
-      await panel.waitFor({ timeout: 5_000 }).catch(() => {});
-      check("a TAP opens the breakdown", await panel.isVisible());
+      // Lower-cased for comparison: the headings are typeset in small caps with
+      // `uppercase`, so `innerText` reports "PASS YD" for a cell whose markup
+      // says "Pass yd". The assertion is about the column existing, not its case.
+      const headings = (await page.locator("thead th").allInnerTexts()).map((h) =>
+        h.trim(),
+      );
+      const has = (label) =>
+        headings.some((h) => h.toLowerCase() === label.toLowerCase());
+      console.log(`  · columns: ${headings.join(" | ")}`);
+      for (const label of [
+        "2025",
+        "Proj",
+        "Pass yd",
+        "Pass TD",
+        "Rush yd",
+        "Rush TD",
+        "Rec",
+        "Rec yd",
+        "Rec TD",
+        "Fum",
+      ]) {
+        check(`the “${label}” column exists`, has(label));
+      }
 
-      const panelText = (await panel.innerText()).replace(/\s+/g, " ");
-      console.log(`  · ${panelText.slice(0, 150)}…`);
+      // The two figures people decide on, immediately right of the frozen block
+      // so they are readable without swiping at all.
       check(
-        "it names the categories rather than only the total",
-        /Rushing yards|Receptions|Passing yards/.test(panelText),
-        panelText.slice(0, 80),
+        "2025 and Proj are the first two numeric columns",
+        headings[1] === "2025" && headings[2].toLowerCase() === "proj",
+        `${headings[1]}, ${headings[2]}`,
+      );
+
+      /*
+       * THE FROZEN COLUMN, MEASURED. A row from the middle of what is on screen,
+       * so the sticky `<thead>` is not sitting on top of the thing being read.
+       */
+      const nameCell = page.locator("[data-player-id]").nth(3).locator("[data-name-cell]");
+      const nameBefore = await nameCell.boundingBox();
+      const whose = await page
+        .locator("[data-player-id]")
+        .nth(3)
+        .getAttribute("data-player-name");
+
+      // All the way right, as a thumb would drag it.
+      await sheet.evaluate((el) => {
+        el.scrollLeft = el.scrollWidth;
+      });
+      await page.waitForTimeout(300);
+      const after = await sheet.evaluate((el) => ({
+        scrollLeft: el.scrollLeft,
+        clientRight: el.getBoundingClientRect().right,
+      }));
+      check(
+        "the table really scrolled sideways",
+        after.scrollLeft > 100,
+        `scrollLeft ${after.scrollLeft}`,
+      );
+
+      const nameAfter = await nameCell.boundingBox();
+      check(
+        `${whose}'s name is still pinned to the left edge after scrolling`,
+        Math.abs((nameAfter?.x ?? -999) - (nameBefore?.x ?? 999)) <= 1,
+        `moved from x=${Math.round(nameBefore?.x ?? -1)} to x=${Math.round(nameAfter?.x ?? -1)}`,
       );
       check(
-        "it shows the rate this league pays, so the arithmetic is checkable",
-        /1 pt \/ \d+ yd|×\d/.test(panelText),
+        "…and is still legible rather than a sliver",
+        (nameAfter?.width ?? 0) >= 100,
+        `${Math.round(nameAfter?.width ?? 0)}px wide`,
       );
       check(
-        "it states the scoring it was computed under",
-        /scored in .*(PPR|premium)/i.test(panelText),
-        panelText.slice(0, 120),
+        "…and the position badge went with it",
+        await page
+          .locator("[data-player-id]")
+          .nth(3)
+          .locator("[data-position-badge]")
+          .isVisible(),
+      );
+      /*
+       * NOT PAINTED OVER BY THE NUMBERS SLIDING UNDER IT. A sticky cell with a
+       * translucent background shows the digits through the name, which looks
+       * like a rendering fault and is the most likely way this goes wrong.
+       */
+      const opaque = await nameCell.evaluate((el) => {
+        const bg = getComputedStyle(el).backgroundColor;
+        const alpha = bg.match(/rgba?\([^)]*?,\s*([\d.]+)\)$/);
+        return { bg, alpha: alpha ? parseFloat(alpha[1]) : 1 };
+      });
+      check(
+        "…on an opaque fill, so the scrolling numbers do not show through it",
+        opaque.alpha >= 0.99,
+        opaque.bg,
+      );
+
+      // The far end of the sheet, whole. `boundingBox()` reports x/y/width/height
+      // and no `right`, so the edge is computed rather than read.
+      const last = await page.locator("thead th").last().boundingBox();
+      const lastRight = last ? last.x + last.width : Infinity;
+      const lastLabel = (await page.locator("thead th").last().innerText()).trim();
+      check(
+        `the last column (“${lastLabel}”) is fully inside the box at the end of the scroll`,
+        lastRight <= after.clientRight + 1,
+        `its right edge is at ${Math.round(lastRight)}, the box ends at ${Math.round(after.clientRight)}`,
       );
       check(
-        "opening it does not push anything off the side of the screen",
+        "…and nothing runs off the side of the PAGE, only inside the table",
         (await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         )) <= 1,
       );
-      check(
-        "the panel is readable — nothing under 10px",
-        (await panel.evaluate((el) =>
-          Math.min(
-            ...[...el.querySelectorAll("*")]
-              .filter((n) => n.textContent?.trim())
-              .map((n) => parseFloat(getComputedStyle(n).fontSize)),
-          ),
-        )) >= 10,
-      );
 
-      await page.screenshot({ path: path.join(OUT, "cheat-sheet-phone-breakdown.png") });
-
-      // Vertical scrolling must still work with a panel open — a region that
-      // traps an upward fling is miserable on a phone.
-      const before = await page.evaluate(() => window.scrollY);
-      await page.mouse.wheel(0, 400);
+      /*
+       * VERTICAL SCROLLING, STILL, WITH THE TABLE DRAGGED SIDEWAYS. A horizontal
+       * scroll region that swallows an upward fling is miserable on a phone and
+       * is a real failure mode of `overflow: auto` boxes with touch handlers.
+       */
+      const vBefore = await sheet.evaluate((el) => el.scrollTop);
+      await sheet.evaluate((el) => {
+        el.scrollTop = 400;
+      });
       await page.waitForTimeout(200);
-      const after = await page.evaluate(() => window.scrollY);
+      const vAfter = await sheet.evaluate((el) => el.scrollTop);
       check(
-        "the list still scrolls vertically with a panel open",
-        after !== before ||
-          (await page.evaluate(() => {
-            const s = document.querySelector(".overflow-auto");
-            return s ? s.scrollHeight > s.clientHeight : false;
-          })),
-        `scrollY ${before} → ${after}`,
+        "the sheet still scrolls vertically while scrolled sideways",
+        vAfter > vBefore,
+        `scrollTop ${vBefore} → ${vAfter}`,
+      );
+      check(
+        "…and the frozen column is still frozen after a vertical scroll",
+        Math.abs(
+          ((await page
+            .locator("[data-player-id]")
+            .nth(3)
+            .locator("[data-name-cell]")
+            .boundingBox()) ?? { x: -999 }
+          ).x - (nameBefore?.x ?? 999),
+        ) <= 1,
       );
 
-      await expander.tap();
-      await page.waitForTimeout(150);
+      // Scrolled to the grid itself, since a shot of the page header proves
+      // nothing about the thing this section is about.
+      await sheet.evaluate((el) => el.scrollIntoView({ block: "start" }));
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: path.join(OUT, "cheat-sheet-sheet-scrolled.png") });
+
+      /*
+       * IT READS LIKE A SPREADSHEET: right-aligned, tabular figures, and a
+       * consistent number of decimal places down each column. The decimals are
+       * checked by column rather than by cell, because "13.2 above 9" in the
+       * same column is exactly what makes a grid of numbers unreadable.
+       */
+      const numeric = await page.evaluate(() => {
+        const rows = [...document.querySelectorAll("[data-player-id]")].slice(0, 60);
+        const byColumn = new Map();
+        let notRight = 0;
+        let notTabular = 0;
+        for (const tr of rows) {
+          const cells = [...tr.querySelectorAll(":scope > td")];
+          for (let i = 2; i < cells.length; i++) {
+            const style = getComputedStyle(cells[i]);
+            if (style.textAlign !== "right") notRight++;
+            if (!style.fontVariantNumeric.includes("tabular-nums")) notTabular++;
+            const text = cells[i].textContent.trim().split("\n")[0];
+            const m = text.match(/^-?[\d,]+(\.(\d+))?$/);
+            if (!m) continue;
+            if (!byColumn.has(i)) byColumn.set(i, new Set());
+            byColumn.get(i).add(m[2]?.length ?? 0);
+          }
+        }
+        return {
+          notRight,
+          notTabular,
+          mixed: [...byColumn.entries()]
+            .filter(([, places]) => places.size > 1)
+            .map(([i, places]) => `column ${i}: ${[...places].join("/")}`),
+        };
+      });
       check(
-        "a second tap closes it again",
-        (await page.locator(`[data-breakdown-for="${id}"]`).count()) === 0,
+        "every numeric cell is right-aligned",
+        numeric.notRight === 0,
+        `${numeric.notRight} cells are not`,
       );
+      check(
+        "…in tabular figures, so the digits line up down the column",
+        numeric.notTabular === 0,
+        `${numeric.notTabular} cells are not`,
+      );
+      check(
+        "…to the same number of decimal places within each column",
+        numeric.mixed.length === 0,
+        numeric.mixed.join("; "),
+      );
+
+      // A missing stat has to look deliberate. An em dash does; an empty cell
+      // reads as a bug and makes a manager distrust the row it is on.
+      const blanks = await page.evaluate(() => {
+        const cells = [
+          ...document.querySelectorAll("[data-player-id] > td"),
+        ].slice(0, 600);
+        return {
+          dashes: cells.filter((c) => c.textContent.includes("—")).length,
+          empty: cells.filter((c) => c.textContent.trim() === "").length,
+        };
+      });
+      check(
+        "a missing number is an em dash rather than an empty cell",
+        blanks.dashes > 0 && blanks.empty === 0,
+        `${blanks.dashes} dashes, ${blanks.empty} truly empty`,
+      );
+
+      // The disclosure he liked. It is the panel he objected to, not this.
+      const disclosure = await page
+        .locator("text=/is scored to Ron and Friends/")
+        .first()
+        .innerText();
+      check(
+        "the line saying the points are this league's is still there",
+        /TE premium|tight end catches/.test(disclosure),
+        disclosure.slice(0, 90),
+      );
+      check(
+        "…and so is the invitation to scroll sideways",
+        await page.locator("text=/Scroll the table sideways/").first().isVisible(),
+      );
+
+      // Sorting from a stat heading, which is what a spreadsheet does.
+      await sheet.evaluate((el) => {
+        el.scrollLeft = 0;
+        el.scrollTop = 0;
+      });
+      await page.getByRole("button", { name: "Rec", exact: true }).click();
+      await page.waitForTimeout(400);
+      const byRec = await page.evaluate(() =>
+        [...document.querySelectorAll("[data-player-id]")].slice(0, 40).map((tr) => {
+          const cells = tr.querySelectorAll(":scope > td");
+          const text = cells[cells.length - 7]?.textContent.trim() ?? "";
+          return parseFloat(text.replace(/,/g, ""));
+        }),
+      );
+      check(
+        "tapping a stat heading sorts the pool by that column, biggest first",
+        byRec.every((v, i) => i === 0 || byRec[i - 1] >= v),
+        byRec.slice(0, 6).join(", "),
+      );
+      await page.getByRole("button", { name: "Rk", exact: true }).click();
+      await page.waitForTimeout(300);
     }
+
 
     /*
      * ========================================================================
@@ -357,34 +565,47 @@ const run = async () => {
           `${filtered} of ${rows}`,
         );
 
-        const target = alt.locator("[data-player-id]").nth(3);
-        const expander = target.getByRole("button", { name: /stat breakdown/ });
-        await target.evaluate((el) => el.scrollIntoView({ block: "center" }));
-        await alt.waitForTimeout(200);
         /*
-         * ACTIVATED, RATHER THAN TAPPED, AND ONLY HERE.
-         *
-         * A landscape phone is 390px TALL. Between the sticky app header and
-         * the table's own sticky `<thead>` there is not enough room to scroll
-         * an arbitrary row clear of both, so Playwright's tap lands on a header
-         * and times out. That is a limitation of driving the scroll from a
-         * script, not something a thumb runs into — and the tap itself is
-         * already proven at 390×844 and 375×667 above, which is where these
-         * managers will actually be.
-         *
-         * So landscape asserts what it can honestly assert: the control is
-         * present, focusable and opens the panel when activated. The two
-         * portrait sizes carry the touch claim.
+         * THE FROZEN COLUMN, AT EVERY SIZE. Checked here as well as at 390×844
+         * because the sticky offsets are written per breakpoint — the phone
+         * layout uses a narrower rank column than the desktop one — so the two
+         * numbers that have to agree are a DIFFERENT pair at each width, and
+         * getting one pair right proves nothing about the other.
          */
-        await expander.focus();
-        await expander.press("Enter");
+        await alt.getByRole("button", { name: "All pos", exact: true }).tap();
         await alt.waitForTimeout(300);
+        const sheet = alt.locator("[data-sheet-scroll]");
+        const nameCell = alt.locator("[data-player-id]").nth(3).locator("[data-name-cell]");
+        const wasAt = await nameCell.boundingBox();
         check(
-          `${label}: the breakdown opens when the control is used`,
-          (await alt.locator("[data-breakdown-for]").count()) > 0,
+          `${label}: the sheet has columns off to the right`,
+          (await sheet.evaluate((el) => el.scrollWidth - el.clientWidth)) > 100,
+        );
+        await sheet.evaluate((el) => {
+          el.scrollLeft = el.scrollWidth;
+        });
+        await alt.waitForTimeout(300);
+        const nowAt = await nameCell.boundingBox();
+        check(
+          `${label}: the name stays pinned through a full sideways scroll`,
+          Math.abs((nowAt?.x ?? -999) - (wasAt?.x ?? 999)) <= 1 &&
+            (nowAt?.width ?? 0) >= 90,
+          `x ${Math.round(wasAt?.x ?? -1)} → ${Math.round(nowAt?.x ?? -1)}, ${Math.round(nowAt?.width ?? 0)}px wide`,
+        );
+        const boxRight = await sheet.evaluate(
+          (el) => el.getBoundingClientRect().right,
+        );
+        const lastColumn = await alt.locator("thead th").last().boundingBox();
+        const columnRight = lastColumn
+          ? lastColumn.x + lastColumn.width
+          : Infinity;
+        check(
+          `${label}: the last column is fully readable at the end of the scroll`,
+          columnRight <= boxRight + 1,
+          `right edge ${Math.round(columnRight)} against a box ending at ${Math.round(boxRight)}`,
         );
         check(
-          `${label}: …and still nothing overflows`,
+          `${label}: …and still nothing overflows the page itself`,
           (await alt.evaluate(
             () => document.documentElement.scrollWidth - window.innerWidth,
           )) <= 1,
@@ -444,14 +665,18 @@ const run = async () => {
                 const m = cells[i]?.textContent?.match(/-?\d[\d,]*\.?\d*/);
                 return m ? parseFloat(m[0].replace(/,/g, "")) : null;
               };
+              const rank = tr.getAttribute("data-league-rank");
               return {
                 id: tr.getAttribute("data-player-id"),
                 pos:
                   tr.querySelector("[data-position-badge]")?.getAttribute(
                     "data-position-badge",
                   ) ?? null,
-                rank: num(0),
-                proj: num(3),
+                // Off the attribute: the rank shares its cell with the name and
+                // the position badge now, so the first number in that cell is
+                // not reliably the rank.
+                rank: rank ? Number(rank) : null,
+                proj: num(2),
               };
             }),
           );
@@ -729,7 +954,12 @@ const run = async () => {
     // The player at the top of the flex list, who is definitely on screen.
     const target = page.locator("[data-player-id]").first();
     const targetId = await target.getAttribute("data-player-id");
-    const targetName = (await target.locator("td").nth(1).innerText()).split("\n")[0];
+    // Off the attribute rather than out of the cell: the frozen identity cell
+    // now also carries the position badge and the team, and reading a name out
+    // of that by splitting on newlines was one layout change away from typing
+    // "RB1 " into the search box and filtering the row away before the pick
+    // landed — which would make the propagation check below pass vacuously.
+    const targetName = await target.getAttribute("data-player-name");
     console.log(`  · target: ${targetName} (${targetId})`);
 
     /*
@@ -810,12 +1040,8 @@ const run = async () => {
       "the row is not flagged drafted",
     );
     const struck = await row
-      .locator("td")
-      .nth(1)
-      .evaluate((td) => {
-        const span = td.querySelector("span");
-        return span ? getComputedStyle(span).textDecorationLine : "";
-      });
+      .locator("[data-name-text]")
+      .evaluate((el) => getComputedStyle(el).textDecorationLine);
     check("…with a line through his name", struck.includes("line-through"), struck);
 
     await page.getByRole("button", { name: "Gone", exact: true }).click();
