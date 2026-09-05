@@ -146,7 +146,10 @@ export default async function PlayersPage() {
           tap away — collapsed, not deleted, because none of it is optional
           once somebody wants to know why the numbers disagree.
         */}
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        {/* Stacked on a phone. Side by side, the refresh button took a third of
+            a 390px screen and squeezed the summary into a column four words
+            wide, which is slower to read than the paragraph it replaced. */}
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
           <details className="group border-border bg-card/40 min-w-0 flex-1 rounded-lg border">
             <summary className="text-muted-foreground flex cursor-pointer list-none items-start gap-2 p-3 text-xs touch:min-h-11">
               {sheetIsHealthy ? (
