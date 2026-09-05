@@ -1,0 +1,102 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+# Verification builds use their own dist dir via NEXT_DIST_DIR (see next.config.ts)
+# so they cannot corrupt the running dev server's cache.
+/.next-*/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# supabase cli
+/supabase/.temp
+/supabase/.branches
+
+# holds a Supabase personal access token; see .cursor/mcp.json.example
+.cursor/mcp.json
+
+# throwaway local Postgres + PostgREST stack (scripts/seed-local-stack.mjs), and
+# the file-backed FantasyPros OAuth grant written by `npm run auth:fantasypros`.
+# That file holds a live refresh token — it must never reach a commit.
+/.local
+/.local/fantasypros-oauth.json
+
+# Rolling safety copies of the live draft board, written before every pick.
+# The board itself (data/draft-state-YYYY.json) is the record and stays tracked;
+# these are the crash net and there can be hundreds of them on draft night.
+/data/draft-backups/
+
+# Recorded recap generations: the web research a paid-for run gathered, plus the
+# blurbs it produced. `npm run experiment:recap -- --replay` writes from these
+# instead of re-buying the same searches. Untracked because they are large,
+# because they are somebody's API bill rather than a league record, and because
+# the encrypted page blobs inside them are Anthropic's to hand back, not ours to
+# publish. See src/lib/recap-recording.ts.
+/data/recap-recordings/
+
+# A mock draft in progress. Disposable by definition — the recovery for a bad
+# mock is the Restart button — and deliberately a DIFFERENT filename from the
+# live board, which is tracked. See src/lib/mock-draft-store.ts.
+/data/mock-draft-state-*.json
+
+# Screenshots from scripts/verify-draft-typing.mjs
+/screenshots/
+
+# The harnesses' safety net while one of them has the live board borrowed: the
+# lock that stops two runs interleaving, and the on-disk copy of the real board
+# they restore from. Both exist only for the seconds a fixture is installed —
+# and if one survives a crash, the next run consumes it and puts the board back.
+# Committing either would be committing the accident.
+# See scripts/live-board-guard.mjs.
+/data/.live-board-borrowed.lock
+/data/.live-board-vault/
+
+# A snapshot of the working tree taken mid-session, as somewhere to roll back to
+# before a risky change. Checksums plus a `git diff` of everything uncommitted at
+# the time. Once the work is committed, git is the snapshot and this is a stale
+# copy of it — keeping it tracked would mean committing a diff of the commit.
+/.verified-snapshot/
+
+# Dot-prefixed scratch scripts at the repo root. `.shot.mjs` was committed once
+# already, by a palette commit that swept it up with a `git add -A`; the two
+# siblings caught by the same commit turned out to be hard-wired to the port the
+# commissioner's dev server runs on and to reset the board twice per run. A
+# harness worth keeping goes in `scripts/`, takes an npm entry and borrows the
+# board through `live-board-guard.mjs`. Nothing at the root does.
+/.*.mjs
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

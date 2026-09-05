@@ -1,0 +1,44 @@
+---
+description: Commit finished work automatically, without waiting to be asked
+alwaysApply: true
+---
+
+# Commit as you go
+
+**Do not wait to be asked to commit.** When a piece of work is finished and
+verified, commit it. Leaving a session's work uncommitted is how the repo and
+the deployed app drift apart, and it has already happened once: production was
+deployed straight from a dirty working tree.
+
+## What counts as finished
+
+A change is ready to commit when it builds, its verification scripts pass, and
+it would still make sense to someone reading it a month from now. Do not wait
+for the whole task to be done — commit each coherent piece as it lands.
+
+## One commit per coherent change
+
+Split unrelated work. Fixing a keeper declaration and repairing a draft test
+are two commits, not one. Do not split so far that a commit does not build.
+
+## Message style
+
+Match the existing log. Imperative subject line that names the effect, not the
+mechanism, then a body explaining **why** — the failure it prevents, the thing
+that was wrong, the reason a reader would otherwise be surprised.
+
+```
+Stop the two-client draft test passing by never running
+
+The one test that proves a remote manager sees a pick had not asserted
+anything in some time. It waited on a `<footer>` that no longer exists...
+
+Co-authored-by: Cursor <cursoragent@cursor.com>
+```
+
+Always include the `Co-authored-by: Cursor <cursoragent@cursor.com>` trailer.
+
+## Still ask first
+
+- Pushing to a remote, force-pushing, rebasing, or amending a pushed commit.
+- Anything that looks like a credential: `.env.local`, keys, tokens.

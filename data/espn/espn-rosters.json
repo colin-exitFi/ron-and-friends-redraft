@@ -1,0 +1,61 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "rosters": [
+    {
+      "teamId": 1,
+      "name": "Tushy Booth Ballers",
+      "players": []
+    },
+    {
+      "teamId": 2,
+      "name": "Jimmy's Johnson",
+      "players": []
+    },
+    {
+      "teamId": 3,
+      "name": "The Replacement Team",
+      "players": []
+    },
+    {
+      "teamId": 4,
+      "name": "Flurp McDerp",
+      "players": []
+    },
+    {
+      "teamId": 5,
+      "name": "Perpetually Impaired",
+      "players": []
+    },
+    {
+      "teamId": 6,
+      "name": "Teddys Trouser Snake",
+      "players": []
+    },
+    {
+      "teamId": 7,
+      "name": "DHB Sandmen",
+      "players": []
+    },
+    {
+      "teamId": 8,
+      "name": "Mound City Dogs",
+      "players": []
+    },
+    {
+      "teamId": 9,
+      "name": "Fingers are for painting",
+      "players": []
+    },
+    {
+      "teamId": 10,
+      "name": "A.D.B. Rombusters II",
+      "players": []
+    }
+  ]
+}

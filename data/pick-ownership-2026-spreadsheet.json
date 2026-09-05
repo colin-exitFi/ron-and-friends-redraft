@@ -1,0 +1,1447 @@
+{
+ "source": "Draft Picks 2026.xlsx :: \"Sheet3\"",
+ "note": "WARNING: the overallPick numbering here uses the 2025 draft order (Colin 1, Stefan 2, Witte 3, Joe 4, Elbe 5, Kyle 6, Josh 7, Scott 8, Greg 9, Zach 10), NOT the 2026 order in the live Smart Draft room. Compare by (owner, round), not by overall pick number.",
+ "slotCount": 160,
+ "slots": [
+  {
+   "round": 1,
+   "overallPick": 1,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 1,
+   "overallPick": 2,
+   "originalOwner": "Stefan",
+   "trade1Flag": "x",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": "X",
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 1,
+   "overallPick": 3,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 1,
+   "overallPick": 4,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 1,
+   "overallPick": 5,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 1,
+   "overallPick": 6,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 1,
+   "overallPick": 7,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 1,
+   "overallPick": 8,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 1,
+   "overallPick": 9,
+   "originalOwner": "Greg",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Scott",
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 1,
+   "overallPick": 10,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 2,
+   "overallPick": 11,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 2,
+   "overallPick": 12,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 2,
+   "overallPick": 13,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 2,
+   "overallPick": 14,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 2,
+   "overallPick": 15,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 2,
+   "overallPick": 16,
+   "originalOwner": "Kyle",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 2,
+   "overallPick": 17,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 2,
+   "overallPick": 18,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 2,
+   "overallPick": 19,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 2,
+   "overallPick": 20,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 3,
+   "overallPick": 21,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 3,
+   "overallPick": 22,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 3,
+   "overallPick": 23,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 3,
+   "overallPick": 24,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 3,
+   "overallPick": 25,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 3,
+   "overallPick": 26,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 3,
+   "overallPick": 27,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 3,
+   "overallPick": 28,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 3,
+   "overallPick": 29,
+   "originalOwner": "Greg",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Scott",
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 3,
+   "overallPick": 30,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 4,
+   "overallPick": 31,
+   "originalOwner": "Colin",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": "X",
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 4,
+   "overallPick": 32,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 4,
+   "overallPick": 33,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 4,
+   "overallPick": 34,
+   "originalOwner": "Joe",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 4,
+   "overallPick": 35,
+   "originalOwner": "Elbe",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Kyle",
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 4,
+   "overallPick": 36,
+   "originalOwner": "Kyle",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Zach",
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 4,
+   "overallPick": 37,
+   "originalOwner": "Josh",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Scott",
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 4,
+   "overallPick": 38,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 4,
+   "overallPick": 39,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 4,
+   "overallPick": 40,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 5,
+   "overallPick": 41,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 5,
+   "overallPick": 42,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 5,
+   "overallPick": 43,
+   "originalOwner": "Witte",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Stefan",
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 5,
+   "overallPick": 44,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 5,
+   "overallPick": 45,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 5,
+   "overallPick": 46,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 5,
+   "overallPick": 47,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 5,
+   "overallPick": 48,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 5,
+   "overallPick": 49,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 5,
+   "overallPick": 50,
+   "originalOwner": "Zach",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Kyle",
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 6,
+   "overallPick": 51,
+   "originalOwner": "Colin",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": "X",
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 6,
+   "overallPick": 52,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 6,
+   "overallPick": 53,
+   "originalOwner": "Witte",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Kyle",
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 6,
+   "overallPick": 54,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 6,
+   "overallPick": 55,
+   "originalOwner": "Elbe",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Scott",
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 6,
+   "overallPick": 56,
+   "originalOwner": "Kyle",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Zach",
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 6,
+   "overallPick": 57,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 6,
+   "overallPick": 58,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 6,
+   "overallPick": 59,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 6,
+   "overallPick": 60,
+   "originalOwner": "Zach",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 7,
+   "overallPick": 61,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 7,
+   "overallPick": 62,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 7,
+   "overallPick": 63,
+   "originalOwner": "Witte",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Stefan",
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 7,
+   "overallPick": 64,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 7,
+   "overallPick": 65,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 7,
+   "overallPick": 66,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 7,
+   "overallPick": 67,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 7,
+   "overallPick": 68,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 7,
+   "overallPick": 69,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 7,
+   "overallPick": 70,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 8,
+   "overallPick": 71,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 8,
+   "overallPick": 72,
+   "originalOwner": "Stefan",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 8,
+   "overallPick": 73,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 8,
+   "overallPick": 74,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 8,
+   "overallPick": 75,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 8,
+   "overallPick": 76,
+   "originalOwner": "Kyle",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Elbe",
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 8,
+   "overallPick": 77,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 8,
+   "overallPick": 78,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 8,
+   "overallPick": 79,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 8,
+   "overallPick": 80,
+   "originalOwner": "Zach",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Witte",
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 9,
+   "overallPick": 81,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 9,
+   "overallPick": 82,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 9,
+   "overallPick": 83,
+   "originalOwner": "Witte",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Colin",
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 9,
+   "overallPick": 84,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 9,
+   "overallPick": 85,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 9,
+   "overallPick": 86,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 9,
+   "overallPick": 87,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 9,
+   "overallPick": 88,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 9,
+   "overallPick": 89,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 9,
+   "overallPick": 90,
+   "originalOwner": "Zach",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Kyle",
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 10,
+   "overallPick": 91,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 10,
+   "overallPick": 92,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 10,
+   "overallPick": 93,
+   "originalOwner": "Witte",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Colin",
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 10,
+   "overallPick": 94,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 10,
+   "overallPick": 95,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 10,
+   "overallPick": 96,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 10,
+   "overallPick": 97,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 10,
+   "overallPick": 98,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 10,
+   "overallPick": 99,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 10,
+   "overallPick": 100,
+   "originalOwner": "Zach",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Kyle",
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 11,
+   "overallPick": 101,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 11,
+   "overallPick": 102,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 11,
+   "overallPick": 103,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 11,
+   "overallPick": 104,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 11,
+   "overallPick": 105,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 11,
+   "overallPick": 106,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 11,
+   "overallPick": 107,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 11,
+   "overallPick": 108,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 11,
+   "overallPick": 109,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 11,
+   "overallPick": 110,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 12,
+   "overallPick": 111,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 12,
+   "overallPick": 112,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 12,
+   "overallPick": 113,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 12,
+   "overallPick": 114,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 12,
+   "overallPick": 115,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 12,
+   "overallPick": 116,
+   "originalOwner": "Kyle",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Zach",
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 12,
+   "overallPick": 117,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 12,
+   "overallPick": 118,
+   "originalOwner": "Scott",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Josh",
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 12,
+   "overallPick": 119,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 12,
+   "overallPick": 120,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 13,
+   "overallPick": 121,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 13,
+   "overallPick": 122,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 13,
+   "overallPick": 123,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 13,
+   "overallPick": 124,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 13,
+   "overallPick": 125,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 13,
+   "overallPick": 126,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 13,
+   "overallPick": 127,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 13,
+   "overallPick": 128,
+   "originalOwner": "Scott",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Elbe",
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 13,
+   "overallPick": 129,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 13,
+   "overallPick": 130,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 14,
+   "overallPick": 131,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 14,
+   "overallPick": 132,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 14,
+   "overallPick": 133,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 14,
+   "overallPick": 134,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 14,
+   "overallPick": 135,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 14,
+   "overallPick": 136,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 14,
+   "overallPick": 137,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 14,
+   "overallPick": 138,
+   "originalOwner": "Scott",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Scott"
+  },
+  {
+   "round": 14,
+   "overallPick": 139,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 14,
+   "overallPick": 140,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 15,
+   "overallPick": 141,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 15,
+   "overallPick": 142,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 15,
+   "overallPick": 143,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 15,
+   "overallPick": 144,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 15,
+   "overallPick": 145,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 15,
+   "overallPick": 146,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 15,
+   "overallPick": 147,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 15,
+   "overallPick": 148,
+   "originalOwner": "Scott",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Greg",
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 15,
+   "overallPick": 149,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 15,
+   "overallPick": 150,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  },
+  {
+   "round": 16,
+   "overallPick": 151,
+   "originalOwner": "Colin",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Colin"
+  },
+  {
+   "round": 16,
+   "overallPick": 152,
+   "originalOwner": "Stefan",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Stefan"
+  },
+  {
+   "round": 16,
+   "overallPick": 153,
+   "originalOwner": "Witte",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Witte"
+  },
+  {
+   "round": 16,
+   "overallPick": 154,
+   "originalOwner": "Joe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Joe"
+  },
+  {
+   "round": 16,
+   "overallPick": 155,
+   "originalOwner": "Elbe",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Elbe"
+  },
+  {
+   "round": 16,
+   "overallPick": 156,
+   "originalOwner": "Kyle",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Kyle"
+  },
+  {
+   "round": 16,
+   "overallPick": 157,
+   "originalOwner": "Josh",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Josh"
+  },
+  {
+   "round": 16,
+   "overallPick": 158,
+   "originalOwner": "Scott",
+   "trade1Flag": "X",
+   "trade1NewOwner": "Greg",
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 16,
+   "overallPick": 159,
+   "originalOwner": "Greg",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Greg"
+  },
+  {
+   "round": 16,
+   "overallPick": 160,
+   "originalOwner": "Zach",
+   "trade1Flag": null,
+   "trade1NewOwner": null,
+   "trade2Flag": null,
+   "finalOwner": "Zach"
+  }
+ ]
+}

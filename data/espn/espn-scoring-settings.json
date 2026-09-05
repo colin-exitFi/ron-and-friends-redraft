@@ -1,0 +1,932 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "scoringType": "H2H_POINTS",
+  "matchupTiebreaker": "NONE",
+  "playerRankType": "PPR",
+  "homeTeamBonus": 0,
+  "derived": {
+    "pointsPerReception": 1,
+    "pprFormat": "FULL PPR",
+    "kickerScoringActive": true
+  },
+  "scoringItemsWithPoints": [
+    {
+      "statId": 3,
+      "category": "Passing Yards",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": 0.04,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.04,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.04 pts = 1 pt per 25 yards"
+    },
+    {
+      "statId": 4,
+      "category": "Passing Touchdown",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 19,
+      "category": "2-Point Passing Conversion",
+      "group": "passing",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 20,
+      "category": "Interception Thrown",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 24,
+      "category": "Rushing Yards",
+      "group": "rushing",
+      "confidence": "empirical",
+      "points": 0.1,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.1,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards"
+    },
+    {
+      "statId": 25,
+      "category": "Rushing Touchdown",
+      "group": "rushing",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 26,
+      "category": "2-Point Rushing Conversion",
+      "group": "rushing",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 42,
+      "category": "Receiving Yards",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 0.1,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.1,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards"
+    },
+    {
+      "statId": 43,
+      "category": "Receiving Touchdown",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 44,
+      "category": "2-Point Receiving Conversion",
+      "group": "receiving",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 53,
+      "category": "Reception",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 1,
+      "dstSlotOverride": null,
+      "effectivePoints": 1,
+      "isReverseItem": false,
+      "note": "THIS IS THE PPR KNOB. 1.0 = full PPR, 0.5 = half PPR, 0 = standard."
+    },
+    {
+      "statId": 63,
+      "category": "Fumble Recovered for Touchdown",
+      "group": "turnovers",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 72,
+      "category": "Fumble Lost",
+      "group": "turnovers",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false,
+      "note": "ESPN standard is -2"
+    },
+    {
+      "statId": 77,
+      "category": "Field Goal Made 40-49",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 4,
+      "dstSlotOverride": null,
+      "effectivePoints": 4,
+      "isReverseItem": false
+    },
+    {
+      "statId": 80,
+      "category": "Field Goal Made 0-39",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 3,
+      "dstSlotOverride": null,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 85,
+      "category": "Field Goal Missed",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": -1,
+      "dstSlotOverride": null,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 86,
+      "category": "Extra Point Made",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": 1,
+      "dstSlotOverride": null,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 88,
+      "category": "Extra Point Missed",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 89,
+      "category": "D/ST Points Allowed 0",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 5,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 90,
+      "category": "D/ST Points Allowed 1-6",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 4,
+      "effectivePoints": 4,
+      "isReverseItem": false
+    },
+    {
+      "statId": 91,
+      "category": "D/ST Points Allowed 7-13",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 3,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 92,
+      "category": "D/ST Points Allowed 14-17",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 1,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 93,
+      "category": "D/ST Blocked Punt / FG / PAT Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 95,
+      "category": "D/ST Interception",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 96,
+      "category": "D/ST Fumble Recovered",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 97,
+      "category": "D/ST Blocked Kick",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 98,
+      "category": "D/ST Safety",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 99,
+      "category": "D/ST Sack",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 1,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 101,
+      "category": "D/ST Kickoff Return Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 102,
+      "category": "D/ST Punt Return Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 103,
+      "category": "D/ST Interception Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 104,
+      "category": "D/ST Fumble Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 123,
+      "category": "D/ST Points Allowed 28-34",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -1,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 124,
+      "category": "D/ST Points Allowed 35-45",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -3,
+      "effectivePoints": -3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 125,
+      "category": "D/ST Points Allowed 46+",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -5,
+      "effectivePoints": -5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 128,
+      "category": "D/ST Yards Allowed under 100",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 5,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 129,
+      "category": "D/ST Yards Allowed 100-199",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 3,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 130,
+      "category": "D/ST Yards Allowed 200-299",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 132,
+      "category": "D/ST Yards Allowed 350-399",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -1,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 133,
+      "category": "D/ST Yards Allowed 400-449",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -3,
+      "effectivePoints": -3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 134,
+      "category": "D/ST Yards Allowed 450-499",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -5,
+      "effectivePoints": -5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 135,
+      "category": "D/ST Yards Allowed 500-549",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -6,
+      "effectivePoints": -6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 136,
+      "category": "D/ST Yards Allowed 550+",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -7,
+      "effectivePoints": -7,
+      "isReverseItem": false
+    },
+    {
+      "statId": 198,
+      "category": "Field Goal Made 50-59",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 5,
+      "dstSlotOverride": null,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 201,
+      "category": "Field Goal Made 60+",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 5,
+      "dstSlotOverride": null,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    }
+  ],
+  "allScoringItems": [
+    {
+      "statId": 3,
+      "category": "Passing Yards",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": 0.04,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.04,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.04 pts = 1 pt per 25 yards"
+    },
+    {
+      "statId": 4,
+      "category": "Passing Touchdown",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 19,
+      "category": "2-Point Passing Conversion",
+      "group": "passing",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 20,
+      "category": "Interception Thrown",
+      "group": "passing",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 24,
+      "category": "Rushing Yards",
+      "group": "rushing",
+      "confidence": "empirical",
+      "points": 0.1,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.1,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards"
+    },
+    {
+      "statId": 25,
+      "category": "Rushing Touchdown",
+      "group": "rushing",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 26,
+      "category": "2-Point Rushing Conversion",
+      "group": "rushing",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 42,
+      "category": "Receiving Yards",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 0.1,
+      "dstSlotOverride": null,
+      "effectivePoints": 0.1,
+      "isReverseItem": false,
+      "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards"
+    },
+    {
+      "statId": 43,
+      "category": "Receiving Touchdown",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 44,
+      "category": "2-Point Receiving Conversion",
+      "group": "receiving",
+      "confidence": "preset",
+      "points": 2,
+      "dstSlotOverride": null,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 53,
+      "category": "Reception",
+      "group": "receiving",
+      "confidence": "empirical",
+      "points": 1,
+      "dstSlotOverride": null,
+      "effectivePoints": 1,
+      "isReverseItem": false,
+      "note": "THIS IS THE PPR KNOB. 1.0 = full PPR, 0.5 = half PPR, 0 = standard."
+    },
+    {
+      "statId": 63,
+      "category": "Fumble Recovered for Touchdown",
+      "group": "turnovers",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": null,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 72,
+      "category": "Fumble Lost",
+      "group": "turnovers",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false,
+      "note": "ESPN standard is -2"
+    },
+    {
+      "statId": 77,
+      "category": "Field Goal Made 40-49",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 4,
+      "dstSlotOverride": null,
+      "effectivePoints": 4,
+      "isReverseItem": false
+    },
+    {
+      "statId": 80,
+      "category": "Field Goal Made 0-39",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 3,
+      "dstSlotOverride": null,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 85,
+      "category": "Field Goal Missed",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": -1,
+      "dstSlotOverride": null,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 86,
+      "category": "Extra Point Made",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": 1,
+      "dstSlotOverride": null,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 88,
+      "category": "Extra Point Missed",
+      "group": "kicking",
+      "confidence": "empirical",
+      "points": -2,
+      "dstSlotOverride": null,
+      "effectivePoints": -2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 89,
+      "category": "D/ST Points Allowed 0",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 5,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 90,
+      "category": "D/ST Points Allowed 1-6",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 4,
+      "effectivePoints": 4,
+      "isReverseItem": false
+    },
+    {
+      "statId": 91,
+      "category": "D/ST Points Allowed 7-13",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 3,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 92,
+      "category": "D/ST Points Allowed 14-17",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 1,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 93,
+      "category": "D/ST Blocked Punt / FG / PAT Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 95,
+      "category": "D/ST Interception",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 96,
+      "category": "D/ST Fumble Recovered",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 97,
+      "category": "D/ST Blocked Kick",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 98,
+      "category": "D/ST Safety",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 99,
+      "category": "D/ST Sack",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 1,
+      "effectivePoints": 1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 101,
+      "category": "D/ST Kickoff Return Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 102,
+      "category": "D/ST Punt Return Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 103,
+      "category": "D/ST Interception Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 104,
+      "category": "D/ST Fumble Returned for Touchdown",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 6,
+      "dstSlotOverride": 6,
+      "effectivePoints": 6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 123,
+      "category": "D/ST Points Allowed 28-34",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -1,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 124,
+      "category": "D/ST Points Allowed 35-45",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -3,
+      "effectivePoints": -3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 125,
+      "category": "D/ST Points Allowed 46+",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -5,
+      "effectivePoints": -5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 128,
+      "category": "D/ST Yards Allowed under 100",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 5,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 129,
+      "category": "D/ST Yards Allowed 100-199",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 3,
+      "effectivePoints": 3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 130,
+      "category": "D/ST Yards Allowed 200-299",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": 2,
+      "effectivePoints": 2,
+      "isReverseItem": false
+    },
+    {
+      "statId": 132,
+      "category": "D/ST Yards Allowed 350-399",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -1,
+      "effectivePoints": -1,
+      "isReverseItem": false
+    },
+    {
+      "statId": 133,
+      "category": "D/ST Yards Allowed 400-449",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -3,
+      "effectivePoints": -3,
+      "isReverseItem": false
+    },
+    {
+      "statId": 134,
+      "category": "D/ST Yards Allowed 450-499",
+      "group": "defenseSpecialTeams",
+      "confidence": "empirical",
+      "points": 0,
+      "dstSlotOverride": -5,
+      "effectivePoints": -5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 135,
+      "category": "D/ST Yards Allowed 500-549",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -6,
+      "effectivePoints": -6,
+      "isReverseItem": false
+    },
+    {
+      "statId": 136,
+      "category": "D/ST Yards Allowed 550+",
+      "group": "defenseSpecialTeams",
+      "confidence": "preset",
+      "points": 0,
+      "dstSlotOverride": -7,
+      "effectivePoints": -7,
+      "isReverseItem": false
+    },
+    {
+      "statId": 198,
+      "category": "Field Goal Made 50-59",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 5,
+      "dstSlotOverride": null,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    },
+    {
+      "statId": 201,
+      "category": "Field Goal Made 60+",
+      "group": "kicking",
+      "confidence": "preset",
+      "points": 5,
+      "dstSlotOverride": null,
+      "effectivePoints": 5,
+      "isReverseItem": false
+    }
+  ]
+}

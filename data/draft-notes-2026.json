@@ -1,0 +1,390 @@
+{
+ "note": "The scribe's record of the 2026 draft room, imported from the SCJ COMMENTS column of Scott Johnston's workbook by scripts/import-draft-notes.py. Joined onto the board by overallPick; the board supplies every player name, because the sheet is a transcript of a room and not a player database. sheetPlayer is the audit trail for that join and is never rendered. Do not hand-edit: re-run the importer.",
+ "season": 2026,
+ "scribe": {
+  "shortName": "Scott",
+  "fullName": "Scott Johnston"
+ },
+ "source": "2026 Fantasy Football.xlsx",
+ "commentedPicks": 63,
+ "notes": [
+  {
+   "overallPick": 2,
+   "round": 1,
+   "sheetPlayer": "Ja'Marr Chase",
+   "said": "\"Canada boy\""
+  },
+  {
+   "overallPick": 5,
+   "round": 1,
+   "sheetPlayer": "Christian McCaffrey",
+   "said": "\"I really didn't want CMC\""
+  },
+  {
+   "overallPick": 7,
+   "round": 1,
+   "sheetPlayer": "James Cook",
+   "said": "\"Can I get a little less head. When did this guy learn to pour beers?\" Elbe"
+  },
+  {
+   "overallPick": 10,
+   "round": 1,
+   "sheetPlayer": "Drake London",
+   "said": "\"First reach of the draft\" Kyle"
+  },
+  {
+   "overallPick": 11,
+   "round": 2,
+   "sheetPlayer": "CeeDee Lamb",
+   "said": "\"I guess I should have kept London\" Joe"
+  },
+  {
+   "overallPick": 23,
+   "round": 3,
+   "sheetPlayer": "Josh Jacobs",
+   "said": "\"Let's at least tell him what happened\" Zach"
+  },
+  {
+   "overallPick": 25,
+   "round": 3,
+   "sheetPlayer": "Emeka Egbuka",
+   "said": "\"You like a turf toe, huh\" Stefan"
+  },
+  {
+   "overallPick": 26,
+   "round": 3,
+   "sheetPlayer": "Luther Burden",
+   "said": "\"That's a reach, but good pick, I guess\" Stefan"
+  },
+  {
+   "overallPick": 31,
+   "round": 4,
+   "sheetPlayer": "Jadarian Price",
+   "said": "\"Is that a reach?\" Colin \"Maybe, but it doesn't really matter\" Zach"
+  },
+  {
+   "overallPick": 37,
+   "round": 4,
+   "sheetPlayer": "Parker Washington",
+   "said": "\"That's quite the reach\" Stefan \"You've been listening to podcasts and you're surprised by that? I thought you were prepared?\" Kyle"
+  },
+  {
+   "overallPick": 38,
+   "round": 4,
+   "sheetPlayer": "Rhamondre Stevenson",
+   "said": "\"What a gross pick\" Stefan"
+  },
+  {
+   "overallPick": 40,
+   "round": 4,
+   "sheetPlayer": "Christian Watson",
+   "said": "\"Oh I have the next pick? Fuck yeah! Thought I was done for a while\" Kyle"
+  },
+  {
+   "overallPick": 41,
+   "round": 5,
+   "sheetPlayer": "Bhayshul Tuten",
+   "said": "\"TUUUTEN!\" Kyle \"That's the kind of long shots I need here\" Kyle"
+  },
+  {
+   "overallPick": 42,
+   "round": 5,
+   "sheetPlayer": "Jameson Williams",
+   "said": "\"That's my boy\" Stefan \"Go back, I want to see JaMo's picture\" Stefan \"Um, I'm worried that will delete the whole board\" Colin \"This app sucks\" Kyle"
+  },
+  {
+   "overallPick": 43,
+   "round": 5,
+   "sheetPlayer": "Davante Adams",
+   "said": "\"There are some people that are asexual\" Stefan"
+  },
+  {
+   "overallPick": 44,
+   "round": 5,
+   "sheetPlayer": "Terry McCLaurin",
+   "said": "\"That's a nice pice, he's Terry McClaurin, you know?\" Kyle"
+  },
+  {
+   "overallPick": 70,
+   "round": 7,
+   "sheetPlayer": "Alec Pierce",
+   "said": "\"That's a terrible pick\""
+  },
+  {
+   "overallPick": 72,
+   "round": 8,
+   "sheetPlayer": "Rico Dowdle",
+   "said": "\"I do not like my team Kyle\" Greg"
+  },
+  {
+   "overallPick": 74,
+   "round": 8,
+   "sheetPlayer": "Brian Thomas Jr",
+   "said": "\"I'm going to do a 3-peptide stack\" Stefan \"That's what Barry Bonds did\" Kyle"
+  },
+  {
+   "overallPick": 75,
+   "round": 8,
+   "sheetPlayer": "Makai Lemon",
+   "said": "\"You don’t think they have a cure for cancer? God bless your heart\" Stefan to Zach"
+  },
+  {
+   "overallPick": 79,
+   "round": 8,
+   "sheetPlayer": "KC Concepcion",
+   "said": "\"Who took Joe Burrow? That dude's a dumbass\" TopShooters manager"
+  },
+  {
+   "overallPick": 81,
+   "round": 9,
+   "sheetPlayer": "De'Zhaun Stribling",
+   "said": "\"He's biting my nipples back there\" Stefan; \"Now I can start drafting\" Kyle after the pick"
+  },
+  {
+   "overallPick": 90,
+   "round": 9,
+   "sheetPlayer": "Wan'Dale Robinson",
+   "said": "\"You took 10 minutes to pick Wan'Dale?\" Kyle"
+  },
+  {
+   "overallPick": 92,
+   "round": 10,
+   "sheetPlayer": "Dalton Kincaid",
+   "said": "\"Do you think [Dolly Parton] is actually dead?\" Josh \"I bet her tits just exploded…\" Joe"
+  },
+  {
+   "overallPick": 93,
+   "round": 10,
+   "sheetPlayer": "Jonah Coleman",
+   "said": "\"Do you guys remember Dalton Bentenvengolio [GUNS]?\" Kyle"
+  },
+  {
+   "overallPick": 94,
+   "round": 10,
+   "sheetPlayer": "Isaiah Likely",
+   "said": "\"Hey Josh, eat my butt\" Stefan \"Is JK Dobbins available?\" Kyle \"You drafted a 3rd string player\" Greg \"I didn’t want to take him yet, but I did\" Stefan"
+  },
+  {
+   "overallPick": 97,
+   "round": 10,
+   "sheetPlayer": "Zach Charbonnet",
+   "said": "\"Wait, Charbs went?\" Stefan"
+  },
+  {
+   "overallPick": 98,
+   "round": 10,
+   "sheetPlayer": "Rachaad White",
+   "said": "\"I thought you said Rashee Rice\" Elbe \"….I did…\" Joe, and takes a shot"
+  },
+  {
+   "overallPick": 100,
+   "round": 10,
+   "sheetPlayer": "Justin Herbert",
+   "said": "\"Madison Beers, ever heard of her?\" Kyle \"She's deep\" Joe"
+  },
+  {
+   "overallPick": 101,
+   "round": 11,
+   "sheetPlayer": "Chris Rodriguez",
+   "said": "\"Nibbling on those nibbies\" Kyle"
+  },
+  {
+   "overallPick": 102,
+   "round": 11,
+   "sheetPlayer": "Tucker Kraft",
+   "said": "\"What if Tuten just sucks?\" Stefan \"But what if he's a stud?\" Kyle"
+  },
+  {
+   "overallPick": 103,
+   "round": 11,
+   "sheetPlayer": "Tank Dell",
+   "said": "\"Is he hurt?\" Zach \"I think he's going to get cut\" Stefan"
+  },
+  {
+   "overallPick": 104,
+   "round": 11,
+   "sheetPlayer": "Josh Downs",
+   "said": "\"A touch of the downs\" Joe"
+  },
+  {
+   "overallPick": 105,
+   "round": 11,
+   "sheetPlayer": "Jayden Reed",
+   "said": "\"Elbe, you should take another trash-ass running back\" Joe \"Can I have Josh Jacobs?\" Elbe back to Joe \"They're consolidating targets, good pick\" Stefan \"I like when you approve my picks\" Elbe \"Are you driniing NAs over there, Stef, or why are you sucking everyone's dicks\" JOe"
+  },
+  {
+   "overallPick": 108,
+   "round": 11,
+   "sheetPlayer": "Stefon Diggs",
+   "said": "\"Did you know he's bisexual?\" Kyle \"Just the way I like it. I'll take Caleb Williams next\" Stefan"
+  },
+  {
+   "overallPick": 109,
+   "round": 11,
+   "sheetPlayer": "Trevor Lawrence",
+   "said": "\"That's a pick right there\" Kyle \"Is he going to be throwing to receivers or tik tok'in?\" Joe"
+  },
+  {
+   "overallPick": 112,
+   "round": 12,
+   "sheetPlayer": "Michael Wilson",
+   "said": "\"This is the Garry Barnage range\" Kyle"
+  },
+  {
+   "overallPick": 115,
+   "round": 12,
+   "sheetPlayer": "Mike Washington",
+   "said": "\"Stefan, do you know who Mike Washington is?\" Zach"
+  },
+  {
+   "overallPick": 116,
+   "round": 12,
+   "sheetPlayer": "Romeo Doubs",
+   "said": "\"Just turrible picks, Kyle\" Greg"
+  },
+  {
+   "overallPick": 117,
+   "round": 12,
+   "sheetPlayer": "Denzel Boston",
+   "said": "\"Is there any objection to us going to Sleeper now?\" Colin"
+  },
+  {
+   "overallPick": 118,
+   "round": 12,
+   "sheetPlayer": "Harold Fannin",
+   "said": "\"You guys take this shit so seriously?\" Waitress \"I BUILT THIS APP!\" Colin to Waitress \"I told him he's a fucking nerd\" Waitress \"The season doesn't start for 2 more weeks. He's going to rosterbate a lot. He's going to be dry\" Stefan"
+  },
+  {
+   "overallPick": 119,
+   "round": 12,
+   "sheetPlayer": "Caleb Williams",
+   "said": "\"Low T?\" Colin to waitress \"No\" Waitress \"High T, Low Sack\" Joe"
+  },
+  {
+   "overallPick": 120,
+   "round": 12,
+   "sheetPlayer": "Deeboo Samuel",
+   "said": "\"Let's do the root beer barrells after 12\" Kyle \"No, after the draft. That's a treat!\" Stefan; \"I think I have a playoff team\" Kyle"
+  },
+  {
+   "overallPick": 121,
+   "round": 13,
+   "sheetPlayer": "Travis Kelce",
+   "said": "[Zach took Tucker Kraft - kepper - finished his beer]"
+  },
+  {
+   "overallPick": 122,
+   "round": 13,
+   "sheetPlayer": "George Kittle",
+   "said": "\"I'm the oldest person here by far. Not even in the ballpark.\" Zach \"Old man TE run\" Colin"
+  },
+  {
+   "overallPick": 123,
+   "round": 13,
+   "sheetPlayer": "Hunter [Fucking] Henrey",
+   "said": "\"Who did this to me?\" Greg"
+  },
+  {
+   "overallPick": 124,
+   "round": 13,
+   "sheetPlayer": "Denver Broncos",
+   "said": "\"Do you just go to the games and wave a flag saying, 'that's my fantasy team!'\" Kyle to Josh"
+  },
+  {
+   "overallPick": 125,
+   "round": 13,
+   "sheetPlayer": "Xaiver Worthy",
+   "said": "\"Automatic first bet of the year…broncos at chiefs\" Josh"
+  },
+  {
+   "overallPick": 127,
+   "round": 13,
+   "sheetPlayer": "Caleb Douglas",
+   "said": "\"Who?\" Kyle \"Top receiver in Miami\" Stefan"
+  },
+  {
+   "overallPick": 128,
+   "round": 13,
+   "sheetPlayer": "Emmett Johnson",
+   "said": "\"Walker…gonna get hurt\" Stefan to GG"
+  },
+  {
+   "overallPick": 129,
+   "round": 13,
+   "sheetPlayer": "Aaron Jones",
+   "said": "\"Oh, he's still out there? I have no interest in him\" Stefan"
+  },
+  {
+   "overallPick": 133,
+   "round": 14,
+   "sheetPlayer": "Tyler Algeier",
+   "said": "\"Fuck, do I really have 7 WRs…no Tes...\" Kyle \"I'll take MATTHEW GOLDEN\" Stefan [SHOT] \"I knew that was too good to be true. FUCK!\" Stefan \"When did he go?\" Kyle [Shows 4 rounds prior] \"Oh, you reached that high?\" Stefan \"I had to\" Kyle…after long process and Stefan makes pick \"TAKE A FUCKING PICK\" Joe to Stefan right after his pick"
+  },
+  {
+   "overallPick": 135,
+   "round": 14,
+   "sheetPlayer": "Kyler Murray",
+   "said": "\"Terrible Pick. THAT’S YOUR QB 1?!?!?\" Stefan \"No, I have a QB\" Kyle \"Oh, Ok\" Stefan"
+  },
+  {
+   "overallPick": 136,
+   "round": 14,
+   "sheetPlayer": "Seattle Seahawks DEF",
+   "said": "\"How we doing, do we want any more pitchers?\" Waitress \"How many more free ones do we have?\" Stefan"
+  },
+  {
+   "overallPick": 139,
+   "round": 14,
+   "sheetPlayer": "Keaton Mitchell",
+   "said": "[Waitress flips off the group after explanation of Root Barrells]"
+  },
+  {
+   "overallPick": 140,
+   "round": 14,
+   "sheetPlayer": "Baltimore Ravens DEF",
+   "said": "\"Josh this isn't Centreville...\" Kyle"
+  },
+  {
+   "overallPick": 141,
+   "round": 15,
+   "sheetPlayer": "Patrick Mahomes",
+   "said": "\"You went to the strip club and you got a Stan Musial signed jersey…and you got your butthole ate.\" Stefan to Josh"
+  },
+  {
+   "overallPick": 144,
+   "round": 15,
+   "sheetPlayer": "Fernando Mendoza",
+   "said": "\"Give me Francisco Mendoza!\" Josh"
+  },
+  {
+   "overallPick": 146,
+   "round": 15,
+   "sheetPlayer": "Mark Andrews",
+   "said": "\"That's my starter. Top 5 perennial TE in the 15th round\" Kyle \"Mark Andrews is 38 years old.\" Greg \"No he isn't….is he?\" Kyle"
+  },
+  {
+   "overallPick": 151,
+   "round": 16,
+   "sheetPlayer": "Minnesota Vikings DEF",
+   "said": "\"What if we have two rounds of drafting college players at the end\" Zach"
+  },
+  {
+   "overallPick": 152,
+   "round": 16,
+   "sheetPlayer": "Woody Marks",
+   "said": "\"Zach is mentally trapping Stefan\" Kyle to Joe and Scott"
+  },
+  {
+   "overallPick": 153,
+   "round": 16,
+   "sheetPlayer": "Tyjae Spears",
+   "said": "\"Who's the top IR guy?\" Stefan \"I'll take Woody Marks\" [hands raised with joy] - taken"
+  },
+  {
+   "overallPick": 154,
+   "round": 16,
+   "sheetPlayer": "Ryan Flournoy",
+   "said": "\"Fucking worry about your own life, Kyle\" Stefan \"He sucks dick and he plays for the Tennessee Titans\" Josh"
+  }
+ ]
+}

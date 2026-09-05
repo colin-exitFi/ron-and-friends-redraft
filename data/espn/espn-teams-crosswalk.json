@@ -1,0 +1,147 @@
+{
+  "_about": "Crosswalk between ESPN teams (league 441239, season 2026) and the managers already known from the Smart Draft room and the 2026 workbooks.",
+  "_pulledAt": "2026-08-26",
+  "_headline": "ESPN supplies the real franchise names and abbreviations, which data/managers.json is missing entirely (franchiseName was null for all 10 managers). ESPN's own pick order and its pre-generated 160-pick board agree with each other exactly, but they disagree with the Smart Draft room at three slots.",
+  "_espnDraftOrder": {
+    "source": "settings.draftSettings.pickOrder, cross-checked against draftDetail.picks round 1",
+    "internallyConsistent": true,
+    "teamIdOrder": [5, 3, 9, 6, 10, 1, 7, 4, 2, 8],
+    "abbrevOrder": ["PI", "DinP", "HOJO", "TITS", "ADB", "TBB", "DHB", "CT", "JJ", "DOGS"]
+  },
+  "_conflictsWithSmartDraft": {
+    "slot1": "ESPN says the slot-1 franchise 'Perpetually Impaired' is owned by Ted Buckman. Smart Draft and the workbooks say the slot-1 manager is Zach Rakowski. Ted Buckman does not appear anywhere in the Smart Draft room or the workbooks, and Zach Rakowski does not appear anywhere in ESPN. Most likely Zach has taken over Ted's franchise and the ESPN owner has not been reassigned - but the commissioner must confirm.",
+    "slots8and10": "ESPN puts Colin Tracy (Flurp McDerp) at draft slot 8 and Stefan Albers (Mound City Dogs) at slot 10. Smart Draft and the workbooks put Stefan at 8 and Colin at 10. Slots 8 and 10 are swapped between the two systems.",
+    "whichToTrust": "GENUINELY UNRESOLVED - the commissioner must arbitrate before the board is printed. The tempting answer is 'ESPN is stale, trust Smart Draft', but the evidence does not support that: ESPN's pickOrder is orderType MANUAL and is a DIFFERENT, deliberate order in every season (2022, 2023, 2024, 2025 and 2026 are all distinct), so somebody set the 2026 order on purpose. Against that, the ESPN draft has never been run for this league (type OFFLINE, date null, drafted false, all 160 slots empty), and Smart Draft is the live room being used on Saturday. Note also that data/managers.json and data/RECONCILIATION.md both derive their order from Smart Draft, so this is one source against one, not three against one.",
+    "espnOrderBySeason": {
+      "_note": "Owner names by ESPN draft slot. Proves the 2026 order is not a copy of any prior season.",
+      "2026": ["Ted Buckman", "Kyle Witte", "Joe Murray", "Joshua Grainger", "Scott Elbe", "Kyle Mertens", "Scott Johnston", "Colin Tracy", "Greg Blome", "Stefan Albers"],
+      "2025": ["Colin Tracy", "Stefan Albers", "Kyle Witte", "Joe Murray", "Scott Elbe", "Kyle Mertens", "Ted Buckman", "Joshua Grainger", "Scott Johnston", "Greg Blome"],
+      "2024": ["Ted Buckman", "Joshua Grainger", "Colin Tracy", "Kyle Mertens", "Scott Elbe", "Kyle Witte", "Joe Murray", "Scott Johnston", "Greg Blome", "Stefan Albers"],
+      "2023": ["Kyle Mertens", "Stefan Albers", "Greg Blome", "Joshua Grainger", "Scott Johnston", "Kyle Witte", "Ted Buckman", "Scott Elbe", "Joe Murray", "Colin Tracy"],
+      "2022": ["Scott Elbe", "Joe Murray", "Scott Johnston", "Colin Tracy", "Kyle Mertens", "Greg Blome", "Stefan Albers", "Kyle Witte", "Joshua Grainger", "Ted Buckman"]
+    },
+    "sideNoteOn2025": "data/RECONCILIATION.md reports the 2025 order from the workbook's Sheet3 as Colin, Stefan, Witte, Joe, Elbe, Kyle, Josh, Scott, Greg, Zach. ESPN's 2025 order agrees on slots 1-6 and then diverges: ESPN has Ted at 7 with Josh, Scott and Greg shifted down one. So ESPN and the workbook disagreed about this franchise's slot in 2025 as well. That is history and does not affect Saturday, but it is the same franchise involved both times.",
+    "agreementElsewhere": "Slots 2, 3, 4, 5, 6, 7 and 9 agree across ESPN, Smart Draft and the workbooks."
+  },
+  "teams": [
+    {
+      "espnDraftSlot": 1,
+      "espnTeamId": 5,
+      "espnFranchiseName": "Perpetually Impaired",
+      "espnAbbrev": "PI",
+      "espnOwner": "Ted Buckman",
+      "smartDraftSlot1Manager": "Zach Rakowski",
+      "smartDraftTeamId": "9e0da9f9-cab5-4f66-ab19-35b615097ace",
+      "agreement": "MISMATCH - different person"
+    },
+    {
+      "espnDraftSlot": 2,
+      "espnTeamId": 3,
+      "espnFranchiseName": "The Replacement Team",
+      "espnAbbrev": "DinP",
+      "espnOwner": "Kyle Witte",
+      "smartDraftSlot2Manager": "Kyle Witte",
+      "smartDraftTeamId": "8ef9267d-0e3d-42a1-a3d8-887fef838da6",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 3,
+      "espnTeamId": 9,
+      "espnFranchiseName": "Fingers are for painting",
+      "espnAbbrev": "HOJO",
+      "espnOwner": "Joe Murray",
+      "smartDraftSlot3Manager": "Joe Murray",
+      "smartDraftTeamId": "61fb3616-6862-420f-bb2b-22ebb00964e6",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 4,
+      "espnTeamId": 6,
+      "espnFranchiseName": "Teddys Trouser Snake",
+      "espnAbbrev": "TITS",
+      "espnOwner": "Joshua Grainger",
+      "smartDraftSlot4Manager": "Josh Grainger",
+      "smartDraftTeamId": "2a215c13-2fda-47be-a42a-a75cd3474370",
+      "agreement": "exact (ESPN uses the long form 'Joshua')"
+    },
+    {
+      "espnDraftSlot": 5,
+      "espnTeamId": 10,
+      "espnFranchiseName": "A.D.B. Rombusters II",
+      "espnAbbrev": "ADB",
+      "espnOwner": "Scott Elbe",
+      "smartDraftSlot5Manager": "Scott Elbe",
+      "smartDraftTeamId": "8f57b971-5b63-46af-9e64-13ad6af4a7c9",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 6,
+      "espnTeamId": 1,
+      "espnFranchiseName": "Tushy Booth Ballers",
+      "espnAbbrev": "TBB",
+      "espnOwner": "Kyle Mertens",
+      "smartDraftSlot6Manager": "Kyle Mertens",
+      "smartDraftTeamId": "011792a6-db06-422d-9d30-81abb87f77aa",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 7,
+      "espnTeamId": 7,
+      "espnFranchiseName": "DHB Sandmen",
+      "espnAbbrev": "DHB",
+      "espnOwner": "Scott Johnston",
+      "smartDraftSlot7Manager": "Scott Johnston",
+      "smartDraftTeamId": "01fb92cb-b51d-4622-be2d-1bfea6fc0106",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 8,
+      "espnTeamId": 4,
+      "espnFranchiseName": "Flurp McDerp",
+      "espnAbbrev": "CT",
+      "espnOwner": "Colin Tracy",
+      "smartDraftSlot8Manager": "Stefan Albers",
+      "smartDraftTeamId": "665bb83a-1d27-4446-b1df-f38252387f81",
+      "agreement": "MISMATCH - ESPN has Colin here, Smart Draft has him at slot 10",
+      "note": "This is the commissioner's own team. ESPN teamId 4 matches the teamId in the league page URL he supplied."
+    },
+    {
+      "espnDraftSlot": 9,
+      "espnTeamId": 2,
+      "espnFranchiseName": "Jimmy's Johnson",
+      "espnAbbrev": "JJ",
+      "espnOwner": "Greg Blome",
+      "smartDraftSlot9Manager": "Greg Blome",
+      "smartDraftTeamId": "fc3936ca-ddad-4459-a3a1-158380a28172",
+      "agreement": "exact"
+    },
+    {
+      "espnDraftSlot": 10,
+      "espnTeamId": 8,
+      "espnFranchiseName": "Mound City Dogs",
+      "espnAbbrev": "DOGS",
+      "espnOwner": "Stefan Albers",
+      "smartDraftSlot10Manager": "Colin Tracy",
+      "smartDraftTeamId": "32dee545-0719-42e3-b490-47a7ec434eab",
+      "agreement": "MISMATCH - ESPN has Stefan here, Smart Draft has him at slot 8"
+    }
+  ],
+  "franchiseNamesForManagersJson": {
+    "_note": "data/managers.json has franchiseName: null for every manager. These are the real ESPN franchise names, keyed by manager. Joining by PERSON, not by draft slot, so the slot conflict above does not corrupt them.",
+    "Kyle Mertens": { "franchiseName": "Tushy Booth Ballers", "abbrev": "TBB", "espnTeamId": 1 },
+    "Greg Blome": { "franchiseName": "Jimmy's Johnson", "abbrev": "JJ", "espnTeamId": 2 },
+    "Kyle Witte": { "franchiseName": "The Replacement Team", "abbrev": "DinP", "espnTeamId": 3 },
+    "Colin Tracy": { "franchiseName": "Flurp McDerp", "abbrev": "CT", "espnTeamId": 4 },
+    "Josh Grainger": { "franchiseName": "Teddys Trouser Snake", "abbrev": "TITS", "espnTeamId": 6 },
+    "Scott Johnston": { "franchiseName": "DHB Sandmen", "abbrev": "DHB", "espnTeamId": 7 },
+    "Stefan Albers": { "franchiseName": "Mound City Dogs", "abbrev": "DOGS", "espnTeamId": 8 },
+    "Joe Murray": { "franchiseName": "Fingers are for painting", "abbrev": "HOJO", "espnTeamId": 9 },
+    "Scott Elbe": { "franchiseName": "A.D.B. Rombusters II", "abbrev": "ADB", "espnTeamId": 10 },
+    "Zach Rakowski": {
+      "franchiseName": "Perpetually Impaired",
+      "abbrev": "PI",
+      "espnTeamId": 5,
+      "caveat": "UNCONFIRMED. ESPN lists Ted Buckman as the owner of this franchise, not Zach Rakowski. Do not publish this pairing until the commissioner confirms."
+    }
+  }
+}

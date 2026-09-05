@@ -1,0 +1,901 @@
+{
+ "generatedAt": "2026-08-26T21:06:36.219Z",
+ "keeperTermTotalYears": 3,
+ "liveKeeperCount": 14,
+ "keepers": [
+  {
+   "player": "Garrett Wilson",
+   "position": "WR",
+   "liveOwner": "Greg",
+   "liveRound": 4,
+   "liveOverallPick": 32,
+   "sheetMatch": true,
+   "sheetManager": "Greg",
+   "sheetManagerFullName": "Greg Blome",
+   "sheetRound2025": 5,
+   "sheetRoundToKeep2026": 4,
+   "sheetStatus2025": "2 of 3",
+   "sheetStatus2026": "3 of 3",
+   "sheetStatus2027": "N/A",
+   "keeperClockYear2026": 3,
+   "finalYearOfClock": true,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Jaxon Smith-Njigba",
+   "position": "WR",
+   "liveOwner": "Kyle",
+   "liveRound": 4,
+   "liveOverallPick": 36,
+   "sheetMatch": true,
+   "sheetManager": "Kyle",
+   "sheetManagerFullName": "Kyle Mertens",
+   "sheetRound2025": 5,
+   "sheetRoundToKeep2026": 4,
+   "sheetStatus2025": "2 of 3",
+   "sheetStatus2026": "3 of 3",
+   "sheetStatus2027": "N/A",
+   "keeperClockYear2026": 3,
+   "finalYearOfClock": true,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Rashee Rice",
+   "position": "WR",
+   "liveOwner": "Stefan",
+   "liveRound": 4,
+   "liveOverallPick": 39,
+   "sheetMatch": true,
+   "sheetManager": "Stefan",
+   "sheetManagerFullName": "Stefan Albers",
+   "sheetRound2025": 5,
+   "sheetRoundToKeep2026": 4,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Rome Odunze",
+   "position": "WR",
+   "liveOwner": "Greg",
+   "liveRound": 6,
+   "liveOverallPick": 52,
+   "sheetMatch": true,
+   "sheetManager": "Greg",
+   "sheetManagerFullName": "Greg Blome",
+   "sheetRound2025": 7,
+   "sheetRoundToKeep2026": 6,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Brock Bowers",
+   "position": "TE",
+   "liveOwner": "Josh",
+   "liveRound": 6,
+   "liveOverallPick": 57,
+   "sheetMatch": true,
+   "sheetManager": "Josh",
+   "sheetManagerFullName": "Josh Grainger",
+   "sheetRound2025": 7,
+   "sheetRoundToKeep2026": 6,
+   "sheetStatus2025": "2 of 3",
+   "sheetStatus2026": "3 of 3",
+   "sheetStatus2027": "N/A",
+   "keeperClockYear2026": 3,
+   "finalYearOfClock": true,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Chase Brown",
+   "position": "RB",
+   "liveOwner": "Kyle",
+   "liveRound": 6,
+   "liveOverallPick": 59,
+   "sheetMatch": true,
+   "sheetManager": "Kyle",
+   "sheetManagerFullName": "Kyle Mertens",
+   "sheetRound2025": 7,
+   "sheetRoundToKeep2026": 6,
+   "sheetStatus2025": "2 of 3",
+   "sheetStatus2026": "3 of 3",
+   "sheetStatus2027": "N/A",
+   "keeperClockYear2026": 3,
+   "finalYearOfClock": true,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Travis Etienne",
+   "position": "RB",
+   "liveOwner": "Josh",
+   "liveRound": 7,
+   "liveOverallPick": 64,
+   "sheetMatch": true,
+   "sheetManager": "Josh",
+   "sheetManagerFullName": "Josh Grainger",
+   "sheetRound2025": 8,
+   "sheetRoundToKeep2026": 7,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Kyren Williams",
+   "position": "RB",
+   "liveOwner": "Scott",
+   "liveRound": 7,
+   "liveOverallPick": 67,
+   "sheetMatch": true,
+   "sheetManager": "Scott",
+   "sheetManagerFullName": "Scott Johnston",
+   "sheetRound2025": 8,
+   "sheetRoundToKeep2026": 7,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Trey McBride",
+   "position": "TE",
+   "liveOwner": "Colin",
+   "liveRound": 8,
+   "liveOverallPick": 71,
+   "sheetMatch": true,
+   "sheetManager": "Colin",
+   "sheetManagerFullName": "Colin Tracy",
+   "sheetRound2025": 9,
+   "sheetRoundToKeep2026": 8,
+   "sheetStatus2025": "2 of 3",
+   "sheetStatus2026": "3 of 3",
+   "sheetStatus2027": "N/A",
+   "keeperClockYear2026": 3,
+   "finalYearOfClock": true,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "De'Von Achane",
+   "position": "RB",
+   "liveOwner": "Witte",
+   "liveRound": 8,
+   "liveOverallPick": 80,
+   "sheetMatch": true,
+   "sheetManager": "Witte",
+   "sheetManagerFullName": "Kyle Witte",
+   "sheetRound2025": 9,
+   "sheetRoundToKeep2026": 8,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Colston Loveland",
+   "position": "TE",
+   "liveOwner": "Stefan",
+   "liveRound": 9,
+   "liveOverallPick": 88,
+   "sheetMatch": true,
+   "sheetManager": "Stefan",
+   "sheetManagerFullName": "Stefan Albers",
+   "sheetRound2025": 9,
+   "sheetRoundToKeep2026": 8,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": [
+    "ROUND CONFLICT: sheet cost round 8, live room round 9"
+   ]
+  },
+  {
+   "player": "Bucky Irving",
+   "position": "RB",
+   "liveOwner": "Colin",
+   "liveRound": 10,
+   "liveOverallPick": 91,
+   "sheetMatch": true,
+   "sheetManager": "Colin",
+   "sheetManagerFullName": "Colin Tracy",
+   "sheetRound2025": 11,
+   "sheetRoundToKeep2026": 10,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Tucker Kraft",
+   "position": "TE",
+   "liveOwner": "Witte",
+   "liveRound": 11,
+   "liveOverallPick": 102,
+   "sheetMatch": true,
+   "sheetManager": "Witte",
+   "sheetManagerFullName": "Kyle Witte",
+   "sheetRound2025": 12,
+   "sheetRoundToKeep2026": 11,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": []
+  },
+  {
+   "player": "Puka Nacua",
+   "position": "WR",
+   "liveOwner": "Scott",
+   "liveRound": 11,
+   "liveOverallPick": 107,
+   "sheetMatch": true,
+   "sheetManager": "Greg",
+   "sheetManagerFullName": "Greg Blome",
+   "sheetRound2025": 12,
+   "sheetRoundToKeep2026": 11,
+   "sheetStatus2025": "1 of 3",
+   "sheetStatus2026": "2 of 3",
+   "sheetStatus2027": "3 of 3",
+   "keeperClockYear2026": 2,
+   "finalYearOfClock": false,
+   "sheetTradeFlag": null,
+   "issues": [
+    "OWNER CONFLICT: sheet says Greg Blome (Greg), live room says Scott"
+   ]
+  }
+ ],
+ "keeperClockYear2": [
+  {
+   "owner": "Stefan",
+   "round": 4,
+   "player": "Rashee Rice"
+  },
+  {
+   "owner": "Greg",
+   "round": 6,
+   "player": "Rome Odunze"
+  },
+  {
+   "owner": "Josh",
+   "round": 7,
+   "player": "Travis Etienne"
+  },
+  {
+   "owner": "Scott",
+   "round": 7,
+   "player": "Kyren Williams"
+  },
+  {
+   "owner": "Witte",
+   "round": 8,
+   "player": "De'Von Achane"
+  },
+  {
+   "owner": "Stefan",
+   "round": 9,
+   "player": "Colston Loveland"
+  },
+  {
+   "owner": "Colin",
+   "round": 10,
+   "player": "Bucky Irving"
+  },
+  {
+   "owner": "Witte",
+   "round": 11,
+   "player": "Tucker Kraft"
+  },
+  {
+   "owner": "Scott",
+   "round": 11,
+   "player": "Puka Nacua"
+  }
+ ],
+ "keeperClockYear3Final": [
+  {
+   "owner": "Greg",
+   "round": 4,
+   "player": "Garrett Wilson"
+  },
+  {
+   "owner": "Kyle",
+   "round": 4,
+   "player": "Jaxon Smith-Njigba"
+  },
+  {
+   "owner": "Josh",
+   "round": 6,
+   "player": "Brock Bowers"
+  },
+  {
+   "owner": "Kyle",
+   "round": 6,
+   "player": "Chase Brown"
+  },
+  {
+   "owner": "Colin",
+   "round": 8,
+   "player": "Trey McBride"
+  }
+ ],
+ "sheetIneligible2026": [
+  {
+   "manager": "Josh",
+   "player": "Ja'Marr Chase",
+   "status2025": "3 of 3"
+  },
+  {
+   "manager": "Elbe",
+   "player": "Sam LaPorta",
+   "status2025": "3 of 3"
+  },
+  {
+   "manager": "Stefan",
+   "player": "Nico Collins",
+   "status2025": "3 of 3"
+  }
+ ],
+ "escalationRule": "roundToKeep(next season) = costRound(this season) - 1",
+ "escalationViolations": [],
+ "firstRoundKeepersProducingRoundZero": [
+  {
+   "manager": "Colin",
+   "player": "CeeDee Lamb"
+  },
+  {
+   "manager": "Joe",
+   "player": "Saquon Barkley"
+  },
+  {
+   "manager": "Greg",
+   "player": "Derrick Henry"
+  },
+  {
+   "manager": "Greg",
+   "player": "Jonathan Taylor"
+  },
+  {
+   "manager": "Josh",
+   "player": "Amon-Ra St. Brown"
+  },
+  {
+   "manager": "Kyle",
+   "player": "Ashton Jeanty"
+  },
+  {
+   "manager": "Elbe",
+   "player": "Christian McCaffrey"
+  },
+  {
+   "manager": "Elbe",
+   "player": "Malik Nabers"
+  },
+  {
+   "manager": "Stefan",
+   "player": "Jahmyr Gibbs"
+  },
+  {
+   "manager": "Stefan",
+   "player": "Bijan Robinson"
+  }
+ ],
+ "liveTradedSlotCount": 29,
+ "sheetTradedSlotCount": 29,
+ "tradedPickDifferences": [
+  {
+   "key": "R1 Greg->Scott",
+   "liveCount": 0,
+   "sheetCount": 1,
+   "status": "SHEET ONLY"
+  },
+  {
+   "key": "R4 Stefan->Witte",
+   "liveCount": 1,
+   "sheetCount": 0,
+   "status": "LIVE ONLY"
+  },
+  {
+   "key": "R4 Witte->Stefan",
+   "liveCount": 1,
+   "sheetCount": 0,
+   "status": "LIVE ONLY"
+  },
+  {
+   "key": "R15 Scott->Greg",
+   "liveCount": 0,
+   "sheetCount": 1,
+   "status": "SHEET ONLY"
+  }
+ ],
+ "inventoryDifferences": [
+  {
+   "team": "Greg",
+   "sheet": [
+    2,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    15,
+    16,
+    16
+   ],
+   "live": [
+    1,
+    2,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    16
+   ]
+  },
+  {
+   "team": "Scott",
+   "sheet": [
+    1,
+    1,
+    2,
+    3,
+    3,
+    4,
+    4,
+    5,
+    6,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    14
+   ],
+   "live": [
+    1,
+    2,
+    3,
+    3,
+    4,
+    4,
+    5,
+    6,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    14,
+    15
+   ]
+  }
+ ],
+ "liveTradedSlots": [
+  {
+   "round": 1,
+   "overallPick": 8,
+   "from": "Stefan",
+   "to": "Zach",
+   "keeper": false
+  },
+  {
+   "round": 2,
+   "overallPick": 15,
+   "from": "Kyle",
+   "to": "Witte",
+   "keeper": false
+  },
+  {
+   "round": 3,
+   "overallPick": 29,
+   "from": "Greg",
+   "to": "Scott",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 31,
+   "from": "Colin",
+   "to": "Zach",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 33,
+   "from": "Stefan",
+   "to": "Witte",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 35,
+   "from": "Kyle",
+   "to": "Zach",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 36,
+   "from": "Elbe",
+   "to": "Kyle",
+   "keeper": true
+  },
+  {
+   "round": 4,
+   "overallPick": 37,
+   "from": "Josh",
+   "to": "Scott",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 38,
+   "from": "Joe",
+   "to": "Witte",
+   "keeper": false
+  },
+  {
+   "round": 4,
+   "overallPick": 39,
+   "from": "Witte",
+   "to": "Stefan",
+   "keeper": true
+  },
+  {
+   "round": 5,
+   "overallPick": 41,
+   "from": "Zach",
+   "to": "Kyle",
+   "keeper": false
+  },
+  {
+   "round": 5,
+   "overallPick": 42,
+   "from": "Witte",
+   "to": "Stefan",
+   "keeper": false
+  },
+  {
+   "round": 6,
+   "overallPick": 51,
+   "from": "Colin",
+   "to": "Joe",
+   "keeper": false
+  },
+  {
+   "round": 6,
+   "overallPick": 55,
+   "from": "Kyle",
+   "to": "Zach",
+   "keeper": false
+  },
+  {
+   "round": 6,
+   "overallPick": 56,
+   "from": "Elbe",
+   "to": "Scott",
+   "keeper": false
+  },
+  {
+   "round": 6,
+   "overallPick": 59,
+   "from": "Witte",
+   "to": "Kyle",
+   "keeper": true
+  },
+  {
+   "round": 6,
+   "overallPick": 60,
+   "from": "Zach",
+   "to": "Witte",
+   "keeper": false
+  },
+  {
+   "round": 7,
+   "overallPick": 62,
+   "from": "Witte",
+   "to": "Stefan",
+   "keeper": false
+  },
+  {
+   "round": 8,
+   "overallPick": 73,
+   "from": "Stefan",
+   "to": "Witte",
+   "keeper": false
+  },
+  {
+   "round": 8,
+   "overallPick": 75,
+   "from": "Kyle",
+   "to": "Elbe",
+   "keeper": false
+  },
+  {
+   "round": 8,
+   "overallPick": 80,
+   "from": "Zach",
+   "to": "Witte",
+   "keeper": true
+  },
+  {
+   "round": 9,
+   "overallPick": 81,
+   "from": "Zach",
+   "to": "Kyle",
+   "keeper": false
+  },
+  {
+   "round": 9,
+   "overallPick": 82,
+   "from": "Witte",
+   "to": "Colin",
+   "keeper": false
+  },
+  {
+   "round": 10,
+   "overallPick": 99,
+   "from": "Witte",
+   "to": "Colin",
+   "keeper": false
+  },
+  {
+   "round": 10,
+   "overallPick": 100,
+   "from": "Zach",
+   "to": "Kyle",
+   "keeper": false
+  },
+  {
+   "round": 12,
+   "overallPick": 114,
+   "from": "Scott",
+   "to": "Josh",
+   "keeper": false
+  },
+  {
+   "round": 12,
+   "overallPick": 115,
+   "from": "Kyle",
+   "to": "Zach",
+   "keeper": false
+  },
+  {
+   "round": 13,
+   "overallPick": 127,
+   "from": "Scott",
+   "to": "Elbe",
+   "keeper": false
+  },
+  {
+   "round": 16,
+   "overallPick": 154,
+   "from": "Scott",
+   "to": "Greg",
+   "keeper": false
+  }
+ ],
+ "sheetTradedSlots": [
+  {
+   "round": 1,
+   "sheetOverallPick": 2,
+   "from": "Stefan",
+   "to": "Zach"
+  },
+  {
+   "round": 1,
+   "sheetOverallPick": 9,
+   "from": "Greg",
+   "to": "Scott"
+  },
+  {
+   "round": 2,
+   "sheetOverallPick": 16,
+   "from": "Kyle",
+   "to": "Witte"
+  },
+  {
+   "round": 3,
+   "sheetOverallPick": 29,
+   "from": "Greg",
+   "to": "Scott"
+  },
+  {
+   "round": 4,
+   "sheetOverallPick": 31,
+   "from": "Colin",
+   "to": "Zach"
+  },
+  {
+   "round": 4,
+   "sheetOverallPick": 34,
+   "from": "Joe",
+   "to": "Witte"
+  },
+  {
+   "round": 4,
+   "sheetOverallPick": 35,
+   "from": "Elbe",
+   "to": "Kyle"
+  },
+  {
+   "round": 4,
+   "sheetOverallPick": 36,
+   "from": "Kyle",
+   "to": "Zach"
+  },
+  {
+   "round": 4,
+   "sheetOverallPick": 37,
+   "from": "Josh",
+   "to": "Scott"
+  },
+  {
+   "round": 5,
+   "sheetOverallPick": 43,
+   "from": "Witte",
+   "to": "Stefan"
+  },
+  {
+   "round": 5,
+   "sheetOverallPick": 50,
+   "from": "Zach",
+   "to": "Kyle"
+  },
+  {
+   "round": 6,
+   "sheetOverallPick": 51,
+   "from": "Colin",
+   "to": "Joe"
+  },
+  {
+   "round": 6,
+   "sheetOverallPick": 53,
+   "from": "Witte",
+   "to": "Kyle"
+  },
+  {
+   "round": 6,
+   "sheetOverallPick": 55,
+   "from": "Elbe",
+   "to": "Scott"
+  },
+  {
+   "round": 6,
+   "sheetOverallPick": 56,
+   "from": "Kyle",
+   "to": "Zach"
+  },
+  {
+   "round": 6,
+   "sheetOverallPick": 60,
+   "from": "Zach",
+   "to": "Witte"
+  },
+  {
+   "round": 7,
+   "sheetOverallPick": 63,
+   "from": "Witte",
+   "to": "Stefan"
+  },
+  {
+   "round": 8,
+   "sheetOverallPick": 72,
+   "from": "Stefan",
+   "to": "Witte"
+  },
+  {
+   "round": 8,
+   "sheetOverallPick": 76,
+   "from": "Kyle",
+   "to": "Elbe"
+  },
+  {
+   "round": 8,
+   "sheetOverallPick": 80,
+   "from": "Zach",
+   "to": "Witte"
+  },
+  {
+   "round": 9,
+   "sheetOverallPick": 83,
+   "from": "Witte",
+   "to": "Colin"
+  },
+  {
+   "round": 9,
+   "sheetOverallPick": 90,
+   "from": "Zach",
+   "to": "Kyle"
+  },
+  {
+   "round": 10,
+   "sheetOverallPick": 93,
+   "from": "Witte",
+   "to": "Colin"
+  },
+  {
+   "round": 10,
+   "sheetOverallPick": 100,
+   "from": "Zach",
+   "to": "Kyle"
+  },
+  {
+   "round": 12,
+   "sheetOverallPick": 116,
+   "from": "Kyle",
+   "to": "Zach"
+  },
+  {
+   "round": 12,
+   "sheetOverallPick": 118,
+   "from": "Scott",
+   "to": "Josh"
+  },
+  {
+   "round": 13,
+   "sheetOverallPick": 128,
+   "from": "Scott",
+   "to": "Elbe"
+  },
+  {
+   "round": 15,
+   "sheetOverallPick": 148,
+   "from": "Scott",
+   "to": "Greg"
+  },
+  {
+   "round": 16,
+   "sheetOverallPick": 158,
+   "from": "Scott",
+   "to": "Greg"
+  }
+ ]
+}

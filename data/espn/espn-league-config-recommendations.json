@@ -1,0 +1,250 @@
+{
+  "_about": "The exact values src/lib/league-config.ts should be changed to, based on the authenticated ESPN pull of league 441239. Machine-readable companion to data/espn-reconciliation.md. ANOTHER AGENT APPLIES THESE - this file does not edit anything.",
+  "_pulledAt": "2026-08-26",
+  "_evidenceKey": {
+    "espn-2026": "Read directly from ESPN league 441239, season 2026, authenticated.",
+    "espn-history": "Also identical in ESPN seasons 2022, 2023, 2024 and 2025 - a five-season-stable setting, not a typo.",
+    "smartdraft": "From data/smartdraft-room-snapshot.json. ESPN cannot corroborate.",
+    "none": "No evidence found anywhere. Still a placeholder; needs the commissioner."
+  },
+  "changes": [
+    {
+      "export": "LEAGUE.playoffTeams",
+      "current": 4,
+      "correct": 6,
+      "evidence": "espn-history",
+      "detail": "settings.scheduleSettings.playoffTeamCount = 6, in all of 2022-2026."
+    },
+    {
+      "export": "ROSTER.bench",
+      "current": 5,
+      "correct": 7,
+      "evidence": "espn-history",
+      "detail": "lineupSlotCounts slot 20 (Bench) = 7, in all of 2022-2026. Also confirmed by the 'Roster' sheet in 2026 DRAFT.xlsx (7 BENCH rows). The Smart Draft room's BN:5 is WRONG. Sanity check: 9 starters + 7 bench = 16 roster spots = exactly the 16 draft rounds, which only works with 7."
+    },
+    {
+      "export": "ROSTER.irSlots",
+      "current": 2,
+      "correct": 1,
+      "evidence": "espn-history",
+      "detail": "lineupSlotCounts slot 21 (IR) = 1, in all of 2022-2026."
+    },
+    {
+      "export": "ROSTER.activeCap",
+      "current": 14,
+      "correct": 16,
+      "evidence": "espn-2026",
+      "detail": "9 starters + 7 bench. IR sits outside the active cap."
+    },
+    {
+      "export": "ROSTER.positionalMax",
+      "current": "\"Not yet defined\"",
+      "correct": { "QB": 4, "RB": 8, "WR": 9, "TE": 3, "DST": 3, "K": 0 },
+      "evidence": "espn-2026",
+      "detail": "settings.rosterSettings.positionLimits, keyed by ESPN position id: 1=QB:4, 2=RB:8, 3=WR:9, 4=TE:3, 5=K:0, 16=D/ST:3. Note this changes the field's type from string to object."
+    },
+    {
+      "export": "DRAFT.clockSeconds",
+      "current": 120,
+      "correct": 90,
+      "evidence": "espn-2026",
+      "detail": "settings.draftSettings.timePerSelection = 90. Advisory only, since the draft is offline - but 90 is what ESPN is set to."
+    },
+    {
+      "export": "TRADES.reviewHours",
+      "current": 0,
+      "correct": 48,
+      "evidence": "espn-2026",
+      "detail": "settings.tradeSettings.revisionHours = 48. ESPN's own preset default is 24, so 48 is a deliberate league choice. Trades are NOT instant in this league."
+    },
+    {
+      "export": "TRADES.deadlineWeek",
+      "current": 12,
+      "correct": 11,
+      "evidence": "espn-2026",
+      "detail": "settings.tradeSettings.deadlineDate = 2026-11-20T08:00:00Z, which is midnight Pacific / 02:00 Central on Fri Nov 20 2026. The 2026 NFL season opens Thu Sep 10, so week 11 runs Nov 19-23 and week 12 starts Nov 26. The deadline therefore falls inside week 11.",
+      "confirmFirst": "Ask the commissioner whether he means week 11. The deadline currently lands mid-week-11, after the Thursday night game but before Sunday, which is an odd place for it. If he wants end of week 12, the ESPN setting needs moving, not this file."
+    },
+    {
+      "export": "BASE_SCORING",
+      "current": "6 of 7 rows are the string \"TBD\"",
+      "correct": [
+        { "category": "Passing Yards", "value": "0.04", "note": "1 point per 25 yards" },
+        { "category": "Rushing Yards", "value": "0.1", "note": "1 point per 10 yards" },
+        { "category": "Receiving Yards", "value": "0.1", "note": "1 point per 10 yards" },
+        { "category": "Reception", "value": "1.0", "note": "Full PPR" },
+        { "category": "Passing TD", "value": "6", "note": "SIX points, not the standard four" },
+        { "category": "Rushing TD", "value": "6", "note": "" },
+        { "category": "Receiving TD", "value": "6", "note": "" }
+      ],
+      "evidence": "espn-history",
+      "detail": "statIds 3=0.04, 24=0.1, 42=0.1, 53=1.0, 4=6, 25=6, 43=6. Identical in all of 2022-2026.",
+      "callout": "PASSING TD = 6 IS THE BIG ONE. It is not ESPN's default (4) and nothing in the repo had it. It materially raises QB value, so any ranking or ADP built assuming 4-point passing TDs understates quarterbacks for this league."
+    },
+    {
+      "export": "TURNOVER_SCORING",
+      "current": "3 rows, all \"TBD\"",
+      "correct": [
+        { "category": "Interception Thrown", "value": "-2", "note": "" },
+        { "category": "Fumble Lost", "value": "-2", "note": "" },
+        { "category": "Fumble Recovered for TD", "value": "6", "note": "" },
+        { "category": "DST Touchdown", "value": "6", "note": "Applies to interception, fumble, kickoff and punt return TDs, and blocked kick / punt / PAT returns" }
+      ],
+      "evidence": "espn-history",
+      "detail": "statIds 20=-2, 72=-2, 63=6, and 93/101/102/103/104 all = 6 on the D/ST slot."
+    },
+    {
+      "export": "MILESTONE_BONUSES",
+      "current": [],
+      "correct": [],
+      "evidence": "espn-2026",
+      "detail": "NO CHANGE NEEDED, and now confirmed rather than assumed: ESPN has no yardage-milestone bonus items configured at all."
+    },
+    {
+      "export": "EXPLOSIVE_BONUSES",
+      "current": [],
+      "correct": [],
+      "evidence": "espn-2026",
+      "detail": "NO CHANGE NEEDED, now confirmed: no distance-based or long-TD bonus items are configured."
+    },
+    {
+      "export": "SCORING_SPEC",
+      "current": { "kicker": false, "ppr": 1 },
+      "correct": {
+        "kicker": false,
+        "ppr": 1,
+        "passingYardsPerPoint": 25,
+        "rushingYardsPerPoint": 10,
+        "receivingYardsPerPoint": 10,
+        "passingTd": 6,
+        "rushingTd": 6,
+        "receivingTd": 6,
+        "interceptionThrown": -2,
+        "fumbleLost": -2,
+        "twoPointConversion": 2,
+        "dstTouchdown": 6,
+        "dstSack": 1,
+        "dstInterception": 2,
+        "dstFumbleRecovery": 2,
+        "dstSafety": 2,
+        "dstBlockedKick": 2,
+        "dstPointsAllowedTiers": { "0": 5, "1-6": 4, "7-13": 3, "14-17": 1, "18-27": 0, "28-34": -1, "35-45": -3, "46+": -5 },
+        "dstYardsAllowedTiers": { "under100": 5, "100-199": 3, "200-299": 2, "300-349": 0, "350-399": -1, "400-449": -3, "450-499": -5, "500-549": -6, "550+": -7 }
+      },
+      "evidence": "espn-history",
+      "detail": "Full decoded scoring is in data/espn/espn-scoring-settings.json."
+    },
+    {
+      "export": "SCORING_EXCLUSIONS",
+      "current": ["No kicker scoring — the K position is not used in this league"],
+      "correct": [
+        "No kicker slot — lineupSlotCounts K = 0 and the ESPN roster position limit for K is 0, so no kicker can be rostered",
+        "ESPN still has kicker point values configured (FG 0-39 = 3, 40-49 = 4, 50-59 = 5, 60+ = 5, FG missed = -1, XP made = 1, XP missed = -2) but they are inert while no kicker can be rostered",
+        "No yardage-milestone or long-play bonuses",
+        "No head-coach, punter or IDP scoring"
+      ],
+      "evidence": "espn-2026",
+      "detail": "Worth stating precisely, because 'no kicker scoring' is not literally true - the rules exist, they just cannot fire."
+    },
+    {
+      "export": "KEEPERS.maxPerTeam",
+      "current": 2,
+      "correct": 2,
+      "evidence": "smartdraft",
+      "detail": "VALUE IS UNCHANGED, but the annotation should change. ESPN holds nothing (keeperCount = 0 in every season 2022-2026). The support for 2 comes from the Smart Draft room: 7 of 10 teams kept exactly 2, three kept none, and nobody kept 3. Re-tag from @placeholder to @fromSmartDraft-inferred, and note ESPN cannot corroborate it."
+    },
+    {
+      "export": "KEEPERS.maxConsecutiveSeasons",
+      "current": 2,
+      "correct": 2,
+      "evidence": "none",
+      "detail": "VALUE UNCHANGED. Add a comment that ESPN structurally cannot store this: its only keeper fields are keeperCount, keeperCountFuture and keeperOrderType. There is no keeper-duration field in the ESPN data model at all, so this app is necessarily the system of record for the two-year clock."
+    },
+    {
+      "export": "KEEPERS.fees",
+      "current": false,
+      "correct": false,
+      "evidence": "espn-2026",
+      "detail": "NO CHANGE, now confirmed: settings.financeSettings is all zeroes (entryFee, miscFee, perLoss, perTrade, playerAcquisition, playerDrop, playerMoveToActive, playerMoveToIR)."
+    }
+  ],
+  "confirmedNoChangeNeeded": [
+    { "export": "LEAGUE.teams", "value": 10, "evidence": "espn-2026", "detail": "settings.size = 10." },
+    { "export": "LEAGUE.currentSeason", "value": 2026, "evidence": "espn-2026", "detail": "seasonId 2026, status.isActive true." },
+    { "export": "LEAGUE.platform", "value": "ESPN", "evidence": "espn-2026" },
+    { "export": "LEAGUE.regularSeasonWeeks", "value": "[1, 14]", "evidence": "espn-history", "detail": "scheduleSettings.matchupPeriodCount = 14. The placeholder was right." },
+    { "export": "LEAGUE.playoffWeeks", "value": "[15, 17]", "evidence": "espn-2026", "detail": "status.finalScoringPeriod = 17 and playoffMatchupPeriodLength = 1, so three one-week rounds in weeks 15, 16, 17. The placeholder was right." },
+    { "export": "STARTING_LINEUP", "value": "1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 DST", "evidence": "espn-history", "detail": "lineupSlotCounts {0:1, 2:2, 4:2, 6:1, 23:2, 16:1, 17:0}. Exact match, including no kicker." },
+    { "export": "ROSTER.starters", "value": 9, "evidence": "espn-2026" },
+    { "export": "DRAFT.rounds", "value": 16, "evidence": "espn-2026", "detail": "draftDetail has exactly 160 picks with max roundId 16." },
+    { "export": "DRAFT.snake", "value": true, "evidence": "espn-2026", "detail": "ESPN's own generated board serpentines: round 1 runs PI->DOGS, round 2 runs DOGS->PI, round 3 forward again." },
+    { "export": "SCORING_FORMAT", "value": "\"PPR\"", "evidence": "espn-history", "detail": "statId 53 = 1.0 and scoringSettings.playerRankType = 'PPR'. Full PPR confirmed." },
+    { "export": "FEATURES.treasury", "value": false, "evidence": "espn-2026", "detail": "financeSettings all zero." },
+    { "export": "FEATURES.tradedPicks", "value": true, "evidence": "espn-2026", "detail": "tradeSettings.max = -1, unlimited trades." }
+  ],
+  "suggestedNewExports": [
+    {
+      "export": "WAIVERS",
+      "value": {
+        "type": "WAIVERS_TRADITIONAL",
+        "claimPeriodHours": 24,
+        "processDaily": true,
+        "processHour": 11,
+        "orderResetsWeekly": true,
+        "faabEnabled": true,
+        "faabBudget": 100,
+        "minimumBid": 1,
+        "acquisitionLimit": "unlimited"
+      },
+      "evidence": "espn-2026",
+      "detail": "settings.acquisitionSettings. The app currently has no waiver config at all, and the preseason checklist asks for it.",
+      "confirmFirst": "acquisitionType is WAIVERS_TRADITIONAL yet isUsingAcquisitionBudget is true with a $100 budget and $1 minimum bid, which reads contradictory. It is probably deliberate: ESPN's own preset ships isUsingAcquisitionBudget = false, so someone switched it on. Ask the commissioner whether waivers are FAAB-bid or rolling-order."
+    },
+    {
+      "export": "PLAYOFFS",
+      "value": {
+        "teams": 6,
+        "weeks": [15, 16, 17],
+        "roundLengthWeeks": 1,
+        "byes": 2,
+        "reseedEachRound": false,
+        "seedingRule": "TOTAL_POINTS_SCORED"
+      },
+      "evidence": "espn-2026",
+      "detail": "scheduleSettings.playoffTeamCount 6, playoffMatchupPeriodLength 1, playoffReseed false, playoffSeedingRule TOTAL_POINTS_SCORED. Six teams over three one-week rounds means the top two seeds get a first-round bye.",
+      "confirmFirst": "playoffSeedingRule = TOTAL_POINTS_SCORED is unusual - most leagues seed on head-to-head record. Confirm whether seeding really is by total points, or whether that field is only the tiebreaker."
+    },
+    {
+      "export": "TRADES.vetoVotesRequired",
+      "value": 4,
+      "evidence": "espn-2026",
+      "detail": "tradeSettings.vetoVotesRequired = 4 out of 10 managers, alongside the 48-hour review window."
+    },
+    {
+      "export": "LEAGUE.divisions",
+      "value": "single division named \"U.S.A.\" containing all 10 teams",
+      "evidence": "espn-2026",
+      "detail": "scheduleSettings.divisions. Effectively no divisions, but the name is real and may be worth showing."
+    },
+    {
+      "export": "LEAGUE.espnLeagueId / LEAGUE.espnFirstSeason",
+      "value": "441239 / 2012",
+      "evidence": "espn-2026",
+      "detail": "status.previousSeasons lists 2012 through 2025, so this is the league's 15th season."
+    },
+    {
+      "export": "FEATURES.platformSync",
+      "value": "currently false - now genuinely possible",
+      "evidence": "espn-2026",
+      "detail": "The ESPN read API works fully with the commissioner's cookies (see data/espn/pull-espn-league.mjs). Leaving this false is a reasonable product call before Saturday, but it is no longer true that there is no way to read the platform."
+    }
+  ],
+  "stillPlaceholderNoEvidenceFound": [
+    "LEAGUE.shortName, LEAGUE.tagline - ESPN only gives the full name, 'The Ultimate Keeper League' (note the leading 'The', which the config omits).",
+    "DRAFT.keeperLockHoursBeforeDraft",
+    "KEEPERS.round1Eligible - no keeper in the Smart Draft room cost earlier than round 4, which hints but does not prove.",
+    "KEEPERS.undraftedDefaultRound, KEEPERS.undraftedYear2Round, KEEPERS.costRoundEscalationPerSeason",
+    "TRADES.futurePicksSeasonsOut, TRADES.requirePickCountBalance",
+    "VOTING_THRESHOLDS, OFFICERS, CALENDAR_EVENTS - ESPN holds no governance data."
+  ]
+}

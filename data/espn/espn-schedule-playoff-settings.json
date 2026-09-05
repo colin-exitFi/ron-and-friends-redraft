@@ -1,0 +1,83 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "regularSeasonMatchupPeriods": 14,
+  "matchupPeriodLength": 1,
+  "regularSeasonWeeks": [
+    1,
+    14
+  ],
+  "playoffWeeks": [
+    15,
+    17
+  ],
+  "playoffTeamCount": 6,
+  "playoffMatchupPeriodLength": 1,
+  "playoffReseed": false,
+  "playoffSeedingRule": "TOTAL_POINTS_SCORED",
+  "divisions": [
+    {
+      "id": 0,
+      "name": "U.S.A.",
+      "size": 10
+    }
+  ],
+  "matchupPeriods": {
+    "1": [
+      1
+    ],
+    "2": [
+      2
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      4
+    ],
+    "5": [
+      5
+    ],
+    "6": [
+      6
+    ],
+    "7": [
+      7
+    ],
+    "8": [
+      8
+    ],
+    "9": [
+      9
+    ],
+    "10": [
+      10
+    ],
+    "11": [
+      11
+    ],
+    "12": [
+      12
+    ],
+    "13": [
+      13
+    ],
+    "14": [
+      14
+    ],
+    "15": [
+      15
+    ],
+    "16": [
+      16
+    ],
+    "17": [
+      17
+    ]
+  }
+}

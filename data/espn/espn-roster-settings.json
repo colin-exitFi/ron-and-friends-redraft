@@ -1,0 +1,197 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "startingLineup": [
+    {
+      "slotId": 0,
+      "slot": "QB",
+      "count": 1
+    },
+    {
+      "slotId": 2,
+      "slot": "RB",
+      "count": 2
+    },
+    {
+      "slotId": 4,
+      "slot": "WR",
+      "count": 2
+    },
+    {
+      "slotId": 6,
+      "slot": "TE",
+      "count": 1
+    },
+    {
+      "slotId": 16,
+      "slot": "D/ST",
+      "count": 1
+    },
+    {
+      "slotId": 23,
+      "slot": "FLEX (RB/WR/TE)",
+      "count": 2
+    }
+  ],
+  "starters": 9,
+  "bench": 7,
+  "irSlots": 1,
+  "totalRosterSlots": 16,
+  "kickerSlotCount": 0,
+  "positionLimits": {
+    "0": 0,
+    "1": 4,
+    "2": 8,
+    "3": 9,
+    "4": 3,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": -1,
+    "16": 3,
+    "17": 0
+  },
+  "lineupLocktimeType": "INDIVIDUAL_GAME",
+  "isBenchUnlimited": true,
+  "moveLimit": -1,
+  "isUsingUndroppableList": true,
+  "allSlotCounts": [
+    {
+      "slotId": 0,
+      "slot": "QB",
+      "count": 1
+    },
+    {
+      "slotId": 1,
+      "slot": "TQB (Team QB)",
+      "count": 0
+    },
+    {
+      "slotId": 2,
+      "slot": "RB",
+      "count": 2
+    },
+    {
+      "slotId": 3,
+      "slot": "RB/WR",
+      "count": 0
+    },
+    {
+      "slotId": 4,
+      "slot": "WR",
+      "count": 2
+    },
+    {
+      "slotId": 5,
+      "slot": "WR/TE",
+      "count": 0
+    },
+    {
+      "slotId": 6,
+      "slot": "TE",
+      "count": 1
+    },
+    {
+      "slotId": 7,
+      "slot": "OP (Offensive Player)",
+      "count": 0
+    },
+    {
+      "slotId": 8,
+      "slot": "DT",
+      "count": 0
+    },
+    {
+      "slotId": 9,
+      "slot": "DE",
+      "count": 0
+    },
+    {
+      "slotId": 10,
+      "slot": "LB",
+      "count": 0
+    },
+    {
+      "slotId": 11,
+      "slot": "DL",
+      "count": 0
+    },
+    {
+      "slotId": 12,
+      "slot": "CB",
+      "count": 0
+    },
+    {
+      "slotId": 13,
+      "slot": "S",
+      "count": 0
+    },
+    {
+      "slotId": 14,
+      "slot": "DB",
+      "count": 0
+    },
+    {
+      "slotId": 15,
+      "slot": "DP (Defensive Player)",
+      "count": 0
+    },
+    {
+      "slotId": 16,
+      "slot": "D/ST",
+      "count": 1
+    },
+    {
+      "slotId": 17,
+      "slot": "K",
+      "count": 0
+    },
+    {
+      "slotId": 18,
+      "slot": "P (Punter)",
+      "count": 0
+    },
+    {
+      "slotId": 19,
+      "slot": "HC (Head Coach)",
+      "count": 0
+    },
+    {
+      "slotId": 20,
+      "slot": "Bench",
+      "count": 7
+    },
+    {
+      "slotId": 21,
+      "slot": "IR",
+      "count": 1
+    },
+    {
+      "slotId": 22,
+      "slot": "(unused)",
+      "count": 0
+    },
+    {
+      "slotId": 23,
+      "slot": "FLEX (RB/WR/TE)",
+      "count": 2
+    },
+    {
+      "slotId": 24,
+      "slot": "ER (Edge Rusher)",
+      "count": 0
+    }
+  ]
+}

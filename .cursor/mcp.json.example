@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Copy this to .cursor/mcp.json and paste your own Supabase personal access token.",
+    "The real file is gitignored because the token grants access to every project on the account.",
+    "Create a token at https://supabase.com/dashboard/account/tokens",
+    "",
+    "--project-ref pins the server to the Ultimate Keeper League database so it cannot",
+    "reach the other leagues on the same account. --read-only keeps schema changes in",
+    "migrations under supabase/migrations, where they belong.",
+    "",
+    "fantasypros needs no token here. It is OAuth-protected (scope user:read) against",
+    "secure.fantasypros.com, so Cursor prompts for a browser sign-in the first time a",
+    "tool is called. This entry is for exploring the server from the editor.",
+    "",
+    "THIS IS NOT THE GRANT THE APP USES. Cursor's sign-in lives in the editor and a",
+    "deployment has no browser to renew it with, so the app holds its own grant:",
+    "npm run auth:fantasypros, stored in fantasypros_oauth and refreshed server-side.",
+    "See docs/FANTASYPROS-MCP.md. The draft board still reads only the committed",
+    "snapshot in data/, which is what makes an outage a non-event."
+  ],
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--read-only",
+        "--project-ref=xqhkhcmphvytoibjewqi"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_your_token_here"
+      }
+    },
+    "fantasypros": {
+      "url": "https://api.fantasypros.com/mcp"
+    }
+  }
+}

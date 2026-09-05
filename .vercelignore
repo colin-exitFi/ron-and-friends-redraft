@@ -1,0 +1,33 @@
+# What not to upload when deploying.
+#
+# Without this file the CLI uploaded the whole directory — 776 MB — and the
+# deploy FAILED with "File size limit exceeded (100 MB)". The offenders were
+# Turbopack's dev cache files under `.next/dev/cache`, individually 180–270 MB
+# after a few days of `next dev`. Nothing here is needed anyway: Vercel installs
+# dependencies and runs the build itself, from source.
+#
+# `data/` is deliberately NOT excluded. The app reads the player pool, the board
+# and the keeper sheets out of `data/*.json` at runtime, so those files have to
+# ship. They are about 9 MB.
+
+# Build output and bundler caches. `.next-*` covers the alternate dist dirs the
+# verification builds use via NEXT_DIST_DIR, which accumulate the same way.
+.next
+.next-*
+
+# Vercel installs these itself.
+node_modules
+
+# Local verification artifacts.
+screenshots
+coverage
+
+# Secrets live in the Vercel project's environment variables, which is where the
+# deployment reads them from. Uploading a local copy would only risk drift.
+.env
+.env.local
+.env.*.local
+
+# Local scratch.
+.DS_Store
+*.log

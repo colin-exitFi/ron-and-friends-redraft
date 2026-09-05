@@ -1,0 +1,42 @@
+---
+description: How this project reaches production, and what not to keep proposing
+alwaysApply: true
+---
+
+# How this ships
+
+**The Vercel project was imported from GitHub. Any commit pushed to `main`
+deploys itself to production.** There is no separate deploy step, and the CLI
+should not be used to hand-deploy one. Do not explain this back to the
+commissioner — he set it up.
+
+The consequence that actually matters: **a push IS a production release.** Run
+`npm run build` and the relevant `verify:*` scripts *before* pushing, not after.
+Pushing is still the one git action to ask about first.
+
+## Do not raise these again
+
+The commissioner has ruled on the following. Raising them costs him the time it
+takes to say no again.
+
+- **Access control on the draft routes.** Pick, undo and reset are unauthenticated
+  and will stay that way. The league previously ran on a Google Sheet that any
+  member could have deleted outright; a link nobody has posted is not a step down
+  from that.
+- **Accidental clicks on destructive controls.** The answer to a misclick is that
+  it can be taken back, not that it should be made harder to reach. Build the
+  recovery, not the gate.
+
+State a real, load-bearing risk once if you find one. Do not append a security
+or safety recommendation to the end of a summary as a matter of habit.
+
+## Prefer recovery over prevention
+
+Where an action can destroy work, the design question is "can the room put it
+back in one keystroke, in front of ten people" — not "can we stop them doing
+it". `undoLast` restoring a wiped board is the worked example.
+
+## Answer, don't survey
+
+Do not close a turn with a menu of optional next steps he did not ask for. If
+something is genuinely finished, say so and stop.

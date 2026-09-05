@@ -1,0 +1,305 @@
+{
+ "workbook": "2026 DRAFT.xlsx",
+ "sheet": "2017 Keeper",
+ "ref": "A1:F37",
+ "rowCount": 37,
+ "columnCount": 6,
+ "rows": [
+  [
+   "League Member",
+   "Player",
+   "Round in 2016",
+   "Round in 2017",
+   "Available in 2018",
+   "Available in 2019"
+  ],
+  [
+   "Kyle Witte",
+   "Antonio Brown",
+   3,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Kyle Witte",
+   "Michael Floyd",
+   9,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Kyle Witte",
+   "Marcus Mariota",
+   "N/A",
+   10,
+   null,
+   null
+  ],
+  [
+   "Kyle Witte",
+   "Spencer Ware",
+   "N/A",
+   12,
+   null,
+   null
+  ],
+  [
+   "Kyle Mertens",
+   "Todd Gurley",
+   4,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Kyle Mertens",
+   "Andrew Luck",
+   8,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Kyle Mertens",
+   "TY Hilton",
+   "N/A",
+   4,
+   null,
+   null
+  ],
+  [
+   "Kyle Mertens",
+   "Isaiah Crowell",
+   "N/A",
+   10,
+   null,
+   null
+  ],
+  [
+   "Scott Elbe",
+   "TY Hilton",
+   5,
+   "N/A",
+   null,
+   null
+  ],
+  [
+   "Scott Elbe",
+   "Thomas Rawls",
+   10,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Scott Elbe",
+   "Doug Baldwin",
+   "N/A",
+   4,
+   null,
+   null
+  ],
+  [
+   "Scott Elbe",
+   "Jordan Howard",
+   "N/A",
+   10,
+   null,
+   null
+  ],
+  [
+   "Andy Seibert",
+   "Brandon Marshall",
+   5,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Andy Seibert",
+   "Cam Newton",
+   12,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Andy Seibert",
+   "Kirk Cousins",
+   "N/A",
+   14,
+   13,
+   12
+  ],
+  [
+   "Greg Blome",
+   "Allen Robinson",
+   5,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Greg Blome",
+   "Jordan Matthews",
+   10,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Greg Blome",
+   "Deandre Hopkins",
+   "N/A",
+   7,
+   null,
+   null
+  ],
+  [
+   "Greg Blome",
+   "Alshon Jeffrey",
+   "N/A",
+   10,
+   null,
+   null
+  ],
+  [
+   "Josh Schaefer",
+   "Devonta Freeman",
+   6,
+   5,
+   "N/A",
+   "N/A"
+  ],
+  [
+   "Josh Schaefer",
+   "Greg Olsen",
+   8,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Josh Schaefer",
+   "Michael Thomas",
+   "N/A",
+   12,
+   11,
+   "N/A"
+  ],
+  [
+   "Josh Grainger",
+   "Kelvin Benjamin",
+   8,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Josh Grainger",
+   "Le'Veon Bell",
+   10,
+   9,
+   "N/A",
+   "N/A"
+  ],
+  [
+   "Josh Grainger",
+   "Davante Adams",
+   "N/A",
+   10,
+   null,
+   null
+  ],
+  [
+   "Stefan Albers",
+   "Odell Beckham Jr",
+   9,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Stefan Albers",
+   "Alshon Jeffrey",
+   11,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Stefan Albers",
+   "Travis Kelce",
+   "N/A",
+   5,
+   4,
+   null
+  ],
+  [
+   "Stefan Albers",
+   "Tom Brady",
+   "N/A",
+   7,
+   "N/A",
+   null
+  ],
+  [
+   "Chad McCann",
+   "David Johnson",
+   10,
+   9,
+   null,
+   null
+  ],
+  [
+   "Chad McCann",
+   "Jordan Reed",
+   11,
+   "N/A",
+   "N/A",
+   null
+  ],
+  [
+   "Chad McCann",
+   "Melvin Gordon",
+   "N/A",
+   4,
+   3,
+   null
+  ],
+  [
+   "Scott Johnston",
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  [
+   "Scott Johnston",
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  [
+   "Scott Johnston",
+   "Terrelle Pryor",
+   null,
+   10,
+   null,
+   null
+  ],
+  [
+   "Scott Johnston",
+   "Jay Ajayi",
+   null,
+   11,
+   null,
+   null
+  ]
+ ]
+}

@@ -1,0 +1,96 @@
+{
+  "_about": "ESPN fantasy football numeric statId -> human-readable category. Used to decode settings.scoringSettings.scoringItems[].statId from the ESPN read API.",
+  "_generatedAt": "2026-08-26",
+  "_verification": {
+    "empirical": "Confirmed in this session by pulling real 2025 season totals from ESPN (Josh Allen QB, Jahmyr Gibbs RB, Ja'Marr Chase WR, Trey McBride TE, Brandon Aubrey K, Broncos D/ST) and checking the values against known football arithmetic (e.g. completions + incompletions = attempts; tier counts summing to games played).",
+    "preset": "Confirmed by the point value ESPN itself assigns in its built-in 2026 'FFL PPR Scoring' preset (leaguedefaults/3), which matches the well-known standard value for that category.",
+    "unverified": "Could not be pinned down from the data available without league access. Do not rely on these."
+  },
+  "passing": [
+    { "statId": 0, "category": "Pass Attempts", "verification": "empirical" },
+    { "statId": 1, "category": "Pass Completions", "verification": "empirical" },
+    { "statId": 2, "category": "Pass Incompletions", "verification": "empirical" },
+    { "statId": 3, "category": "Passing Yards", "verification": "empirical", "note": "ESPN standard is 0.04 pts = 1 pt per 25 yards" },
+    { "statId": 4, "category": "Passing Touchdown", "verification": "empirical" },
+    { "statId": 19, "category": "2-Point Passing Conversion", "verification": "preset" },
+    { "statId": 20, "category": "Interception Thrown", "verification": "empirical" },
+    { "statId": 22, "category": "Passing Yards Per Game", "verification": "empirical" },
+    { "statId": 73, "category": "Times Sacked", "verification": "empirical" }
+  ],
+  "rushing": [
+    { "statId": 23, "category": "Rush Attempts", "verification": "empirical" },
+    { "statId": 24, "category": "Rushing Yards", "verification": "empirical", "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards" },
+    { "statId": 25, "category": "Rushing Touchdown", "verification": "empirical" },
+    { "statId": 26, "category": "2-Point Rushing Conversion", "verification": "preset" },
+    { "statId": 39, "category": "Yards Per Rush Attempt", "verification": "empirical" },
+    { "statId": 40, "category": "Rushing Yards Per Game", "verification": "empirical" }
+  ],
+  "receiving": [
+    { "statId": 41, "category": "Receptions (raw count)", "verification": "empirical", "note": "Mirrors statId 53. ESPN scores receptions on 53, not 41." },
+    { "statId": 42, "category": "Receiving Yards", "verification": "empirical", "note": "ESPN standard is 0.1 pts = 1 pt per 10 yards" },
+    { "statId": 43, "category": "Receiving Touchdown", "verification": "empirical" },
+    { "statId": 44, "category": "2-Point Receiving Conversion", "verification": "preset" },
+    { "statId": 53, "category": "Reception", "verification": "empirical", "note": "THIS IS THE PPR KNOB. 1.0 = full PPR, 0.5 = half PPR, 0 = standard." },
+    { "statId": 58, "category": "Targets", "verification": "empirical" },
+    { "statId": 60, "category": "Yards Per Reception", "verification": "empirical" },
+    { "statId": 61, "category": "Receiving Yards Per Game", "verification": "empirical" }
+  ],
+  "turnovers": [
+    { "statId": 63, "category": "Fumble Recovered for Touchdown", "verification": "preset" },
+    { "statId": 68, "category": "Fumbles (total)", "verification": "empirical" },
+    { "statId": 72, "category": "Fumble Lost", "verification": "empirical", "note": "ESPN standard is -2" }
+  ],
+  "kicking": [
+    { "statId": 74, "category": "Field Goal Made 50+ (aggregate of 198 and 201)", "verification": "empirical" },
+    { "statId": 77, "category": "Field Goal Made 40-49", "verification": "preset" },
+    { "statId": 80, "category": "Field Goal Made 0-39", "verification": "preset" },
+    { "statId": 83, "category": "Field Goals Made (total)", "verification": "empirical" },
+    { "statId": 84, "category": "Field Goals Attempted (total)", "verification": "empirical" },
+    { "statId": 85, "category": "Field Goal Missed", "verification": "empirical" },
+    { "statId": 86, "category": "Extra Point Made", "verification": "empirical" },
+    { "statId": 87, "category": "Extra Points Attempted", "verification": "empirical" },
+    { "statId": 88, "category": "Extra Point Missed", "verification": "empirical" },
+    { "statId": 198, "category": "Field Goal Made 50-59", "verification": "preset" },
+    { "statId": 201, "category": "Field Goal Made 60+", "verification": "preset" }
+  ],
+  "_kickingNote": "The Ultimate Keeper League does not use the K position, so every kicking item should be irrelevant. If ESPN returns non-zero kicking values, the K slot is probably still enabled in the ESPN league and needs turning off.",
+  "defenseSpecialTeams": [
+    { "statId": 89, "category": "D/ST Points Allowed 0", "verification": "empirical" },
+    { "statId": 90, "category": "D/ST Points Allowed 1-6", "verification": "empirical" },
+    { "statId": 91, "category": "D/ST Points Allowed 7-13", "verification": "empirical" },
+    { "statId": 92, "category": "D/ST Points Allowed 14-17", "verification": "empirical" },
+    { "statId": 93, "category": "D/ST Blocked Punt / FG / PAT Returned for Touchdown", "verification": "preset" },
+    { "statId": 94, "category": "UNKNOWN (non-zero on real D/ST data, no point value in the PPR preset)", "verification": "unverified" },
+    { "statId": 95, "category": "D/ST Interception", "verification": "empirical" },
+    { "statId": 96, "category": "D/ST Fumble Recovered", "verification": "empirical" },
+    { "statId": 97, "category": "D/ST Blocked Kick", "verification": "empirical" },
+    { "statId": 98, "category": "D/ST Safety", "verification": "preset" },
+    { "statId": 99, "category": "D/ST Sack", "verification": "empirical" },
+    { "statId": 101, "category": "D/ST Kickoff Return Touchdown", "verification": "preset" },
+    { "statId": 102, "category": "D/ST Punt Return Touchdown", "verification": "preset" },
+    { "statId": 103, "category": "D/ST Interception Returned for Touchdown", "verification": "preset" },
+    { "statId": 104, "category": "D/ST Fumble Returned for Touchdown", "verification": "preset" },
+    { "statId": 121, "category": "D/ST Points Allowed 18-21", "verification": "empirical" },
+    { "statId": 122, "category": "D/ST Points Allowed 22-27", "verification": "empirical" },
+    { "statId": 123, "category": "D/ST Points Allowed 28-34", "verification": "empirical" },
+    { "statId": 124, "category": "D/ST Points Allowed 35-45", "verification": "preset" },
+    { "statId": 125, "category": "D/ST Points Allowed 46+", "verification": "preset" },
+    { "statId": 127, "category": "D/ST Yards Allowed (total)", "verification": "empirical" },
+    { "statId": 128, "category": "D/ST Yards Allowed under 100", "verification": "empirical" },
+    { "statId": 129, "category": "D/ST Yards Allowed 100-199", "verification": "empirical" },
+    { "statId": 130, "category": "D/ST Yards Allowed 200-299", "verification": "empirical" },
+    { "statId": 131, "category": "D/ST Yards Allowed 300-349", "verification": "empirical" },
+    { "statId": 132, "category": "D/ST Yards Allowed 350-399", "verification": "empirical" },
+    { "statId": 133, "category": "D/ST Yards Allowed 400-449", "verification": "empirical" },
+    { "statId": 134, "category": "D/ST Yards Allowed 450-499", "verification": "empirical" },
+    { "statId": 135, "category": "D/ST Yards Allowed 500-549", "verification": "preset" },
+    { "statId": 136, "category": "D/ST Yards Allowed 550+", "verification": "preset" }
+  ],
+  "_dstTierEvidence": "Points-allowed tiers 89/90/91/92/121/122/123/124/125 and yards-allowed tiers 128-136 were confirmed by taking the Broncos' real 2025 D/ST season line and checking that each tier family's counts sum to exactly 17 games, and that the tier midpoints reproduce the season yards-allowed total (4,730 yards over 17 games).",
+  "misc": [
+    { "statId": 206, "category": "UNKNOWN (worth 2 pts in the ESPN PPR preset, D/ST override)", "verification": "unverified" },
+    { "statId": 209, "category": "UNKNOWN (worth 1 pt in the ESPN PPR preset, D/ST override)", "verification": "unverified" },
+    { "statId": 210, "category": "Games Played", "verification": "empirical" }
+  ],
+  "_pointsOverridesNote": "A scoringItem may carry `pointsOverrides`, keyed by lineup slot id. Key '16' means 'this value applies to the D/ST slot'. When decoding, a slot-16 override beats the base `points` value for D/ST players."
+}

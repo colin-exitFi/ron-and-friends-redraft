@@ -1,0 +1,217 @@
+{
+ "generatedAt": "2026-08-26T21:05:09.946Z",
+ "files": [
+  {
+   "workbook": "2026 DRAFT.xlsx",
+   "sheetCount": 22,
+   "sheets": [
+    {
+     "sheet": "KEEPER LIST for 2026",
+     "ref": "A1:S5138",
+     "rows": 178,
+     "cols": 12,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2026.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2026.csv"
+    },
+    {
+     "sheet": "2025 Draft",
+     "ref": "A1:T165",
+     "rows": 161,
+     "cols": 20,
+     "json": "data/spreadsheets/2026-draft__2025-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2025-draft.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2025",
+     "ref": "A1:S5138",
+     "rows": 178,
+     "cols": 12,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2025.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2025.csv"
+    },
+    {
+     "sheet": "2024 Draft",
+     "ref": "A1:V178",
+     "rows": 174,
+     "cols": 22,
+     "json": "data/spreadsheets/2026-draft__2024-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2024-draft.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2024",
+     "ref": "A1:U5141",
+     "rows": 181,
+     "cols": 11,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2024.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2024.csv"
+    },
+    {
+     "sheet": "2023 Draft",
+     "ref": "A2:F166",
+     "rows": 161,
+     "cols": 6,
+     "json": "data/spreadsheets/2026-draft__2023-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2023-draft.csv"
+    },
+    {
+     "sheet": "Roster",
+     "ref": "B2:C18",
+     "rows": 17,
+     "cols": 1,
+     "json": "data/spreadsheets/2026-draft__roster.json",
+     "csv": "data/spreadsheets/2026-draft__roster.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2022",
+     "ref": "A1:O5138",
+     "rows": 177,
+     "cols": 15,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2022.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2022.csv"
+    },
+    {
+     "sheet": "2021 Draft",
+     "ref": "A1:F172",
+     "rows": 172,
+     "cols": 6,
+     "json": "data/spreadsheets/2026-draft__2021-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2021-draft.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2021",
+     "ref": "A1:O5138",
+     "rows": 177,
+     "cols": 15,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2021.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2021.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2020",
+     "ref": "A1:P5295",
+     "rows": 175,
+     "cols": 16,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2020.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2020.csv"
+    },
+    {
+     "sheet": "2020 Draft",
+     "ref": "A1:H161",
+     "rows": 161,
+     "cols": 8,
+     "json": "data/spreadsheets/2026-draft__2020-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2020-draft.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2019",
+     "ref": "A1:O1012",
+     "rows": 180,
+     "cols": 15,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2019.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2019.csv"
+    },
+    {
+     "sheet": "KEEPER LIST for 2018",
+     "ref": "A1:M1003",
+     "rows": 171,
+     "cols": 13,
+     "json": "data/spreadsheets/2026-draft__keeper-list-for-2018.json",
+     "csv": "data/spreadsheets/2026-draft__keeper-list-for-2018.csv"
+    },
+    {
+     "sheet": "2019 Draft by Round",
+     "ref": "A1:Z980",
+     "rows": 161,
+     "cols": 9,
+     "json": "data/spreadsheets/2026-draft__2019-draft-by-round.json",
+     "csv": "data/spreadsheets/2026-draft__2019-draft-by-round.csv"
+    },
+    {
+     "sheet": "2018 Draft by Round",
+     "ref": "A1:Z980",
+     "rows": 161,
+     "cols": 9,
+     "json": "data/spreadsheets/2026-draft__2018-draft-by-round.json",
+     "csv": "data/spreadsheets/2026-draft__2018-draft-by-round.csv"
+    },
+    {
+     "sheet": "2018 Team after Draft",
+     "ref": "A1:Y980",
+     "rows": 161,
+     "cols": 8,
+     "json": "data/spreadsheets/2026-draft__2018-team-after-draft.json",
+     "csv": "data/spreadsheets/2026-draft__2018-team-after-draft.csv"
+    },
+    {
+     "sheet": "By Round 2017",
+     "ref": "A1:A353",
+     "rows": 353,
+     "cols": 1,
+     "json": "data/spreadsheets/2026-draft__by-round-2017.json",
+     "csv": "data/spreadsheets/2026-draft__by-round-2017.csv"
+    },
+    {
+     "sheet": "Team after draft 2017",
+     "ref": "A1:X991",
+     "rows": 161,
+     "cols": 5,
+     "json": "data/spreadsheets/2026-draft__team-after-draft-2017.json",
+     "csv": "data/spreadsheets/2026-draft__team-after-draft-2017.csv"
+    },
+    {
+     "sheet": "2016 Keeper",
+     "ref": "A1:C21",
+     "rows": 21,
+     "cols": 3,
+     "json": "data/spreadsheets/2026-draft__2016-keeper.json",
+     "csv": "data/spreadsheets/2026-draft__2016-keeper.csv"
+    },
+    {
+     "sheet": "2017 Keeper",
+     "ref": "A1:F37",
+     "rows": 37,
+     "cols": 6,
+     "json": "data/spreadsheets/2026-draft__2017-keeper.json",
+     "csv": "data/spreadsheets/2026-draft__2017-keeper.csv"
+    },
+    {
+     "sheet": "2018 Keeper",
+     "ref": "A1:F37",
+     "rows": 37,
+     "cols": 6,
+     "json": "data/spreadsheets/2026-draft__2018-keeper.json",
+     "csv": "data/spreadsheets/2026-draft__2018-keeper.csv"
+    }
+   ]
+  },
+  {
+   "workbook": "Draft Picks 2026.xlsx",
+   "sheetCount": 3,
+   "sheets": [
+    {
+     "sheet": "Sheet1",
+     "ref": "A1:U36",
+     "rows": 36,
+     "cols": 21,
+     "json": "data/spreadsheets/draft-picks-2026__sheet1.json",
+     "csv": "data/spreadsheets/draft-picks-2026__sheet1.csv"
+    },
+    {
+     "sheet": "Trade Log",
+     "ref": "A1:I34",
+     "rows": 34,
+     "cols": 9,
+     "json": "data/spreadsheets/draft-picks-2026__trade-log.json",
+     "csv": "data/spreadsheets/draft-picks-2026__trade-log.csv"
+    },
+    {
+     "sheet": "Sheet3",
+     "ref": "A1:N165",
+     "rows": 161,
+     "cols": 14,
+     "json": "data/spreadsheets/draft-picks-2026__sheet3.json",
+     "csv": "data/spreadsheets/draft-picks-2026__sheet3.csv"
+    }
+   ]
+  }
+ ]
+}

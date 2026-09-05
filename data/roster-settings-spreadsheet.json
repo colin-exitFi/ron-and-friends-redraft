@@ -1,0 +1,48 @@
+{
+ "source": "2026 DRAFT.xlsx :: \"Roster\"",
+ "rawSlots": [
+  "QB",
+  "RB",
+  "RB",
+  "WR",
+  "WR",
+  "TE",
+  "FLEX",
+  "FLEX",
+  "D/ST",
+  "BENCH",
+  "BENCH",
+  "BENCH",
+  "BENCH",
+  "BENCH",
+  "BENCH",
+  "BENCH"
+ ],
+ "slotCounts": {
+  "QB": 1,
+  "RB": 2,
+  "WR": 2,
+  "TE": 1,
+  "FLEX": 2,
+  "D/ST": 1,
+  "BENCH": 7
+ },
+ "totalSlots": 16,
+ "liveRoomRosterConfig": {
+  "K": 0,
+  "BN": 5,
+  "DB": 0,
+  "DL": 0,
+  "LB": 0,
+  "QB": 1,
+  "RB": 2,
+  "TE": 1,
+  "WR": 2,
+  "DST": 1,
+  "FLEX": 2,
+  "IDP_FLEX": 0
+ },
+ "liveRoomScoring": "PPR",
+ "liveRoomDraftFormat": "snake",
+ "liveRoomDraftRoundCount": 16
+}

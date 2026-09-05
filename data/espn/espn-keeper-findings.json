@@ -1,0 +1,56 @@
+{
+  "_about": "Everything ESPN holds about keepers for league 441239. This was the highest-value question asked of the ESPN pull.",
+  "_pulledAt": "2026-08-26",
+  "headline": "ESPN holds NO keeper configuration for this league, and never has. The keeper system is administered entirely outside ESPN.",
+  "espn2026": {
+    "keeperCount": 0,
+    "keeperCountFuture": 0,
+    "keeperOrderType": "TRADITIONAL",
+    "keepersEnabledInEspn": false,
+    "draftPicksFlaggedAsKeeper": 0,
+    "draftPicksFlaggedReservedForKeeper": 0,
+    "rosterEntriesWithKeeperValue": 0,
+    "note": "keeperOrderType 'TRADITIONAL' is ESPN's default value and is meaningless while keeperCount is 0."
+  },
+  "espnHistory": {
+    "seasonsChecked": [2022, 2023, 2024, 2025, 2026],
+    "keeperCountInEverySeason": 0,
+    "draftPicksFlaggedKeeperInEverySeason": 0,
+    "leagueHasEspnHistoryBackTo": 2012,
+    "conclusion": "For at least five straight seasons the commissioner has run keepers manually and left ESPN's keeper feature switched off. ESPN cannot corroborate the keeper list, the per-team keeper count, or the clock."
+  },
+  "whatEspnCanNeverTellUs": {
+    "keeperDuration": "ESPN's data model has NO field for keeper duration. The only keeper fields in settings.draftSettings are keeperCount, keeperCountFuture and keeperOrderType. There is no 'maximum consecutive seasons', no per-player keeper clock, and no keeper-year counter anywhere in the payload.",
+    "implication": "The two-year clock is a house rule that ESPN structurally cannot represent. It can only be sourced from the commissioner and the league's own spreadsheets, and this app has to be its system of record.",
+    "fieldsSearched": "Every key under settings.* was searched for the substring 'keeper' in both the live league payload and ESPN's own preset. Only the three fields above exist."
+  },
+  "bestAvailableKeeperEvidence": {
+    "source": "data/smartdraft-room-snapshot.json (the live Smart Draft room), NOT ESPN",
+    "keepersPlaced": 14,
+    "teamsUsingKeepers": 7,
+    "teamsUsingZeroKeepers": 3,
+    "keepersPerTeamObserved": {
+      "Greg Blome": 2,
+      "Kyle Mertens": 2,
+      "Stefan Albers": 2,
+      "Josh Grainger": 2,
+      "Scott Johnston": 2,
+      "Colin Tracy": 2,
+      "Kyle Witte": 2,
+      "Zach Rakowski": 0,
+      "Joe Murray": 0,
+      "Scott Elbe": 0
+    },
+    "maxPerTeamInference": "Every team that kept anyone kept exactly 2, and no team kept 3. That is consistent with a cap of 2 per team and is the strongest evidence available, but it is inference from usage, not a declared setting.",
+    "keeperCostRoundsObserved": [4, 6, 7, 8, 9, 10, 11],
+    "round1EligibilityInference": "No keeper cost a pick earlier than round 4. That does not prove round 1 keepers are banned - it may just be that nobody kept a first-rounder. Still unconfirmed.",
+    "keeperMechanics": "In Smart Draft the keepers sit in the DRAFT section and consume the owning team's pick in that round (keeperRoundCount is 0, so there is no separate keeper round). The draft board must reflect that."
+  },
+  "stillNeedsTheCommissioner": [
+    "Maximum keepers per team (2 is inferred from usage, never declared).",
+    "Whether the two-year clock counts the drafting season or only keeper seasons.",
+    "Whether a round-1 pick may be kept.",
+    "The cost round for a player who was never drafted (waiver / free-agent pickup), in each year of the clock.",
+    "How much earlier the cost round gets per keeper season served."
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "teams": [
+    {
+      "teamId": 1,
+      "name": "Tushy Booth Ballers",
+      "abbrev": "TBB",
+      "owners": [
+        "Kyle Mertens"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 2,
+      "name": "Jimmy's Johnson",
+      "abbrev": "JJ",
+      "owners": [
+        "Greg Blome"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 3,
+      "name": "The Replacement Team",
+      "abbrev": "DinP",
+      "owners": [
+        "Kyle Witte"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 4,
+      "name": "Flurp McDerp",
+      "abbrev": "CT",
+      "owners": [
+        "colin tracy"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 5,
+      "name": "Perpetually Impaired",
+      "abbrev": "PI",
+      "owners": [
+        "Ted Buckman"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 6,
+      "name": "Teddys Trouser Snake",
+      "abbrev": "TITS",
+      "owners": [
+        "Joshua Grainger"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 7,
+      "name": "DHB Sandmen",
+      "abbrev": "DHB",
+      "owners": [
+        "Scott Johnston"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 8,
+      "name": "Mound City Dogs",
+      "abbrev": "DOGS",
+      "owners": [
+        "Stefan Albers"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 9,
+      "name": "Fingers are for painting",
+      "abbrev": "HOJO",
+      "owners": [
+        "Joe Murray"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    },
+    {
+      "teamId": 10,
+      "name": "A.D.B. Rombusters II",
+      "abbrev": "ADB",
+      "owners": [
+        "Scott Elbe"
+      ],
+      "divisionId": 0,
+      "draftDayProjectedRank": 0,
+      "playoffSeed": 0,
+      "record": {
+        "gamesBack": 0,
+        "losses": 0,
+        "percentage": 0,
+        "pointsAgainst": 0,
+        "pointsFor": 0,
+        "streakLength": 0,
+        "streakType": "NONE",
+        "ties": 0,
+        "wins": 0
+      }
+    }
+  ]
+}

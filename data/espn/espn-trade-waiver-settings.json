@@ -1,0 +1,41 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "tradeDeadline": "2026-11-20T08:00:00.000Z",
+  "maxTradesPerTeam": -1,
+  "tradeReviewHours": 48,
+  "vetoVotesRequired": 4,
+  "waivers": {
+    "acquisitionType": "WAIVERS_TRADITIONAL",
+    "waiverHours": 24,
+    "waiverProcessDays": [
+      "THURSDAY",
+      "SATURDAY",
+      "WEDNESDAY",
+      "FRIDAY",
+      "SUNDAY",
+      "MONDAY"
+    ],
+    "waiverProcessHour": 11,
+    "waiverOrderReset": true,
+    "isUsingWaiverOrder": null,
+    "isUsingAcquisitionBudget": true,
+    "acquisitionBudget": 100,
+    "acquisitionLimit": -1
+  },
+  "financeSettings": {
+    "entryFee": 0,
+    "miscFee": 0,
+    "perLoss": 0,
+    "perTrade": 0,
+    "playerAcquisition": 0,
+    "playerDrop": 0,
+    "playerMoveToActive": 0,
+    "playerMoveToIR": 0
+  }
+}

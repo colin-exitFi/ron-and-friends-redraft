@@ -1,0 +1,17 @@
+{
+  "_source": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+  "_pulledAt": "2026-08-26T21:23:16.890Z",
+  "leagueId": 441239,
+  "season": 2026,
+  "leagueName": "The Ultimate Keeper League",
+  "size": 10,
+  "isPublic": false,
+  "keeperCount": 0,
+  "keeperCountFuture": 0,
+  "keeperOrderType": "TRADITIONAL",
+  "keepersEnabled": false,
+  "keeperPicksFound": 0,
+  "keeperPicksByTeamId": {},
+  "keeperPicks": [],
+  "HOW_LONG_A_PLAYER_MAY_BE_KEPT": "NOT AVAILABLE FROM ESPN. ESPN's data model has no field for keeper duration or a consecutive-seasons clock. The only keeper fields ESPN stores are keeperCount, keeperCountFuture and keeperOrderType. The league's two-year clock is a house rule that ESPN cannot represent, so it can only come from the commissioner or the league's own spreadsheets."
+}

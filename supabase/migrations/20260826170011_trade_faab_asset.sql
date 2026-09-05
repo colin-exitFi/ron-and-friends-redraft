@@ -1,0 +1,22 @@
+-- Ultimate Keeper League — FAAB as a tradable line item.
+--
+-- The enum deliberately shipped without `faab`: the previous league had a FAAB
+-- ledger with per-team balances, and none of that machinery survives here.
+-- That reasoning still holds, and this migration does not reopen it.
+--
+-- What it adds is narrower. ESPN owns the acquisition budget and this app never
+-- computes a balance, but real trades in this league move dollars, and a trade
+-- that moved $20 has to be recordable as a trade that moved $20. Storing it in
+-- `trades.notes` would make the amount unreadable to code and invisible to the
+-- reconciliation view, so it becomes an asset row like the other two: `ref`
+-- carries the whole-dollar amount, `from_team` and `to_team` carry the
+-- direction, and nothing anywhere derives a balance from it.
+--
+-- Deliberately NOT added: a `faab_balances` table, a starting budget, or any
+-- validation that a franchise can afford what it just sent. ESPN enforces that
+-- and would only disagree with a copy kept here.
+--
+-- `add value` cannot be used in the same transaction that creates it, so this
+-- migration only declares the value. Nothing reads or writes it until the next
+-- statement outside this file.
+alter type trade_asset_type add value if not exists 'faab';

@@ -1,0 +1,11 @@
+# Supabase CLI config for the Ultimate Keeper League app.
+#
+# project_id is the remote project ref for `ultimate-keeper-league`. It is a
+# public identifier, not a secret.
+project_id = "xqhkhcmphvytoibjewqi"
+
+[db]
+# Matches the hosted project's Postgres major version. The CLI warns if this
+# drifts from the remote, which is worth heeding — a shadow database on the
+# wrong major version can accept SQL the real one rejects.
+major_version = 17

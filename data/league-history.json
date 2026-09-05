@@ -1,0 +1,2580 @@
+{
+ "note": "Verified, sourced league history for the post-draft recap. Machine-readable twin of data/LEAGUE-HISTORY.md \u2014 same facts, same sources, same confidence marks. Read the Markdown for the reasoning; read this for the values.",
+ "compiled": "2026-08-28",
+ "compiledFor": "The 2026 post-draft AI recap. Every entry is intended to be safe to build a joke on.",
+ "howToRead": [
+  "Every factual entry carries `source` and `confidence`. Nothing here is asserted without one.",
+  "`confidence: verified` means a primary source in this repo says it in terms, or two independent sources in this repo agree.",
+  "`confidence: derived` means it was computed from repo data by a stated method, and `scripts/verify-league-history.mjs` re-computes it on demand.",
+  "`confidence: inferred` means it follows from repo data by an argument that is stated, not from a source that says it outright. Treat as probably true; do not read it aloud as a hard number.",
+  "`confidence: unverified` appears only in the `unverified` block at the foot of this file. Nothing in that block may be stated as fact in a blurb.",
+  "MANAGERS ARE KEYED BY SHORT NAME. Never match on a first name \u2014 four managers share one and two of them are called Scott. See `managers` and `identityTrap`."
+ ],
+ "runVerification": "npm run verify:history",
+ "identityTrap": {
+  "why": "Four of the ten managers share a first name with another manager, and 'Scott' and 'Kyle' are each simultaneously a legitimate short name for one man AND the first name of a different one. A first-name match does not fail loudly; it silently resolves to the wrong franchise. A joke landed on the wrong Scott, in a room containing both Scotts, is worse than no joke.",
+  "rule": "Match on the short name from data/managers.json, or on a stable id. Never on a first name.",
+  "source": "data/managers.json (note field); data/DECISIONS.md, 'Manager identity \u2014 first names are NOT unique'",
+  "confidence": "verified",
+  "collisions": [
+   {
+    "shortName": "Scott",
+    "fullName": "Scott Johnston",
+    "note": "The lawyer. The Johnston in the Johnston/Blome trade agreement."
+   },
+   {
+    "shortName": "Elbe",
+    "fullName": "Scott Elbe",
+    "note": "The second Scott, goes by his surname."
+   },
+   {
+    "shortName": "Kyle",
+    "fullName": "Kyle Mertens",
+    "note": "The league commissioner."
+   },
+   {
+    "shortName": "Witte",
+    "fullName": "Kyle Witte",
+    "note": "The second Kyle, goes by his surname."
+   }
+  ]
+ },
+ "league": {
+  "name": {
+   "value": "The Ultimate Keeper League",
+   "source": "data/RECONCILIATION.md, ESPN read section \u2014 ESPN league 441239",
+   "confidence": "verified"
+  },
+  "teams": 10,
+  "currentSeason": 2026,
+  "draftDate": {
+   "value": "2026-08-29",
+   "note": "Saturday. Sixteen rounds, snake, 160 slots, no kickers.",
+   "source": "data/DECISIONS.md; data/RECONCILIATION.md ESPN section",
+   "confidence": "verified"
+  },
+  "espnLeagueId": 441239,
+  "seasonsOnEspn": {
+   "value": "ESPN history back to 2012, making 2026 the fifteenth season",
+   "source": "data/RECONCILIATION.md, ESPN read section",
+   "confidence": "verified"
+  },
+  "workbookHistoryFrom": {
+   "value": 2016,
+   "note": "2026 DRAFT.xlsx carries keeper and draft sheets from 2016 forward. Draft-result sheets exist for 2017, 2018, 2019, 2020, 2021, 2023, 2024 and 2025. THERE IS NO 2022 AND NO 2016 DRAFT-RESULT SHEET \u2014 that gap matters for one running joke.",
+   "source": "data/spreadsheets/, data/RECONCILIATION.md",
+   "confidence": "verified"
+  },
+  "scoring": {
+   "format": "Full PPR \u2014 1.0 per reception",
+   "passingTouchdown": 6,
+   "note": "Passing TDs are worth SIX, not the ESPN default of four. Identical settings in 2022, 2023, 2024, 2025 and 2026.",
+   "source": "data/RECONCILIATION.md, ESPN read section; data/espn/espn-scoring-settings.json",
+   "confidence": "verified"
+  },
+  "roster": {
+   "starters": "1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, 1 D/ST",
+   "bench": 7,
+   "kickers": "None. The kicker lineup slot is 0 and the kicker roster limit is 0, so no kicker can be rostered at all.",
+   "source": "data/RECONCILIATION.md ESPN section",
+   "confidence": "verified"
+  },
+  "commissioner": {
+   "shortName": "Kyle",
+   "fullName": "Kyle Mertens",
+   "note": "One office, one holder. No co-commissioner, no vice commissioner, no treasurer. Confirmed directly Aug 26 2026. It is Kyle MERTENS, not Kyle Witte.",
+   "source": "data/DECISIONS.md, 'Officers \u2014 Kyle Mertens is commissioner'",
+   "confidence": "verified"
+  },
+  "operator": {
+   "shortName": "Colin",
+   "note": "Colin Tracy directs this app and is at the keyboard on draft day. He is NOT the commissioner and holds no authority over rulings. He is also a party to the Nacua dispute.",
+   "source": "data/DECISIONS.md, 'The commissioner and the operator are different people'",
+   "confidence": "verified"
+  },
+  "sourceOfTruth": {
+   "value": "This app and its database. The keepers are locked and declared: 19 keepers, all ten franchises answered.",
+   "commissionerWords": "You keep getting confused about 16 keepers, 17 keepers, or 19 keepers. What you have here in this app, now in our database, should be the source of truth. We haven't even updated Smart Draft since I started building this app. This is what we're using, so the keepers are locked and declared. There are 19 keepers. Every team has declared their keepers.",
+   "source": "Commissioner, Aug 28 2026, relayed through the operator",
+   "confidence": "verified"
+  },
+  "frozenArtefacts": {
+   "value": "data/smartdraft-room-snapshot.json and data/keepers-2026-resolved.json are HISTORICAL SEEDS, not live sources. Smart Draft has not been touched since this app was built.",
+   "theTrap": "keepers-2026-resolved.json holds 14 rows and the room snapshot holds 16. Adding those two files to the 3 in the declarations overflow file gives 17, which is WRONG \u2014 it double-drops Scott Elbe's two, which are in the room but not in the resolved file. The correct sum is 16 (room) + 3 (declarations) = 19. Do not count keepers by adding JSON files together; count the assembled board.",
+   "howToCount": "npm run verify:board-keepers",
+   "source": "data/keepers-2026-resolved.json header; commit 06653bf 'Stop the repo claiming eighteen keepers when the board has nineteen'; npm run verify:board-keepers output",
+   "confidence": "verified"
+  },
+  "keeperRules": {
+   "maxPerTeam": 2,
+   "notRequiredToFill": "Nobody is required to fill both slots. Joe deliberately kept one.",
+   "costRoundRule": "Cost round = the player's previous-season draft round minus one. A free-agent acquisition costs the 9th round.",
+   "tenure": "Three consecutive seasons total: the acquisition season plus two keeper seasons. Written 'N of 3' in the keeper sheets, where year 1 is the season the player was acquired.",
+   "tradeResetsClock": "A trade restarts a player's keeper eligibility with his new team, but the player retains his previous season's draft-round value. Clock resets; cost basis carries.",
+   "roundOneIneligible": "A player who occupied a round-1 slot last season can never be kept \u2014 pricing him would need a round 0. Every first-round pick is a one-year rental, permanently. Ruled Aug 26 2026; codifies existing practice.",
+   "source": "docs/2025-johnston-blome-trade-agreement.pdf (WHEREAS clauses); data/DECISIONS.md; data/keeper-declarations.json howToAddOne",
+   "confidence": "verified",
+   "sourceOddity": "The league's keeper rules are stated most clearly in the recitals of a private contract between two managers. This app reads the rules out of that contract."
+  },
+  "draftOrder2026": {
+   "order": [
+    "Zach",
+    "Witte",
+    "Joe",
+    "Josh",
+    "Elbe",
+    "Kyle",
+    "Scott",
+    "Stefan",
+    "Greg",
+    "Colin"
+   ],
+   "mechanic": "A SLOT AUCTION conducted in reverse-standings order. Finishing position decides WHEN you choose, not WHAT you get. The team that finished last chooses any slot it likes; the champion chooses last from what is left.",
+   "workedExample": "Colin finished 3rd and chose the 10th slot, because slot 10 owns the turn \u2014 picks 10 and 11 back to back. Greg and Stefan chose after him, landing at 9 and 8.",
+   "source": "data/DECISIONS.md, 'How the order is actually set'; ROADMAP.md, commissioner quote",
+   "confidence": "verified"
+  },
+  "standings2025": {
+   "value": {
+    "1st": "Stefan",
+    "2nd": "Greg",
+    "3rd": "Colin"
+   },
+   "method": "Derived from the slot-auction quote. Choosing order is worst-first; Colin chose before Greg, who chose before Stefan, so Stefan finished ahead of Greg, who finished ahead of Colin. Colin states he finished 3rd, which fixes the other two at 2nd and 1st.",
+   "corroboration": "In the 2024 draft banter Stefan says 'I wasn't happy with where I was drafting. But when you win the ship you don't get to pick where you draft' (R10 p92), and Kyle says of Joe Mixon 'He won you a title last year, show some respect' (R3 p30) \u2014 both of which put a title on Stefan for the 2023 season as well.",
+   "source": "ROADMAP.md commissioner quote; data/spreadsheets/2026-draft__2024-draft.json Comments column",
+   "confidence": "inferred",
+   "caution": "The finishing positions of the other seven franchises are NOT recorded anywhere in this repo. Do not invent a standings table."
+  },
+  "boardShape": {
+   "slots": 160,
+   "keepers": 19,
+   "draftable": 141,
+   "source": "npm run verify:board-keepers; npm run verify:expected",
+   "confidence": "derived"
+  }
+ },
+ "managers": {
+  "Zach": {
+   "fullName": "Zach Rakowski",
+   "franchiseName": "Perpetually Impaired",
+   "franchiseAbbrev": "PI",
+   "draftSlot2026": 1,
+   "profession": null,
+   "espnOddity": {
+    "value": "ESPN lists the Perpetually Impaired franchise under TED BUCKMAN, in every season 2022\u20132026. Zach Rakowski appears in the keeper sheets and Smart Draft but nowhere in ESPN. The commissioner ruled they are the same person \u2014 an inside joke on the ESPN account.",
+    "source": "data/DECISIONS.md, 'Zach Rakowski / Ted Buckman \u2014 the same person'; data/managers.json note",
+    "confidence": "verified"
+   },
+   "keepers": [
+    {
+     "player": "Justin Jefferson",
+     "position": "WR",
+     "costRound": 7,
+     "boardSlot": "7.01",
+     "priorSeasonRound": 8,
+     "finalKeeperSeason": true
+    },
+    {
+     "player": "Ladd McConkey",
+     "position": "WR",
+     "costRound": 6,
+     "boardSlot": "6.05",
+     "priorSeasonRound": 7,
+     "finalKeeperSeason": false,
+     "note": "Sits on KYLE's round-6 pick, because Zach traded his own R6 to Witte."
+    }
+   ],
+   "notes": [
+    {
+     "fact": "Zach's declaration deliberately carries no `closesList` flag and that is correct \u2014 he declared two of a permitted two, so nothing is outstanding. He is not delinquent.",
+     "source": "data/DECISIONS.md, 'Joe Murray has declared'",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Justin Jefferson is in his final keeper season and must be released back into the 2027 pool.",
+     "source": "data/keeper-eligibility-2026.json; npm run verify:board-keepers",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Zach was a round-8 pick away from a bargain of his own: Jefferson cost him a 7th because he was drafted in the 8th round in 2025 \u2014 cheap for a player of that calibre.",
+     "source": "data/DECISIONS.md, 'Zach Rakowski has declared'",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft Colin narrated Zach's picks in advance and got them all wrong: 'Here comes another dumb ass pick from Zach, let's see who it is. Zamir White. Watch. Tee Higgins. Final Answer' \u2014 Zach took Aaron Jones. Kyle then said 'He's going to trade all of these guys to us next year for more picks.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R5 p44 Comments",
+     "confidence": "verified",
+     "whyFunny": "Kyle predicted the fire sale two years before it happened."
+    },
+    {
+     "fact": "AT THE 2025 TRADE DEADLINE HE ANNOUNCED HE WAS 'OPEN FOR BUSINESS', the whole league texted him their trade ideas, and he ghosted every one of them for a week.",
+     "source": "Colin (operator), 2026-08-29",
+     "confidence": "verified"
+    },
+    {
+     "fact": "KYLE MERTENS TOOK HIS KEEPERS FOR HIM. The commissioner submitted Zach's declaration on Aug 26 because Zach does not respond, and the room still showed Zach with no keepers. Nobody knows whether he is attending the 2026 draft at all, in the room or remotely \u2014 still unresolved on the morning of draft day.",
+     "source": "Colin (operator), 2026-08-29; data/keeper-declarations.json, recordedBy commissioner",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Witte": {
+   "fullName": "Kyle Witte",
+   "franchiseName": "The Replacement Team",
+   "franchiseAbbrev": "DinP",
+   "draftSlot2026": 2,
+   "profession": null,
+   "keepers": [
+    {
+     "player": "De'Von Achane",
+     "position": "RB",
+     "costRound": 8,
+     "boardSlot": "8.10",
+     "priorSeasonRound": 9,
+     "finalKeeperSeason": false,
+     "note": "Sits on ZACH's round-8 pick."
+    },
+    {
+     "player": "Tucker Kraft",
+     "position": "TE",
+     "costRound": 11,
+     "boardSlot": "11.02",
+     "priorSeasonRound": 12,
+     "finalKeeperSeason": false
+    }
+   ],
+   "notes": [
+    {
+     "fact": "Witte is the most active trader in the league by a distance: a party to six of the twelve logged 2026 trades, plus a seventh that never made the log. He moved six picks out and six picks in \u2014 more than double anyone except Kyle and Zach.",
+     "source": "data/trade-log-2026-spreadsheet.json; data/smartdraft-room-snapshot.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He drafted Patrick Mahomes with the LAST PICK OF THE 2018 DRAFT \u2014 round 16, pick 160 of 160. Mahomes then threw 50 touchdowns and won MVP. He took Mahomes again in 2019 (R15 p150), 2020 (R14 p135) and 2024 (R4 p35).",
+     "source": "data/spreadsheets/2026-draft__2018-draft-by-round.json; 2019, 2020, 2024 draft sheets",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Witte is out of the country for the 2026 draft, submitting his keepers remotely, and will NOT be in the room. IT IS TRUE OF THIS DRAFT ONLY \u2014 Colin's correction is explicit \u2014 Witte is international for this draft and not always, so he does not live abroad, he is not the league's international manager, and he is not the man who always drafts from another time zone. The 2024 draft was the other occasion: he attended from Canada and took heat for it all night, 'That doesn't look like Canada it looks like Hawaii' (Elbe), and Joe timing him \u2014 'Witte took 15 minutes for an Evan Engram pick'. Two nights, each usable as the night it was; not a standing trait and not an identity.",
+     "source": "Colin (operator), 2026-08-29, correcting a pre-draft recap that filed him as permanently international; data/spreadsheets/2026-draft__2024-draft.json R2 p14, R7 p62",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He holds THREE round-8 picks and no round 5, 7, 9 or 10 \u2014 the most lopsided inventory in the league.",
+     "source": "data/smartdraft-room-snapshot.json; npm run verify:picks",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He is drafting from a lake in Ontario. That is where the 2026 remote attendance comes from \u2014 a trip, not a residence.",
+     "source": "Colin (operator), 2026-08-29",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Joe": {
+   "fullName": "Joe Murray",
+   "franchiseName": "Fingers are for painting",
+   "franchiseAbbrev": "HOJO",
+   "draftSlot2026": 3,
+   "profession": null,
+   "professionNote": "Do NOT record Joe's job. The operator was openly unsure and will ask him.",
+   "keepers": [
+    {
+     "player": "Jayden Daniels",
+     "position": "QB",
+     "costRound": 9,
+     "boardSlot": "9.03",
+     "priorSeasonRound": 10,
+     "finalKeeperSeason": false
+    }
+   ],
+   "notes": [
+    {
+     "fact": "Joe kept ONE player out of a permitted two, and it was a deliberate, final answer given Aug 27 2026 \u2014 not a missed deadline and not an outstanding declaration. The commissioner considers it a bad decision worth roasting. The roast belongs on the judgement, not on the paperwork.",
+     "source": "data/keeper-declarations.json (closesList: true); data/DECISIONS.md, 'Joe Murray has declared'; commissioner, Aug 28 2026",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He is the only franchise on the board with one keeper. Every other franchise has two.",
+     "source": "npm run verify:board-keepers",
+     "confidence": "derived"
+    },
+    {
+     "fact": "THE AMARI RODGERS PICK IS REAL AND DATED. Joe drafted Amari Rodgers in the FIFTEENTH ROUND of the 2021 draft, pick 141 of 160.",
+     "source": "data/spreadsheets/2026-draft__2021-draft.json row 152",
+     "confidence": "verified"
+    },
+    {
+     "fact": "The joke was still running three years later, and it is written down: during the 2024 draft, at pick 2.16, the Comments column records 'Where is Amari Rodgers playing?' \u2014 Colin to Joe.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R2 p16 Comments",
+     "confidence": "verified",
+     "whyFunny": "The league's own workbook preserves the heckle."
+    },
+    {
+     "fact": "Joe drafted Aaron Rodgers himself in 2019, round 5, pick 48.",
+     "source": "data/spreadsheets/2026-draft__2019-draft-by-round.json row 48",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Joe is the league's tight-end hoarder. In the 2024 draft he took Travis Kelce at 3.27 and announced 'I double TE'ed it'. Stefan: 'That might be the worst pick of the draft.' Joe: 'Kincaid is an 11th round keeper, yall can suck my nuts.' Later, at 11.02, he talked himself out of a third: 'Dallas Goedert\u2026.no wait shut up, that'd be my third TE.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R3 p27 and R11 p102 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "With the final pick of the 2024 draft's sixteenth round he took Matthew Stafford: 'Give me league winning QB big dick Matthew Stafford' Joe; 'Isn't he hurt?' Stefan; 'Oh fuck, is he?' Joe.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R16 p154 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In 2024 Joe waited until round 16 for his first quarterback \u2014 the latest first-QB in the recorded history of the league.",
+     "source": "Derived from data/spreadsheets/2026-draft__2024-draft.json",
+     "confidence": "derived"
+    }
+   ]
+  },
+  "Josh": {
+   "fullName": "Josh Grainger",
+   "franchiseName": "Teddys Trouser Snake",
+   "franchiseAbbrev": "TITS",
+   "draftSlot2026": 4,
+   "profession": null,
+   "keepers": [
+    {
+     "player": "Brock Bowers",
+     "position": "TE",
+     "costRound": 6,
+     "boardSlot": "6.07",
+     "priorSeasonRound": 7,
+     "finalKeeperSeason": true
+    },
+    {
+     "player": "Travis Etienne",
+     "position": "RB",
+     "costRound": 7,
+     "boardSlot": "7.04",
+     "priorSeasonRound": 8,
+     "finalKeeperSeason": false
+    }
+   ],
+   "notes": [
+    {
+     "fact": "Josh lost a keeper to the clock this year: Ja'Marr Chase hit 3 of 3 in 2025 and is ineligible for 2026.",
+     "source": "data/keeper-eligibility-2026.json; data/RECONCILIATION.md",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He could not have kept DeVonta Smith even if he wanted to. Smith prices at round 4 and Josh traded his round-4 pick to Scott in trade #10.",
+     "source": "data/keeper-eligibility-2026.json + data/smartdraft-room-snapshot.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Josh drafted Lamar Jackson twice \u2014 2019 round 11 pick 107, and again 2020 round 10 pick 93.",
+     "source": "data/spreadsheets/2026-draft__2019-draft-by-round.json; 2020-draft.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft, Colin could not retain the name of Josh's pick for one minute: 'Who did Josh take' Colin. 'Brian Robinson' group. 'Who did Josh take?' Colin. 'Brian Robison' again.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R9 p82 Comments",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Elbe": {
+   "fullName": "Scott Elbe",
+   "franchiseName": "A.D.B. Rombusters II",
+   "franchiseAbbrev": "ADB",
+   "draftSlot2026": 5,
+   "profession": "In sales",
+   "professionNote": "Employer deliberately omitted.",
+   "keepers": [
+    {
+     "player": "Javonte Williams",
+     "position": "RB",
+     "costRound": 7,
+     "boardSlot": "7.05",
+     "priorSeasonRound": 8,
+     "finalKeeperSeason": false,
+     "note": "His own pick."
+    },
+    {
+     "player": "Cam Skattebo",
+     "position": "RB",
+     "costRound": 9,
+     "boardSlot": "9.05",
+     "priorSeasonRound": 10,
+     "finalKeeperSeason": false,
+     "note": "Marked TRADE in the 2026 keeper sheet \u2014 acquired from Kyle in trade #9."
+    }
+   ],
+   "notes": [
+    {
+     "fact": "The room was ribbing Elbe about PPR value in 2024 and it is on the record twice. At 3.27, when Joe took Kelce: 'Hey elbe, good pick.' Stefan. 'He's especially good in PPR leagues' Stefan to Elbe. Elbe's reply: 'Come on guys that was a couple years ago, now.' And at 11.05: 'Not a bad pick Elbe. You have a PPR QB and some good WRs' Stefan.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R3 p27 and R11 p105 Comments",
+     "confidence": "verified",
+     "whyThisMatters": "The 2024 sheet proves the room is still running the joke at him two years later. Elbe's own 'a couple years ago' is why the YEAR stays off the recap even now that the player is ruled."
+    },
+    {
+     "fact": "Cam Skattebo reached Elbe by trade and is now kept at round 9. This is the LEGITIMATE version of acquiring a player and keeping him cheap \u2014 the commissioner calls it 'an art form to keep people high'. See `skattebo` for the terms and for why it is not comparable to the Nacua agreement.",
+     "source": "Commissioner, Aug 28 2026; data/trade-log-2026-spreadsheet.json trade #9",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Elbe had TWO players priced at round 7 \u2014 Javonte Williams and Stefon Diggs \u2014 and owns exactly one round-7 pick. He could not have kept both even if he wanted to.",
+     "source": "data/keeper-eligibility-2026.json + data/smartdraft-room-snapshot.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He traded for Patrick Mahomes days before the draft (trade #11, for Cedric Tillman and a 6th) and then declined to keep him at round 10.",
+     "source": "data/trade-log-2026-spreadsheet.json trade #11; data/keeper-eligibility-2026.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Elbe lost Sam LaPorta to the clock \u2014 3 of 3 in 2025, ineligible for 2026.",
+     "source": "data/keeper-eligibility-2026.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft, at 12.116, Kyle caught him mid-search: 'Are you googling is chubba hubbard hurt?' \u2014 and the sheet records that Elbe laughed because it was true. He took Ezekiel Elliott: 'I'm going with Fatty Zeke himself.' Stefan: 'The dusiest of the dust.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R12 p116 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "ELBE REACHED FOR LAMAR JACKSON AND SAID 'at least he's a good PPR QB.' Colin names the player and calls it one of the dumbest things anyone has ever said in this league, because PPR does nothing for a quarterback. The room knows that, which is why they still run it at him \u2014 so do not explain the scoring to them. Quote him. NEVER STATE A YEAR OR A ROUND: no sheet in this repo has the pick, and his own 'a couple years ago' points at 2022, the one draft whose results are missing.",
+     "source": "Colin (operator), 2026-08-29, naming the player and the PPR-on-QB line; every sheet in data/spreadsheets/ searched for the pick",
+     "confidence": "verified"
+    },
+    {
+     "fact": "The room says his name \"LB\". Same man as Elbe and Scott Elbe; never \"Scott\" on its own, which is Scott Johnston.",
+     "source": "Colin (operator), 2026-08-29",
+     "confidence": "verified",
+     "whyThisMatters": "Identified by elimination: the commissioner walked the whole room manager by manager and \"LB\" was the only name left unaccounted for, and it is how Elbe sounds said out loud. A fourth handle for a man in a league with two Scotts is worth writing down."
+    }
+   ]
+  },
+  "Kyle": {
+   "fullName": "Kyle Mertens",
+   "franchiseName": "Tushy Booth Ballers",
+   "franchiseAbbrev": "TBB",
+   "draftSlot2026": 6,
+   "profession": "An accountant",
+   "office": "League commissioner \u2014 the only officer.",
+   "keepers": [
+    {
+     "player": "Jaxon Smith-Njigba",
+     "position": "WR",
+     "costRound": 4,
+     "boardSlot": "4.06",
+     "priorSeasonRound": 5,
+     "finalKeeperSeason": true,
+     "note": "Sits on ELBE's round-4 pick."
+    },
+    {
+     "player": "Chase Brown",
+     "position": "RB",
+     "costRound": 6,
+     "boardSlot": "6.09",
+     "priorSeasonRound": 7,
+     "finalKeeperSeason": true,
+     "note": "Sits on WITTE's round-6 pick."
+    }
+   ],
+   "notes": [
+    {
+     "fact": "Kyle is the ONLY manager whose BOTH keepers are in their final season. He must release Jaxon Smith-Njigba and Chase Brown after 2026 and enters 2027 with nothing carried over.",
+     "source": "npm run verify:board-keepers; data/keeper-eligibility-2026.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Neither of his keepers sits on his own pick \u2014 both occupy picks he acquired.",
+     "source": "npm run verify:board-keepers",
+     "confidence": "verified"
+    },
+    {
+     "fact": "THE QUARTERBACK PATTERN IS REAL AND IT IS SEVEN DRAFTS DEEP. Kyle's first quarterback by year: 2018 R13, 2019 R13, 2020 R15, 2021 R8, 2023 R4, 2024 R13, 2025 R13. In five of the seven recorded drafts he waited until round 13 or later.",
+     "source": "Computed from the 2018, 2019, 2020, 2021, 2023, 2024 and 2025 draft sheets",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He does the same at tight end \u2014 2021 R14, 2023 R13, 2024 R14 \u2014 and the 2024 draft caught him doing both at once, live. At 11.109: 'Why are you people taking backup QBs now?' Kyle, pissed because he hasn't taken a QB. At 11.110: 'Kyle, who's your QB and TE' Greg. 'TBD' Kyle. At 13.123: 'Kyle, you still don't have a QB or a TE?' Stefan. 'Same as 5 rounds ago, yeah' Kyle.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R11 p109, R11 p110, R13 p123 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He then took Jordan Love at 13.124 and declared it himself: 'Jordan Love in the 13th round is amazing value' Kyle \u2026 'That might have been the best pick of the draft' Kyle. Joe's contribution: 'You bitch.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R13 p124 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "At 15.141 he took Caleb Williams and Joe delivered the verdict on his quarterback room: 'Love and Williams\u2026you have two of the fruitiest QBs in the league.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R15 p141 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft he lost track of his own trades in real time: at 10.93, 'Oh fuck I traded my tenth' Kyle. He does it again this year \u2014 he owns no round 2, no round 8 and no round 12 in 2026.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json R10 p93 Comments; data/smartdraft-room-snapshot.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He is the man the Smart Draft board kept defeating: 'This draft board is really hard to follow. Can you put a counter on how many times I've said that?' Kyle, 2024, round 11. This app exists partly because of that complaint.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R11 p110 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Kyle Mertens is `sba361` \u2014 the username the Smart Draft room records as its commissioner, which mapped to no franchise until it was resolved.",
+     "source": "data/DECISIONS.md, 'This resolves the sba361 puzzle'",
+     "confidence": "verified"
+    },
+    {
+     "fact": "His workbook, `Trade Log`, is now confirmed to omit at least one real trade \u2014 the Stefan/Witte round-4 swap. His own ruling on it: 'Yes they swapped 4s \u2014 Kyle missed it on his trade log. SmartDraft is right.'",
+     "source": "data/DECISIONS.md, 'The Stefan \u2194 Witte round-4 swap is real'",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Scott": {
+   "fullName": "Scott Johnston",
+   "franchiseName": "DHB Sandmen",
+   "franchiseAbbrev": "DHB",
+   "draftSlot2026": 7,
+   "profession": "A lawyer",
+   "professionNote": "Employer deliberately omitted. The profession is load-bearing for exactly one story and needs no decoration: he argues for a living, and he came out of a contingently-worded trade agreement holding a first-round receiver at a round-11 keeper price.",
+   "keepers": [
+    {
+     "player": "Kyren Williams",
+     "position": "RB",
+     "costRound": 7,
+     "boardSlot": "7.07",
+     "priorSeasonRound": 8,
+     "finalKeeperSeason": false
+    },
+    {
+     "player": "Puka Nacua",
+     "position": "WR",
+     "costRound": 11,
+     "boardSlot": "11.07",
+     "priorSeasonRound": 12,
+     "finalKeeperSeason": null,
+     "note": "The app declines to state his clock year. See `nacuaAgreement`."
+    }
+   ],
+   "notes": [
+    {
+     "fact": "He is the Johnston in the Johnston/Blome Trade Agreement. He drafted a formal contract, with recitals and defined terms, for a fantasy football trade, and put it through DocuSign. See `nacuaAgreement` \u2014 it is the centrepiece.",
+     "source": "docs/2025-johnston-blome-trade-agreement.pdf",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Scott has the most front-loaded pick inventory in the league: two round-3s, two round-4s, two round-6s, and nothing at all in rounds 12, 13 or 16. He bought the top of the draft with the bottom of it.",
+     "source": "data/smartdraft-room-snapshot.json; npm run verify:picks",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He is the only manager with no keeper-ineligible player on his roster at all \u2014 nobody barred by the round-1 rule and nobody with an expired clock. Seventeen of his seventeen rostered players were technically keepable.",
+     "source": "data/keeper-eligibility-2026.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He took Travis Kelce at pick 4 OVERALL in the 2023 draft \u2014 a tight end in the first round, top four.",
+     "source": "data/spreadsheets/2026-draft__2023-draft.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He drafted Lamar Jackson in 2021, round 5, pick 43, and held him as a keeper through 2022.",
+     "source": "data/spreadsheets/2026-draft__2021-draft.json; keeper-list-for-2022",
+     "confidence": "verified"
+    },
+    {
+     "fact": "The one franchise nickname anywhere in the pre-2026 workbooks is 'DHB Sandmen (SJ)', his, in the 2017 sheet. Nobody else's team name survives from that era.",
+     "source": "data/RECONCILIATION.md, 'Team and manager names'",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He is quoted only seven times in the whole 107-entry banter column of the 2024 draft \u2014 fewer than Colin (65), Stefan (58), Kyle (47), Joe (45), Elbe (33), Greg (20) and Witte (11). Consistent with a man typing rather than talking, but see `unverified` before treating him as the scribe on this evidence.",
+     "source": "Counted from data/spreadsheets/2026-draft__2024-draft.json Comments column",
+     "confidence": "derived"
+    }
+   ]
+  },
+  "Stefan": {
+   "fullName": "Stefan Albers",
+   "franchiseName": "Mound City Dogs",
+   "franchiseAbbrev": "DOGS",
+   "draftSlot2026": 8,
+   "profession": "An accountant",
+   "professionNote": "Employer deliberately omitted.",
+   "keepers": [
+    {
+     "player": "Rashee Rice",
+     "position": "WR",
+     "costRound": 4,
+     "boardSlot": "4.09",
+     "priorSeasonRound": 5,
+     "finalKeeperSeason": false,
+     "note": "Sits on WITTE's round-4 pick."
+    },
+    {
+     "player": "Colston Loveland",
+     "position": "TE",
+     "costRound": 9,
+     "boardSlot": "9.08",
+     "priorSeasonRound": 9,
+     "finalKeeperSeason": false,
+     "note": "A free-agent acquisition, hence round 9."
+    }
+   ],
+   "notes": [
+    {
+     "fact": "STEFAN IS THE ONLY FRANCHISE IN THE LEAGUE WITHOUT A FIRST-ROUND PICK. He traded it to Witte in trade #2 for Bijan Robinson, and Witte flipped it to Zach in trade #6. It is the only round-1 pick that moved all offseason.",
+     "source": "data/smartdraft-room-snapshot.json; data/trade-log-2026-spreadsheet.json trades #2 and #6; npm run verify:picks",
+     "confidence": "verified"
+    },
+    {
+     "fact": "THE CLAIM THAT HE HAS NO PICK UNTIL ROUND 13 IS FALSE. His first owned pick is his own SECOND-ROUND pick. He then picks in rounds 2, 3, 4, 5, 5, 6, 7, 7, 9 and onward. He owns fourteen of the first sixteen rounds; the two he is missing are rounds 1 and 8.",
+     "source": "data/smartdraft-room-snapshot.json; data/draft-pick-inventory-2026-spreadsheet.json; npm run verify:picks",
+     "confidence": "verified",
+     "whyThisMatters": "Correcting a wrong number is the whole point of this document. A blurb built on 'no pick until the 13th' would be caught inside a second."
+    },
+    {
+     "fact": "Selling that first-round pick cost him a keeper. Josh Allen prices at round 1 on Stefan's roster, and Stefan owns no round-1 pick to put him in. He also owns no round-8 pick, which makes NINE more of his players \u2014 everyone priced at a round 8 \u2014 structurally unkeepable.",
+     "source": "data/keeper-eligibility-2026.json + data/smartdraft-room-snapshot.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "He also cannot keep Bijan Robinson, the player he bought the pick with \u2014 Bijan occupied a round-1 slot in 2025 and is barred outright.",
+     "source": "data/DECISIONS.md, 'First-round picks can NEVER be kept'; data/keeper-eligibility-2026.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Stefan hosted the 2024 draft and the board was a running complaint all night. Greg, mocking him: 'Then you make the pizza rolls, bro.' Kyle, on the draft board: 'Its really not that hard' Stefan, as he keeps entering in picks in the wrong spots.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R6 p51 and R7 p62 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft he accepted a $25 side bet from Colin that Rhamondre Stevenson would outscore Javonte Williams. The sheet records: 'Accepted $25'. The outcome is not recorded anywhere in this repo.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R5 p50 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2020 draft sheet his name is typed two different ways \u2014 'Stefan' and 'Sefan' \u2014 so the workbook briefly contains eleven managers.",
+     "source": "data/spreadsheets/2026-draft__2020-draft.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He lost Nico Collins to the clock \u2014 3 of 3 in 2025, ineligible for 2026.",
+     "source": "data/keeper-eligibility-2026.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "STEFAN IS A THREE-TIME CHAMPION. He texted the commissioner before the draft \u2014 'make sure the AI knows I'm the only 3 time champion in the league' \u2014 and COLIN STATES IT FLATLY, unprompted and twice: 'He has won 3x I'm telling you it's the case.' He is not the commissioner and this is testimony rather than a ruling, but he has been in this league ten years, no source contradicts him, and he is the man at the keyboard. Treat it as fact. Say it flat, at full size, no hedge, and not as a boast of his. Two limits: DO NOT DATE THEM, because which three seasons is nowhere in this repo, and 'ONLY' IS HIS WORD, NOT THE LEAGUE'S \u2014 nobody else's count is recorded anywhere, so quote his sentence if you want that word. Colin's reply to him: 'I can do that, but also make sure it knows you're a fucking dumbass.' Both halves are the instruction.",
+     "source": "Colin (operator), 2026-08-29, on Stefan's own message and his reply to it. Kyle Mertens has not been asked and has ruled nothing here.",
+     "confidence": "verified"
+    },
+    {
+     "fact": "HE HAS ALREADY SAID HE DOES NOT TRUST THIS PAGE. Colin, on draft day: 'he already texted me that he doesn't trust the recap, or grading cuz these kinds of things always kinda suck.' He filed the review before reading it. Fair game \u2014 and the reason every figure in his blurb and his grade has to be exact.",
+     "source": "Colin (operator), 2026-08-29",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Greg": {
+   "fullName": "Greg Blome",
+   "franchiseName": "Jimmy's Johnson",
+   "franchiseAbbrev": "JJ",
+   "draftSlot2026": 9,
+   "profession": null,
+   "keepers": [
+    {
+     "player": "Garrett Wilson",
+     "position": "WR",
+     "costRound": 4,
+     "boardSlot": "4.02",
+     "priorSeasonRound": 5,
+     "finalKeeperSeason": true
+    },
+    {
+     "player": "Rome Odunze",
+     "position": "WR",
+     "costRound": 6,
+     "boardSlot": "6.02",
+     "priorSeasonRound": 7,
+     "finalKeeperSeason": false
+    }
+   ],
+   "notes": [
+    {
+     "fact": "GREG HOLDS THE TWO WORST-VALUE KEEPERS ON THE BOARD. Measured against the keeper-adjusted expected pick, Garrett Wilson and Rome Odunze are worth +4 picks each. Every other keeper in the league is worth at least +20, and the best is worth +103 \u2014 the player Greg handed back to Scott.",
+     "source": "Derived from data/smartdraft-players.json ADP and the assembled board, using the method in src/lib/expected-pick.ts",
+     "confidence": "derived",
+     "whyFunny": "He is the man who returned Puka Nacua and is keeping the league's two least valuable keepers."
+    },
+    {
+     "fact": "He is the JJ in the Johnston/Blome Trade Agreement, signing as Manager of Jimmy's Johnson. See `nacuaAgreement`.",
+     "source": "docs/2025-johnston-blome-trade-agreement.pdf, signature page",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Greg owns no round-3 pick in 2026 \u2014 it went to Scott and stayed there \u2014 and holds two round-16s instead. That is the net pick effect of the whole agreement on him.",
+     "source": "data/smartdraft-room-snapshot.json; npm run verify:picks",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Derrick Henry, one of the two players he took in the November 2025 trade, is keeper-ineligible: he occupied a round-1 slot in 2025 and prices to round 0. Greg loses him to the 2026 pool.",
+     "source": "data/spreadsheets/2026-draft__keeper-list-for-2026.json (round 1, roundToKeep 0, TRADE); data/DECISIONS.md round-1 ruling",
+     "confidence": "verified"
+    },
+    {
+     "fact": "Greg currently rosters Lamar Jackson at a round-1 keeper price and cannot keep him either. He drafted him in round 2 of the 2025 draft.",
+     "source": "data/keeper-eligibility-2026.json; data/spreadsheets/2026-draft__2025-draft.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He declined George Kittle at a round-5 price and Jaylen Waddle at a round-4 price to keep the two players above.",
+     "source": "data/keeper-eligibility-2026.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Greg drafted Aaron Rodgers in 2017, round 2 pick 20, and held him as a keeper into 2018.",
+     "source": "data/spreadsheets/2026-draft__by-round-2017.json; keeper-list-for-2018",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the 2024 draft he took two defences and announced the plan: 'Cowboys DEF. Two defenses! I'm going to drop them after week 1 or trade them to one of yo asses.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R16 p152 Comments",
+     "confidence": "verified"
+    }
+   ]
+  },
+  "Colin": {
+   "fullName": "Colin Tracy",
+   "franchiseName": "Flurp McDerp",
+   "franchiseAbbrev": "CT",
+   "draftSlot2026": 10,
+   "profession": "In sales",
+   "professionNote": "Employer deliberately omitted. He also built this app.",
+   "keepers": [
+    {
+     "player": "Trey McBride",
+     "position": "TE",
+     "costRound": 8,
+     "boardSlot": "8.01",
+     "priorSeasonRound": 9,
+     "finalKeeperSeason": true
+    },
+    {
+     "player": "Bucky Irving",
+     "position": "RB",
+     "costRound": 10,
+     "boardSlot": "10.01",
+     "priorSeasonRound": 11,
+     "finalKeeperSeason": false
+    }
+   ],
+   "notes": [
+    {
+     "fact": "COLIN HAS USED THE TRADE-RESET MECHANISM HIMSELF, AND THE SHEETS SHOW IT. Trey McBride appears on the 2024 keeper list under STEFAN ALBERS as a free-agent acquisition with 'Colin' written in the trailing column; on the 2025 list he is under Colin Tracy, flagged 'x-Stefan'; he is now in his third season, showing 3 of 3. data/DECISIONS.md names this as the precedent for the loophole Colin objects to in the Nacua case, saying the same mechanism was used 'to hold Trey McBride a third season'.",
+     "source": "data/spreadsheets/2026-draft__keeper-list-for-2024.json row 169, keeper-list-for-2025 row 8, keeper-list-for-2026 row 7; data/DECISIONS.md ballot item 2",
+     "confidence": "verified",
+     "caution": "DECISIONS.md attributes this to 'the commissioner' in a passage written before the doc separated Kyle Mertens from Colin. McBride is unambiguously COLIN'S keeper on the board. Treat the mechanism as documented and the wording of that sentence as loose."
+    },
+    {
+     "fact": "He chose the 10th draft slot after finishing 3rd, because slot 10 owns the turn \u2014 picks 10 and 11 back to back.",
+     "source": "ROADMAP.md commissioner quote; data/DECISIONS.md",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He is the loudest man in the room by a factor of two: 65 mentions in the 2024 banter column against Stefan's 58 and Kyle's 47.",
+     "source": "Counted from data/spreadsheets/2026-draft__2024-draft.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Colin took Tyreek Hill THIRD OVERALL in the 2024 draft, spent round 7 confirming it \u2014 'I GOT TYREEK HILL ON MY SQUAD' Colin confident \u2014 and Tyreek Hill is now on nobody's roster in this league. Joe then took him in round 2 of the 2025 draft and dropped him too.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json R1 p3 and R7 p64; 2025-draft.json R2 p13; absent from data/keeper-eligibility-2026.json",
+     "confidence": "verified"
+    },
+    {
+     "fact": "In the same 2024 draft, one round after the Tyreek boast: 'I hate my team. They are all old.' Kyle, optimistically: 'Experienced.' By round 15 he had settled on a team name \u2014 'I got two broke dicks\u2026that's my team name.'",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json, R7 p64, R7 p65, R15 p146 Comments",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He gave away a keeper this offseason. Ladd McConkey came to Colin from Witte in trade #3; Colin sent him to Zach in trade #12 for Kimani Vidal and A.J. Brown. Zach is keeping McConkey at round 6.",
+     "source": "data/trade-log-2026-spreadsheet.json trades #3 and #12; npm run verify:board-keepers",
+     "confidence": "verified"
+    },
+    {
+     "fact": "He declined A.J. Brown, Davante Adams and Omarion Hampton at round 1 apiece, Alvin Kamara at round 2 and DK Metcalf at round 3, and kept a tight end in his final season plus a running back at round 10.",
+     "source": "data/keeper-eligibility-2026.json",
+     "confidence": "derived"
+    },
+    {
+     "fact": "Colin has a standing, reciprocal piss-take running with Stefan through every draft.",
+     "source": "src/lib/league-lore.ts MANAGER_NOTES",
+     "confidence": "verified"
+    }
+   ]
+  }
+ },
+ "nacuaAgreement": {
+  "headline": "Two managers wrote a real contract for a fantasy football trade, gave one of them a free option on the other man's first-round pick, and the one who drafted it is a lawyer.",
+  "primarySource": {
+   "path": "docs/2025-johnston-blome-trade-agreement.pdf",
+   "title": "TRADE AGREEMENT",
+   "effective": "2025-11-12",
+   "parties": [
+    {
+     "team": "Jimmy's Johnson (\"JJ\")",
+     "signedBy": "Greg Blome, Manager",
+     "shortName": "Greg"
+    },
+    {
+     "team": "DHB Sandmen (\"DHB\")",
+     "signedBy": "Scott Johnston, Manager",
+     "shortName": "Scott"
+    }
+   ],
+   "documentNumber": "4918-6057-0233v1",
+   "docusignEnvelopeId": "6BB1516F-9AC6-403E-9791-30394C06C9B9",
+   "length": "Two pages, the second of which is a standalone signature page.",
+   "note": "The PDF was copied into the repository from the operator's machine on 2026-08-28 so the source is durable. Before that, every quotation of it in this repo was second-hand through data/DECISIONS.md.",
+   "confidence": "verified"
+  },
+  "form": {
+   "fact": "It has WHEREAS recitals, a 'NOW, THEREFORE, in consideration of the mutual covenants, terms, and conditions' clause, defined terms in quotation marks, a 'For the avoidance of doubt' sentence, '{Remainder of page intentionally left blank; signature page follows}', and 'IN WITNESS WHEREOF'. It carries a law-firm document control number.",
+   "confidence": "verified"
+  },
+  "typo": {
+   "fact": "Clause 2 defines the deal as 'the \"Continent 2026 Trade\"' \u2014 missing the g. The defined term is therefore 'Continent 2026 Trade', and every later reference in the document calls it the 'Contingent 2026 Trade', which the document never defines.",
+   "source": "docs/2025-johnston-blome-trade-agreement.pdf, clause 2",
+   "confidence": "verified",
+   "whyFunny": "A lawyer's contract with a typo in its own defined term, and then a defined term he never uses again."
+  },
+  "quotableVerbatim": [
+   "WHEREAS, JJ and DHB are each teams competing in that certain fantasy football league known as The Ultimate Keeper League (the \"League\");",
+   "NOW, THEREFORE, in consideration of the mutual covenants, terms, and conditions set forth in this Agreement, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the parties agree as follows:",
+   "On the day before the 2026 League Draft, as long as Nacua is not projected by a majority of media outlets to miss six (6) weeks or more of the 2026 season due to injury (a \"Nacua Injury\"), DHB and JJ agree to consummate the following trade (the \"Continent 2026 Trade\"):",
+   "In the event of a Nacua Injury, DHB shall have the option prior to the 2026 League Draft to either (i) consummate the Contingent 2026 Trade, or (ii) cancel the Contingent 2026 Trade, with DHB retaining the picks exchanged in the 2025 Trade and JJ retaining Nacua.",
+   "For the avoidance of doubt, Nacua shall retain his 2026 League Draft 11th round draft Keeper eligibility whether or not the Contingent 2026 Trade is consummated.",
+   "{Remainder of page intentionally left blank; signature page follows}"
+  ],
+  "terms": {
+   "clause1_2025Trade": {
+    "effective": "Immediately, 2025-11-12",
+    "dhbToJj": [
+     "Puka Nacua",
+     "Derrick Henry",
+     "DHB's 2026 15th Round pick",
+     "DHB's 2026 16th Round pick",
+     "DHB's 2027 16th Round pick"
+    ],
+    "jjToDhb": [
+     "Kyle Monangai",
+     "JJ's 2026 1st Round pick",
+     "JJ's 2026 3rd Round pick",
+     "JJ's 2027 3rd Round pick"
+    ],
+    "confidence": "verified"
+   },
+   "clause2_contingentTrade": {
+    "trigger": "To be consummated on the day before the 2026 League Draft \u2014 Friday 2026-08-28 \u2014 as long as there is no \"Nacua Injury\".",
+    "nacuaInjuryDefinition": "Nacua being \"projected by a majority of media outlets to miss six (6) weeks or more of the 2026 season due to injury\".",
+    "dhbToJj": [
+     "JJ's 2026 1st Round pick (handed back)",
+     "JJ's 2027 3rd Round pick (handed back)"
+    ],
+    "jjToDhb": [
+     "Puka Nacua",
+     "DHB's 2026 15th Round pick (handed back)",
+     "DHB's 2027 16th Round pick (handed back)"
+    ],
+    "confidence": "verified"
+   },
+   "theOption": {
+    "text": "In the event of a Nacua Injury, DHB shall have the option prior to the 2026 League Draft to either (i) consummate the Contingent 2026 Trade, or (ii) cancel the Contingent 2026 Trade, with DHB retaining the picks exchanged in the 2025 Trade and JJ retaining Nacua.",
+    "holder": "DHB \u2014 Scott Johnston. JJ holds no corresponding election in any branch.",
+    "confidence": "verified"
+   }
+  },
+  "theAsymmetry": {
+   "statement": "The option is one-directional and it is written that way in the document, not inferred from it.",
+   "branches": [
+    {
+     "branch": "No Nacua Injury",
+     "whatHappens": "Both parties 'agree to consummate' \u2014 it is mandatory on both sides. Scott takes Nacua back at an R11 keeper price; Greg gets his 2026 1st and 2027 3rd returned.",
+     "whoChooses": "Nobody. Automatic."
+    },
+    {
+     "branch": "Nacua Injury, Scott elects (i) consummate",
+     "whatHappens": "Scott takes an injured Nacua anyway and returns Greg's 2026 1st and 2027 3rd.",
+     "whoChooses": "Scott"
+    },
+    {
+     "branch": "Nacua Injury, Scott elects (ii) cancel",
+     "whatHappens": "Scott KEEPS Greg's 2026 1st, 2026 3rd and 2027 3rd, plus Monangai. Greg is left holding an injured Nacua.",
+     "whoChooses": "Scott"
+    }
+   ],
+   "plainEnglish": "Healthy Nacua: Scott gets the receiver. Injured Nacua: Scott gets to keep Greg's first-round pick instead. There is no branch in which Scott has to accept an outcome he did not choose, and no branch in which Greg gets to choose anything.",
+   "optionPricing": {
+    "fact": "The agreement identifies no separate consideration for the option. It is granted inside the same blanket 'other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged' recital that covers the whole document.",
+    "confidence": "verified",
+    "howToPhraseIt": "Say the document allocates no distinct price to the option. Do NOT say Scott 'paid nothing at all' for the trade \u2014 he sent real players and picks. The point is narrower and stronger: the protection itself is free."
+   },
+   "confidence": "verified"
+  },
+  "correctionToTheOralAccount": {
+   "theClaim": "The commissioner's recollection, relayed 2026-08-28: \"they made a rule where, if Puca got hurt, they could revert the trade, and it wouldn't be keeper-eligible.\"",
+   "whatTheDocumentActuallySays": "The opposite, in terms: \"For the avoidance of doubt, Nacua shall retain his 2026 League Draft 11th round draft Keeper eligibility whether or not the Contingent 2026 Trade is consummated.\" The injury clause governs WHO HOLDS HIM, not whether he is keepable. Eligibility is preserved in every branch.",
+   "whyThisMatters": "This is the one detail that would let Scott dismantle a roast on a technicality. Do not use the 'not keeper-eligible' version. The written version is worse for him anyway: they did not merely reserve a revert, they wrote a clause specifically ensuring the cheap keeper price survived either outcome.",
+   "confidence": "verified"
+  },
+  "netEffectOfBothLegs": {
+   "method": "Clause 1 minus clause 2, then checked pick-by-pick against the live 2026 board.",
+   "scott": {
+    "gains": [
+     "Kyle Monangai",
+     "Greg's 2026 3rd Round pick"
+    ],
+    "gives": [
+     "Derrick Henry",
+     "Scott's own 2026 16th Round pick"
+    ],
+    "nacua": "Round trip \u2014 starts Scott's, ends Scott's, with a reset keeper clock in transit.",
+    "picks2027": "Cancel out entirely."
+   },
+   "greg": {
+    "gains": [
+     "Derrick Henry",
+     "Scott's 2026 16th Round pick"
+    ],
+    "gives": [
+     "Kyle Monangai",
+     "Greg's own 2026 3rd Round pick"
+    ],
+    "nacua": "Held from 2025-11-12 through the end of the 2025 season, then returned.",
+    "picks2027": "Cancel out entirely."
+   },
+   "summary": "Scott turned Derrick Henry and a 16th-round pick into Kyle Monangai and a 3rd-round pick, and got Nacua back. Greg paid Monangai and a 3rd-round pick, received a 16th-round pick, and lent his first-round pick as collateral for nine months.",
+   "gregsPermanentReturn": {
+    "fact": "Once the contingent leg fires, Greg's permanent return on the whole agreement is Derrick Henry plus Scott's 2026 16th-round pick \u2014 and Derrick Henry is keeper-ineligible, priced to round 0, so Greg loses him to the 2026 draft pool as well.",
+    "confidence": "derived"
+   },
+   "gregsRealMotive": {
+    "fact": "Nov 12 2025 falls in week 11 of a season whose regular season runs to week 14 and whose playoffs run weeks 15\u201317. Greg bought Nacua and Derrick Henry for the run-in, and by the slot-auction derivation he finished 2nd. He was not fleeced in a vacuum; he bought a title run and came second.",
+    "confidence": "inferred",
+    "caution": "The 2nd-place finish is derived from the draft-order auction, not from a standings table. See league.standings2025."
+   },
+   "boardVerification": "Every leg checks out against the live board: Scott holds Greg's R3, Greg holds Scott's R16, Greg has his own R1 back, Scott has his own R15 back, and no 2027 pick has moved. npm run verify:picks confirms all 160 slots against four independent sources and calls these two the documented, ruled divergences from the workbook.",
+   "theWorkbookNeverCaughtUp": {
+    "fact": "The commissioner's own Sheet1 pick inventory agrees with the board for eight of the ten franchises. The only two it disagrees with are GREG and SCOTT \u2014 it still records the pre-contingency position, with Scott holding Greg's 1st and Greg holding Scott's 15th. The workbook was never updated for the contingent leg.",
+    "source": "data/draft-pick-inventory-2026-spreadsheet.json against data/smartdraft-room-snapshot.json; asserted by npm run verify:history and npm run verify:picks",
+    "confidence": "derived",
+    "whyFunny": "Of ten franchises, the only two the commissioner's spreadsheet has wrong are the two who wrote themselves a contract."
+   },
+   "confidence": "verified"
+  },
+  "theKeeperClockExploit": {
+   "headline": "The trade did not make Puka Nacua cheap. He was already cheap. What the trade did was bring a dead keeper clock back to life.",
+   "priceHistory": [
+    {
+     "season": 2023,
+     "event": "Drafted by Scott Johnston in ROUND 14, pick 137 of 160.",
+     "source": "data/spreadsheets/2026-draft__2023-draft.json"
+    },
+    {
+     "season": 2024,
+     "event": "Kept by Scott at round 13.",
+     "source": "data/spreadsheets/2026-draft__2024-draft.json R13 p128; keeper-list-for-2024"
+    },
+    {
+     "season": 2025,
+     "event": "Kept by Scott at round 12 \u2014 his third and final season under the clock.",
+     "source": "data/spreadsheets/2026-draft__2025-draft.json R12 p113; keeper-list-for-2025"
+    },
+    {
+     "season": 2026,
+     "event": "Priced at round 11 by the ordinary minus-one rule.",
+     "source": "data/keeper-eligibility-2026.json"
+    }
+   ],
+   "theRatchet": "R14 to R11 in three seasons, entirely by the ordinary rule. Nobody engineered the price. The 2023 draft did.",
+   "theRecitalElision": {
+    "fact": "The agreement's own recital describes Nacua as 'drafted in the 12th Round of the 2025 League draft'. In this league a keeper occupies his cost-round slot on the draft sheet, so a keeper and a real pick look identical. Nacua's 'twelfth round' in 2025 was the third rung of a keeper ratchet, not a draft pick \u2014 and by then his clock was spent.",
+    "source": "docs/2025-johnston-blome-trade-agreement.pdf recital; data/RECONCILIATION.md, 'Keepers occupy their cost-round slot in these sheets'",
+    "confidence": "verified"
+   },
+   "theDeadClock": {
+    "fact": "KEEPER LIST for 2025, written before the trade, records Puka Nacua under Scott Johnston with 2024 status '2 of 3', 2025 status '3 of 3' and 2026 status 'N/A'. N/A means he was finished. Scott could not have kept him in 2026 at any price.",
+    "source": "data/spreadsheets/2026-draft__keeper-list-for-2025.json row 41",
+    "confidence": "verified"
+   },
+   "theResurrection": {
+    "fact": "KEEPER LIST for 2026, written after the trade, records the same player under Greg Blome with 2025 status '1 of 3', 2026 status '2 of 3', 2027 status '3 of 3', cost round 11, flagged TRADE. The clock the previous year's sheet had marked N/A is back at year one.",
+    "source": "data/spreadsheets/2026-draft__keeper-list-for-2026.json row 59",
+    "confidence": "verified",
+    "whyThisIsTheStory": "The commissioner's own two spreadsheets, a year apart, record a keeper clock dying and then being reborn. The mechanism is the league's own rule \u2014 'if a player is traded by a League team, such player's Keeper eligibility restarts with his new League team' \u2014 quoted in the recitals of the contract that used it."
+   },
+   "whatTheAppRecords": {
+    "fact": "The app REFUSES to state Nacua's clock year. In data/keepers-2026-resolved.json he is the only keeper whose clockYear2026, isFinalKeeperSeason and keepableIn2027 are all null. src/lib/keeper-tenure-dispute.ts records the question with both readings and prints 'Kept in 2026 \u00b7 final season disputed (2027 or 2028)' on every surface rather than a number.",
+    "source": "data/keepers-2026-resolved.json; src/lib/keeper-tenure-dispute.ts",
+    "confidence": "verified",
+    "theTwoReadings": [
+     {
+      "countsFrom": "the November 2025 in-season trade",
+      "finalSeason": 2027
+     },
+     {
+      "countsFrom": "the pre-draft leg that returns him to Scott",
+      "finalSeason": 2028
+     }
+    ],
+    "whyFunny": "Ten managers, two spreadsheets and a DocuSigned contract all have an answer. The software is the only participant that declines to sign off on it."
+   }
+  },
+  "thePunchlineNumber": {
+   "costRound": 11,
+   "boardSlot": "11.07",
+   "overallPick": 107,
+   "rawConsensusAdp": 4,
+   "pickIfReleased": 4,
+   "slotsSavedByKeeping": 103,
+   "context": "The next-biggest keeper bargain on the board is De'Von Achane at +72. Nacua beats the field by 31 picks. He is the fourth-ranked player in the entire pool and he is being taken at the 107th slot of 160.",
+   "method": "src/lib/expected-pick.ts \u2014 rank the pool by ADP with kept players removed, map the nth-ranked player to the nth draftable slot on this board. Nacua's ADP of 4 is the consensus of nine feeds in data/smartdraft-players.json.",
+   "confidence": "derived"
+  },
+  "whoApprovedIt": {
+   "leagueApproval": {
+    "fact": "There is no record anywhere in this repository of the league approving, ratifying, reviewing or vetoing this agreement. The document itself is signed by two people and nobody else \u2014 there is no commissioner signature block, no ratification clause, no notice provision and no third party.",
+    "source": "docs/2025-johnston-blome-trade-agreement.pdf; searched data/DECISIONS.md, src/lib/governance.ts, src/lib/governance-rules.ts and the full git history",
+    "confidence": "verified"
+   },
+   "isApprovalEvenRequired": {
+    "fact": "No rule requires it and no rule forbids it. data/DECISIONS.md ballot item 3 puts the question 'Are contingent trades permitted at all?' to the league precisely because 'No rule currently permits or forbids this, which is the problem.'",
+    "source": "data/DECISIONS.md, ballot item 3",
+    "confidence": "verified"
+   },
+   "whatMechanismExisted": {
+    "fact": "ESPN's league settings do provide a 48-hour trade review with 4 veto votes required. But that could only ever have covered the player leg: ESPN holds no draft-pick ownership for an offline draft and has keepers switched off entirely, so the pick legs, the contingency and the keeper consequence existed outside any league system that could review them.",
+    "source": "data/RECONCILIATION.md ESPN section; data/espn/espn-trade-waiver-settings.json, espn-keeper-findings.json",
+    "confidence": "verified"
+   },
+   "theMediaOutletsTest": {
+    "fact": "The document does not define 'media outlets', does not name a source, does not say who determines the projection, sets no tiebreak, and appoints no adjudicator. The only party with a decision to make under the clause is DHB, who also holds the option.",
+    "source": "docs/2025-johnston-blome-trade-agreement.pdf, clause 2 \u2014 by reading, these provisions are absent",
+    "confidence": "verified",
+    "whyFunny": "A clause turning on a majority of media outlets, with nobody appointed to count them."
+   },
+   "objectionsOnRecord": {
+    "fact": "One, and it is the operator's. Colin's description of the deal, recorded in data/DECISIONS.md: 'a one-off that should have gone to a vote before it ever happened'. He has also described the arrangement as illegitimate and holds the 2027 reading of the clock. He is a party to the dispute and has no authority over it. Relayed separately on 2026-08-28: 'No one ever agreed to it, no one ever approved it. They just kinda went rogue and did their own damn thing.'",
+    "source": "data/DECISIONS.md ballot items 1 and 3; operator, 2026-08-28",
+    "confidence": "verified"
+   },
+   "commissionerPosition": {
+    "fact": "Kyle Mertens has NOT ruled on whether the agreement was legitimate. He declined to settle the trade-and-reset loophole unilaterally and sent it to an offseason league vote (ballot item 2), and the contingent-trade question is ballot item 3. What is settled is narrower: Nacua is Scott's at round 11 for 2026, and that rests on the contract's own express term rather than on a quoted ruling from Kyle.",
+    "source": "data/DECISIONS.md, 'Puka Nacua \u2014 Scott's, keepable at R11' and ballot items 2 and 3",
+    "confidence": "verified",
+    "caution": "Do not attribute a verbatim ruling on this agreement to Kyle Mertens. None exists in the repo."
+   },
+   "theOwnGoal": {
+    "fact": "data/DECISIONS.md notes that the same trade-and-reset mechanism has been used before in this league \u2014 'to hold Trey McBride a third season' \u2014 and McBride is COLIN'S keeper, in his third season, showing 3 of 3. Whatever the league decides 'applies retroactively to everyone or to no one'.",
+    "source": "data/DECISIONS.md, ballot item 2; data/spreadsheets keeper lists for 2024, 2025 and 2026",
+    "confidence": "verified",
+    "whyFunny": "The loudest objector to the loophole is holding a keeper he obtained through it."
+   }
+  },
+  "didItFire": {
+   "fact": "Yes, in every source that matters. The app's board carries Puka Nacua as SCOTT's keeper at 11.07, the live room carries the same, and the 2026 pick ledger shows the netted position \u2014 Greg with his own R1 back, Scott with his own R15 back, Scott holding Greg's R3, Greg holding Scott's R16.",
+   "timing": "The contingent leg was due 'on the day before the 2026 League Draft'. The draft is Saturday 2026-08-29, so the due date is Friday 2026-08-28 \u2014 the day this was written.",
+   "source": "npm run verify:board-keepers; npm run verify:picks; data/smartdraft-room-snapshot.json",
+   "confidence": "verified",
+   "caution": "The repo holds no record of anyone performing a Friday injury check, and data/DECISIONS.md explicitly asks for one: 'Worth a check on Friday before the board is printed.' Nacua being healthy is assumed by every source here, not verified by any of them. Do not build a joke on his 2026 health status."
+  }
+ },
+ "skattebo": {
+  "framing": "THE LEGITIMATE VERSION OF THE PLAY. The commissioner's ruling on the comparison, 2026-08-28: 'Nothing compared to the Johnston and Blome trade. Cam Skattebo reached Elbe by trade. It's an art form to keep people high.' Acquiring a player and then keeping him at a good cost round is normal, admired play in this league. Record it as ordinary league business. Do NOT set it beside the Nacua agreement as a lesser scandal \u2014 it is not a scandal at all.",
+  "trade": {
+   "tradeNumber": 9,
+   "elbeReceived": [
+    "Stefon Diggs",
+    "Cam Skattebo",
+    "Kyle's 2026 8th Round pick"
+   ],
+   "kyleReceived": [
+    "Darius Slayton",
+    "Elbe's 2026 4th Round pick"
+   ],
+   "source": "data/trade-log-2026-spreadsheet.json trade #9; confirmed against the board \u2014 Elbe's R4 is Kyle's and Kyle's R8 is Elbe's",
+   "confidence": "verified"
+  },
+  "whyItIsDifferent": {
+   "fact": "Skattebo's clock was never dead. He was drafted by Kyle Mertens in round 10 of the 2025 draft, pick 95, and the 2026 keeper sheet has him at 2 of 3 \u2014 a live, ordinary second season. Kyle could have kept him at round 9 himself and chose two other players instead. Elbe bought an asset that was already keepable. Nothing was resurrected.",
+   "source": "data/spreadsheets/2026-draft__2025-draft.json row 95; keeper-list-for-2026 row 154; data/keeper-eligibility-2026.json",
+   "confidence": "verified"
+  },
+  "theNumbers": {
+   "costRound": 9,
+   "boardSlot": "9.05",
+   "rawAdp": 39,
+   "pickIfReleased": 26,
+   "slotsSavedByKeeping": 59,
+   "confidence": "derived"
+  }
+ },
+ "keeperBoard2026": {
+  "count": 19,
+  "note": "Every 2026 keeper priced against the RELEASE counterfactual: where this board would have taken him had that one franchise not kept him, everybody else's keepers standing. `slotsSavedByKeeping` is `overall - pickIfReleased`; positive means keeping him cost a later pick than redrafting him would have. This is the KEEPER measure and is NOT comparable to the reach/steal figure on a drafted pick, which is measured against the board that actually existed \u2014 see the two-measures note in src/lib/recap-dossier.ts. Derived from the player pool as it stood when this document was written; the recap recomputes from the live pool, so re-pulling ADP can move these by a slot. `npm run verify:recap` reports any drift and `npm run sync:history-keepers` closes it.",
+  "source": "npm run verify:board-keepers for slots and owners; steal derived from data/smartdraft-players.json via the method in src/lib/expected-pick.ts",
+  "confidence": "derived",
+  "keepers": [
+   {
+    "slot": "4.02",
+    "overall": 32,
+    "player": "Garrett Wilson",
+    "manager": "Greg",
+    "costRound": 4,
+    "adp": 40.8,
+    "pickIfReleased": 28,
+    "slotsSavedByKeeping": 4,
+    "finalSeason": true,
+    "onOwnPick": true
+   },
+   {
+    "slot": "4.06",
+    "overall": 36,
+    "player": "Jaxon Smith-Njigba",
+    "manager": "Kyle",
+    "costRound": 4,
+    "adp": 5.8,
+    "pickIfReleased": 5,
+    "slotsSavedByKeeping": 31,
+    "finalSeason": true,
+    "onOwnPick": false
+   },
+   {
+    "slot": "4.09",
+    "overall": 39,
+    "player": "Rashee Rice",
+    "manager": "Stefan",
+    "costRound": 4,
+    "adp": 26.2,
+    "pickIfReleased": 19,
+    "slotsSavedByKeeping": 20,
+    "finalSeason": false,
+    "onOwnPick": false
+   },
+   {
+    "slot": "6.02",
+    "overall": 52,
+    "player": "Rome Odunze",
+    "manager": "Greg",
+    "costRound": 6,
+    "adp": 61.8,
+    "pickIfReleased": 48,
+    "slotsSavedByKeeping": 4,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "6.05",
+    "overall": 55,
+    "player": "Ladd McConkey",
+    "manager": "Zach",
+    "costRound": 6,
+    "adp": 45,
+    "pickIfReleased": 30,
+    "slotsSavedByKeeping": 25,
+    "finalSeason": false,
+    "onOwnPick": false
+   },
+   {
+    "slot": "6.07",
+    "overall": 57,
+    "player": "Brock Bowers",
+    "manager": "Josh",
+    "costRound": 6,
+    "adp": 22.8,
+    "pickIfReleased": 16,
+    "slotsSavedByKeeping": 41,
+    "finalSeason": true,
+    "onOwnPick": true
+   },
+   {
+    "slot": "6.09",
+    "overall": 59,
+    "player": "Chase Brown",
+    "manager": "Kyle",
+    "costRound": 6,
+    "adp": 14.4,
+    "pickIfReleased": 11,
+    "slotsSavedByKeeping": 48,
+    "finalSeason": true,
+    "onOwnPick": false
+   },
+   {
+    "slot": "7.01",
+    "overall": 61,
+    "player": "Justin Jefferson",
+    "manager": "Zach",
+    "costRound": 7,
+    "adp": 12.2,
+    "pickIfReleased": 9,
+    "slotsSavedByKeeping": 52,
+    "finalSeason": true,
+    "onOwnPick": true
+   },
+   {
+    "slot": "7.04",
+    "overall": 64,
+    "player": "Travis Etienne",
+    "manager": "Josh",
+    "costRound": 7,
+    "adp": 38.8,
+    "pickIfReleased": 26,
+    "slotsSavedByKeeping": 38,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "7.05",
+    "overall": 65,
+    "player": "Javonte Williams",
+    "manager": "Elbe",
+    "costRound": 7,
+    "adp": 30.4,
+    "pickIfReleased": 22,
+    "slotsSavedByKeeping": 43,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "7.07",
+    "overall": 67,
+    "player": "Kyren Williams",
+    "manager": "Scott",
+    "costRound": 7,
+    "adp": 29.6,
+    "pickIfReleased": 22,
+    "slotsSavedByKeeping": 45,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "8.01",
+    "overall": 71,
+    "player": "Trey McBride",
+    "manager": "Colin",
+    "costRound": 8,
+    "adp": 21.6,
+    "pickIfReleased": 16,
+    "slotsSavedByKeeping": 55,
+    "finalSeason": true,
+    "onOwnPick": true
+   },
+   {
+    "slot": "8.10",
+    "overall": 80,
+    "player": "De'Von Achane",
+    "manager": "Witte",
+    "costRound": 8,
+    "adp": 11.2,
+    "pickIfReleased": 8,
+    "slotsSavedByKeeping": 72,
+    "finalSeason": false,
+    "onOwnPick": false
+   },
+   {
+    "slot": "9.03",
+    "overall": 83,
+    "player": "Jayden Daniels",
+    "manager": "Joe",
+    "costRound": 9,
+    "adp": 63,
+    "pickIfReleased": 48,
+    "slotsSavedByKeeping": 35,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "9.05",
+    "overall": 85,
+    "player": "Cam Skattebo",
+    "manager": "Elbe",
+    "costRound": 9,
+    "adp": 39,
+    "pickIfReleased": 26,
+    "slotsSavedByKeeping": 59,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "9.08",
+    "overall": 88,
+    "player": "Colston Loveland",
+    "manager": "Stefan",
+    "costRound": 9,
+    "adp": 42.8,
+    "pickIfReleased": 30,
+    "slotsSavedByKeeping": 58,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "10.01",
+    "overall": 91,
+    "player": "Bucky Irving",
+    "manager": "Colin",
+    "costRound": 10,
+    "adp": 45.6,
+    "pickIfReleased": 30,
+    "slotsSavedByKeeping": 61,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "11.02",
+    "overall": 102,
+    "player": "Tucker Kraft",
+    "manager": "Witte",
+    "costRound": 11,
+    "adp": 71.4,
+    "pickIfReleased": 54,
+    "slotsSavedByKeeping": 48,
+    "finalSeason": false,
+    "onOwnPick": true
+   },
+   {
+    "slot": "11.07",
+    "overall": 107,
+    "player": "Puka Nacua",
+    "manager": "Scott",
+    "costRound": 11,
+    "adp": 4,
+    "pickIfReleased": 4,
+    "slotsSavedByKeeping": 103,
+    "finalSeason": null,
+    "onOwnPick": true
+   }
+  ],
+  "finalSeasonSix": {
+   "players": [
+    "Garrett Wilson",
+    "Jaxon Smith-Njigba",
+    "Brock Bowers",
+    "Chase Brown",
+    "Trey McBride",
+    "Justin Jefferson"
+   ],
+   "meaning": "All six must be released back into the 2027 pool after this season.",
+   "confidence": "verified"
+  },
+  "extremes": {
+   "biggestBargain": "Puka Nacua, Scott, +103 picks \u2014 clear of the field by 31.",
+   "smallestBargain": "Garrett Wilson and Rome Odunze, both Greg's, +4 picks each.",
+   "confidence": "derived"
+  }
+ },
+ "keeperCounterfactual": {
+  "note": "Who each franchise COULD have kept, and at what derived cost round. Cost rounds come from data/keeper-eligibility-2026.json's roundToKeep2026 column, which implements 'last season's round minus one, or round 9 for a free-agent acquisition'. Players pricing to round 0 are barred outright by the round-1 ruling. A player is only actually keepable if his franchise also OWNS a pick in the cost round \u2014 several do not, and that is where the good material is.",
+  "source": "data/keeper-eligibility-2026.json cross-referenced against pick ownership in data/smartdraft-room-snapshot.json",
+  "confidence": "derived",
+  "headlines": [
+   {
+    "fact": "THE MOST VALUABLE PLAYER ANYONE DECLINED IS DEBATABLE, BUT THE CHEAPEST GOOD ONE IS NOT: Greg could have kept Lamar Jackson at ROUND 1 and did not. James Cook was available to Joe at round 1, A.J. Brown and Davante Adams to Colin at round 1, Josh Jacobs to Kyle at round 1, Tee Higgins to Elbe at round 1.",
+    "confidence": "derived"
+   },
+   {
+    "fact": "NOBODY IN THE LEAGUE KEPT A PLAYER AT A ROUND-1 PRICE. Not one of the ten managers took a round-1 keeper, even where one was legal and cheap.",
+    "confidence": "derived"
+   },
+   {
+    "fact": "NOBODY KEPT A PLAYER AT AN OBVIOUSLY BAD PRICE EITHER. The worst value on the board is +4 picks, which is still a bargain. There is no keeper in this league that anyone overpaid for.",
+    "confidence": "derived",
+    "caution": "If a blurb needs a 'bad keeper', the honest framing is opportunity cost \u2014 what they passed up \u2014 not overpayment."
+   }
+  ],
+  "byManager": {
+   "Joe": {
+    "kept": [
+     {
+      "player": "Jayden Daniels",
+      "position": "QB",
+      "cost": 9
+     }
+    ],
+    "slotsUsed": "1 of 2, deliberately",
+    "declinedNotables": [
+     {
+      "player": "James Cook",
+      "position": "RB",
+      "cost": 1
+     },
+     {
+      "player": "Drake London",
+      "position": "WR",
+      "cost": 2
+     },
+     {
+      "player": "Marvin Harrison Jr",
+      "position": "WR",
+      "cost": 2
+     },
+     {
+      "player": "TreVeyon Henderson",
+      "position": "RB",
+      "cost": 2
+     },
+     {
+      "player": "D'Andre Swift",
+      "position": "RB",
+      "cost": 3
+     },
+     {
+      "player": "Jakobi Meyers",
+      "position": "WR",
+      "cost": 5
+     },
+     {
+      "player": "Travis Kelce",
+      "position": "TE",
+      "cost": 6
+     },
+     {
+      "player": "Keenan Allen",
+      "position": "WR",
+      "cost": 8
+     },
+     {
+      "player": "Caleb Williams",
+      "position": "QB",
+      "cost": 8
+     },
+     {
+      "player": "Jared Goff",
+      "position": "QB",
+      "cost": 8
+     }
+    ],
+    "eligibleCount": 16,
+    "barredByRoundOne": [
+     "Saquon Barkley"
+    ],
+    "theRoast": "Joe had SIXTEEN keepable players, three of them at a round-2 price, and used one slot on a quarterback at round 9. He owns a pick in every round he would have needed \u2014 round 2 included \u2014 so nothing was blocking him. He simply decided one was enough.",
+    "extraTwist": "He acquired TreVeyon Henderson and Keenan Allen from Witte in trade #7 this offseason and kept neither.",
+    "confidence": "derived"
+   },
+   "Greg": {
+    "kept": [
+     {
+      "player": "Garrett Wilson",
+      "cost": 4
+     },
+     {
+      "player": "Rome Odunze",
+      "cost": 6
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Lamar Jackson",
+      "position": "QB",
+      "cost": 1
+     },
+     {
+      "player": "Jaylen Waddle",
+      "position": "WR",
+      "cost": 4
+     },
+     {
+      "player": "George Kittle",
+      "position": "TE",
+      "cost": 5
+     },
+     {
+      "player": "Puka Nacua",
+      "position": "WR",
+      "cost": 11,
+      "note": "On the sheet he was Greg's, at 11, until the contingent leg returned him."
+     }
+    ],
+    "barredByRoundOne": [
+     "Derrick Henry",
+     "Jonathan Taylor"
+    ],
+    "confidence": "derived"
+   },
+   "Elbe": {
+    "kept": [
+     {
+      "player": "Javonte Williams",
+      "cost": 7
+     },
+     {
+      "player": "Cam Skattebo",
+      "cost": 9
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Tee Higgins",
+      "position": "WR",
+      "cost": 1
+     },
+     {
+      "player": "Breece Hall",
+      "position": "WR",
+      "cost": 3
+     },
+     {
+      "player": "Stefon Diggs",
+      "position": "WR",
+      "cost": 7,
+      "note": "Blocked \u2014 Elbe owns only one round-7 pick and used it on Javonte Williams."
+     },
+     {
+      "player": "Patrick Mahomes II",
+      "position": "QB",
+      "cost": 10,
+      "note": "Acquired by trade this offseason and then declined."
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "Zay Flowers",
+      "cost": 4,
+      "why": "Elbe owns no round-4 pick \u2014 he traded it to Kyle in trade #9."
+     }
+    ],
+    "barredByRoundOne": [
+     "Christian McCaffrey",
+     "Malik Nabers"
+    ],
+    "clockExpired": [
+     "Sam LaPorta"
+    ],
+    "confidence": "derived"
+   },
+   "Stefan": {
+    "kept": [
+     {
+      "player": "Rashee Rice",
+      "cost": 4
+     },
+     {
+      "player": "Colston Loveland",
+      "cost": 9
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "Josh Allen",
+      "cost": 1,
+      "why": "Stefan owns no round-1 pick. He traded it away for Bijan Robinson, whom he also cannot keep."
+     },
+     {
+      "player": "Nine players priced at round 8",
+      "cost": 8,
+      "why": "Stefan owns no round-8 pick either \u2014 it went to Witte."
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Courtland Sutton",
+      "cost": 2
+     },
+     {
+      "player": "Mike Evans",
+      "cost": 2
+     }
+    ],
+    "barredByRoundOne": [
+     "Jahmyr Gibbs",
+     "Bijan Robinson"
+    ],
+    "clockExpired": [
+     "Nico Collins"
+    ],
+    "confidence": "derived"
+   },
+   "Kyle": {
+    "kept": [
+     {
+      "player": "Jaxon Smith-Njigba",
+      "cost": 4
+     },
+     {
+      "player": "Chase Brown",
+      "cost": 6
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Josh Jacobs",
+      "position": "RB",
+      "cost": 1
+     },
+     {
+      "player": "George Pickens",
+      "position": "WR",
+      "cost": 3
+     },
+     {
+      "player": "Emeka Egbuka",
+      "position": "WR",
+      "cost": 4
+     },
+     {
+      "player": "Tyler Warren",
+      "position": "TE",
+      "cost": 7,
+      "note": "Acquired from Zach in trade #8 and then declined."
+     }
+    ],
+    "theRoast": "Both of Kyle's keepers are in their final season, so he spent both slots on players he must release in five months, and passed on Josh Jacobs at a first and Tyler Warren at a seventh to do it.",
+    "barredByRoundOne": [
+     "Ashton Jeanty"
+    ],
+    "confidence": "derived"
+   },
+   "Scott": {
+    "kept": [
+     {
+      "player": "Kyren Williams",
+      "cost": 7
+     },
+     {
+      "player": "Puka Nacua",
+      "cost": 11
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Terry McLaurin",
+      "position": "WR",
+      "cost": 2
+     },
+     {
+      "player": "Tetairoa McMillan",
+      "position": "WR",
+      "cost": 3
+     },
+     {
+      "player": "Khalil Shakir",
+      "position": "WR",
+      "cost": 5
+     },
+     {
+      "player": "Kyle Pitts",
+      "position": "TE",
+      "cost": 8
+     },
+     {
+      "player": "Brock Purdy",
+      "position": "QB",
+      "cost": 8
+     }
+    ],
+    "eligibleCount": 17,
+    "barredByRoundOne": [],
+    "clockExpired": [],
+    "confidence": "derived"
+   },
+   "Colin": {
+    "kept": [
+     {
+      "player": "Trey McBride",
+      "cost": 8
+     },
+     {
+      "player": "Bucky Irving",
+      "cost": 10
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "A.J. Brown",
+      "cost": 1
+     },
+     {
+      "player": "Davante Adams",
+      "cost": 1
+     },
+     {
+      "player": "Omarion Hampton",
+      "cost": 1
+     },
+     {
+      "player": "Alvin Kamara",
+      "cost": 2
+     },
+     {
+      "player": "DK Metcalf",
+      "cost": 3
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "Chris Olave and David Montgomery",
+      "cost": 6,
+      "why": "Colin owns no round-6 pick \u2014 it went to Joe."
+     }
+    ],
+    "barredByRoundOne": [
+     "CeeDee Lamb"
+    ],
+    "confidence": "derived"
+   },
+   "Witte": {
+    "kept": [
+     {
+      "player": "De'Von Achane",
+      "cost": 8
+     },
+     {
+      "player": "Tucker Kraft",
+      "cost": 11
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Tony Pollard",
+      "cost": 4
+     },
+     {
+      "player": "Xavier Worthy",
+      "cost": 8
+     },
+     {
+      "player": "CJ Stroud",
+      "cost": 8
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "Jordan Addison",
+      "cost": 5,
+      "why": "Witte owns no round-5 pick."
+     },
+     {
+      "player": "Brian Thomas Jr.",
+      "cost": 7,
+      "why": "Witte owns no round-7 pick."
+     }
+    ],
+    "barredByRoundOne": [],
+    "confidence": "derived"
+   },
+   "Josh": {
+    "kept": [
+     {
+      "player": "Brock Bowers",
+      "cost": 6
+     },
+     {
+      "player": "Travis Etienne",
+      "cost": 7
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Kenneth Walker",
+      "cost": 2
+     },
+     {
+      "player": "DJ Moore",
+      "cost": 3
+     },
+     {
+      "player": "Joe Burrow",
+      "cost": 3
+     },
+     {
+      "player": "Deebo Samuel",
+      "cost": 7
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "DeVonta Smith",
+      "cost": 4,
+      "why": "Josh owns no round-4 pick \u2014 it went to Scott in trade #10."
+     }
+    ],
+    "barredByRoundOne": [
+     "Amon-Ra St. Brown"
+    ],
+    "clockExpired": [
+     "Ja'Marr Chase"
+    ],
+    "confidence": "derived"
+   },
+   "Zach": {
+    "kept": [
+     {
+      "player": "Justin Jefferson",
+      "cost": 7
+     },
+     {
+      "player": "Ladd McConkey",
+      "cost": 6
+     }
+    ],
+    "declinedNotables": [
+     {
+      "player": "Jalen Hurts",
+      "cost": 2
+     },
+     {
+      "player": "Luther Burden",
+      "cost": 7
+     },
+     {
+      "player": "Trey Benson",
+      "cost": 11
+     }
+    ],
+    "structurallyBlocked": [
+     {
+      "player": "Eleven players priced at round 8",
+      "cost": 8,
+      "why": "Zach owns no round-8 pick \u2014 it went to Witte in trade #6."
+     }
+    ],
+    "barredByRoundOne": [],
+    "confidence": "derived"
+   }
+  }
+ },
+ "pickOwnership2026": {
+  "note": "Post-trade, from the live board. EVERY FRANCHISE HOLDS EXACTLY 16 PICKS \u2014 the 29 traded picks net out perfectly, so nobody is pick-rich or pick-poor by count. The story is entirely in WHICH rounds. Verified against four independent sources by npm run verify:picks.",
+  "source": "data/smartdraft-room-snapshot.json; data/draft-pick-inventory-2026-spreadsheet.json; data/pick-ownership-2026-spreadsheet.json; npm run verify:picks",
+  "confidence": "verified",
+  "tradedPickCount": 29,
+  "franchises": {
+   "Colin": {
+    "rounds": [
+     1,
+     2,
+     3,
+     5,
+     7,
+     8,
+     9,
+     9,
+     10,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     4,
+     6
+    ],
+    "doubled": [
+     9,
+     10
+    ],
+    "firstOwned": 1,
+    "out": 2,
+    "in": 2
+   },
+   "Elbe": {
+    "rounds": [
+     1,
+     2,
+     3,
+     5,
+     7,
+     8,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     4,
+     6
+    ],
+    "doubled": [
+     8,
+     13
+    ],
+    "firstOwned": 1,
+    "out": 2,
+    "in": 2
+   },
+   "Greg": {
+    "rounds": [
+     1,
+     2,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     16
+    ],
+    "missing": [
+     3
+    ],
+    "doubled": [
+     16
+    ],
+    "firstOwned": 1,
+    "out": 1,
+    "in": 1
+   },
+   "Joe": {
+    "rounds": [
+     1,
+     2,
+     3,
+     5,
+     6,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     4
+    ],
+    "doubled": [
+     6
+    ],
+    "firstOwned": 1,
+    "out": 1,
+    "in": 1
+   },
+   "Josh": {
+    "rounds": [
+     1,
+     2,
+     3,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     4
+    ],
+    "doubled": [
+     12
+    ],
+    "firstOwned": 1,
+    "out": 1,
+    "in": 1
+   },
+   "Kyle": {
+    "rounds": [
+     1,
+     3,
+     4,
+     5,
+     5,
+     6,
+     7,
+     9,
+     9,
+     10,
+     10,
+     11,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     2,
+     8,
+     12
+    ],
+    "doubled": [
+     5,
+     9,
+     10
+    ],
+    "firstOwned": 1,
+    "out": 5,
+    "in": 5
+   },
+   "Scott": {
+    "rounds": [
+     1,
+     2,
+     3,
+     3,
+     4,
+     4,
+     5,
+     6,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     14,
+     15
+    ],
+    "missing": [
+     12,
+     13,
+     16
+    ],
+    "doubled": [
+     3,
+     4,
+     6
+    ],
+    "firstOwned": 1,
+    "out": 3,
+    "in": 3
+   },
+   "Stefan": {
+    "rounds": [
+     2,
+     3,
+     4,
+     5,
+     5,
+     6,
+     7,
+     7,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     1,
+     8
+    ],
+    "doubled": [
+     5,
+     7
+    ],
+    "firstOwned": 2,
+    "out": 3,
+    "in": 3
+   },
+   "Witte": {
+    "rounds": [
+     1,
+     2,
+     2,
+     3,
+     4,
+     4,
+     6,
+     8,
+     8,
+     8,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     5,
+     7,
+     9,
+     10
+    ],
+    "doubled": [
+     2,
+     4,
+     8
+    ],
+    "firstOwned": 1,
+    "out": 6,
+    "in": 6
+   },
+   "Zach": {
+    "rounds": [
+     1,
+     1,
+     2,
+     3,
+     4,
+     4,
+     4,
+     6,
+     7,
+     11,
+     12,
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "missing": [
+     5,
+     8,
+     9,
+     10
+    ],
+    "doubled": [
+     1,
+     4,
+     12
+    ],
+    "firstOwned": 1,
+    "out": 5,
+    "in": 5
+   }
+  },
+  "headlines": [
+   {
+    "fact": "Stefan is the ONLY franchise without a first-round pick. His first owned pick is his own second-rounder.",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Zach holds TWO first-round picks \u2014 his own and Stefan's \u2014 and three fourths, then nothing at all between round 7 and round 11.",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Scott is the most front-loaded: two thirds, two fourths, two sixths, and nothing in rounds 12, 13 or 16.",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Witte is the most lopsided: three round-8 picks, and no pick in rounds 5, 7, 9 or 10.",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Nobody is destitute. All ten hold exactly 16 picks and nine of ten own a first-round pick.",
+    "confidence": "verified"
+   }
+  ],
+  "correctedClaims": [
+   {
+    "claim": "Stefan has no pick at all until round 13.",
+    "verdict": "FALSE",
+    "truth": "His first pick is his own round-2 pick. He owns picks in fourteen of the sixteen rounds; he is missing only rounds 1 and 8.",
+    "confidence": "verified"
+   },
+   {
+    "claim": "Zach sold his team hard and now holds few picks.",
+    "verdict": "HALF TRUE \u2014 see zachFireSale.",
+    "confidence": "verified"
+   }
+  ]
+ },
+ "zachFireSale": {
+  "verdict": "He did sell the team, but he did not end up short of picks. He ended up with better picks and worse players.",
+  "playersOut": [
+   "De'Von Achane (to Witte, trade #6)",
+   "Tyler Warren (to Kyle, trade #8)",
+   "Kimani Vidal and A.J. Brown (to Colin, trade #12)"
+  ],
+  "playersIn": [
+   "Luke Musgrave (trade #6)",
+   "Cade Otton (trade #8)",
+   "Ladd McConkey (trade #12)"
+  ],
+  "picksOut": [
+   {
+    "round": 5,
+    "to": "Kyle"
+   },
+   {
+    "round": 6,
+    "to": "Witte"
+   },
+   {
+    "round": 8,
+    "to": "Witte"
+   },
+   {
+    "round": 9,
+    "to": "Kyle"
+   },
+   {
+    "round": 10,
+    "to": "Kyle"
+   }
+  ],
+  "picksIn": [
+   {
+    "round": 1,
+    "from": "Stefan"
+   },
+   {
+    "round": 4,
+    "from": "Colin"
+   },
+   {
+    "round": 4,
+    "from": "Kyle"
+   },
+   {
+    "round": 6,
+    "from": "Kyle"
+   },
+   {
+    "round": 12,
+    "from": "Kyle"
+   }
+  ],
+  "netCount": "Five out, five in. Still exactly 16 picks.",
+  "netShape": "He converted the middle of his draft into the top of it: a second first-round pick and three fourth-round picks, at the price of every pick between rounds 8 and 10.",
+  "theHumiliatingDetail": "He traded De'Von Achane and got Luke Musgrave, and traded Tyler Warren and got Cade Otton. Achane is now Witte's keeper at round 8 and Tyler Warren was available to Kyle as a round-7 keeper. Zach sold two of the best assets in the league and received two tight ends nobody kept.",
+  "theRedeemingDetail": "He also came out of trade #12 holding Ladd McConkey, whom he is keeping at round 6.",
+  "source": "data/trade-log-2026-spreadsheet.json trades #6, #8 and #12; data/smartdraft-room-snapshot.json; npm run verify:board-keepers",
+  "confidence": "verified"
+ },
+ "tradeLog2026": {
+  "note": "Twelve logged trades. The log is Kyle Mertens' document and is confirmed to omit at least one real trade \u2014 the Stefan/Witte round-4 swap. Treat it as evidence of WHY a trade happened; treat the board as evidence of WHAT moved.",
+  "source": "data/trade-log-2026-spreadsheet.json; data/DECISIONS.md, 'The Stefan \u2194 Witte round-4 swap is real'",
+  "confidence": "verified",
+  "count": 12,
+  "unloggedTrades": 1,
+  "mostActive": {
+   "manager": "Witte",
+   "trades": 6,
+   "note": "Plus the seventh that never made the log."
+  },
+  "notable": [
+   {
+    "trade": 2,
+    "summary": "Stefan gave Witte his 2026 1st and 8th for Bijan Robinson and Witte's 5th and 7th. It is the only first-round pick that moved all offseason, and Stefan can keep neither Bijan (round-1 barred) nor Josh Allen (no round-1 pick left to put him in)."
+   },
+   {
+    "trade": 4,
+    "summary": "The Johnston/Blome trade. See nacuaAgreement."
+   },
+   {
+    "trade": 12,
+    "summary": "Colin sent Ladd McConkey to Zach for Kimani Vidal and A.J. Brown. Zach is keeping McConkey at round 6; Colin kept neither of the players he received."
+   }
+  ]
+ },
+ "draftHistory": {
+  "coverage": {
+   "draftResultSheets": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2023,
+    2024,
+    2025
+   ],
+   "missing": [
+    2016,
+    2022
+   ],
+   "note": "The 2022 draft-result sheet is absent, and that gap is load-bearing for the Elbe/PPR-quarterback joke.",
+   "source": "data/spreadsheets/",
+   "confidence": "verified"
+  },
+  "runningJokes": {
+   "amariRodgers": {
+    "status": "CONFIRMED WITH A ROUND AND A PICK NUMBER",
+    "fact": "Joe Murray drafted Amari Rodgers in ROUND 15, pick 141 of 160, of the 2021 draft. Amari Rodgers is Aaron Rodgers' brother, and per the league that was the whole justification.",
+    "corroboration": "Three seasons later the 2024 draft's own banter column records the heckle at pick 2.16: 'Where is Amari Rodgers playing?' Colin to Joe.",
+    "source": "data/spreadsheets/2026-draft__2021-draft.json row 152; 2026-draft__2024-draft.json R2 p16 Comments",
+    "confidence": "verified"
+   },
+   "elbePprQuarterback": {
+    "status": "THE JOKE IS ELBE'S; THE PLAYER AND YEAR ARE NOT ESTABLISHED",
+    "whatIsConfirmed": "Elbe is the man the room rib about PPR value, and the 2024 banter column records it twice \u2014 Stefan to Elbe at 3.27 ('He's especially good in PPR leagues') and at 11.05 ('You have a PPR QB and some good WRs'). Elbe's own reply at 3.27 dates the original incident: 'Come on guys that was a couple years ago, now.'",
+    "whatIsNotConfirmed": "No draft sheet in this repo shows Scott Elbe drafting Lamar Jackson, ever. Lamar's recorded drafters are Josh Grainger (2019 R11 p107, 2020 R10 p93), Scott Johnston (2021 R5 p43), Kyle Mertens (2023 R4 p33), Zach (2024 R2 p20) and Greg (2025 R2 p12).",
+    "bestExplanation": "'A couple years' before 2024 lands on 2022 \u2014 the one draft whose result sheet is missing from the extract. In 2022 Lamar was Scott Johnston's keeper, which is a complication, so the player may be wrong even if the incident is right.",
+    "howToUseIt": "Safe to run the joke as Elbe's, because the commissioner confirms it and the 2024 banter corroborates the ribbing. Do NOT state a round or a year for it, and do not name Lamar Jackson as the player unless Colin confirms \u2014 a wrong round number is exactly what gets caught.",
+    "source": "Commissioner via operator; data/spreadsheets/2026-draft__2024-draft.json R3 p27 and R11 p105 Comments; exhaustive search of data/spreadsheets/",
+    "confidence": "inferred"
+   },
+   "garyBarnidge": {
+    "status": "NOT IN THE DATA AT ALL",
+    "fact": "Gary Barnidge appears nowhere in this repository \u2014 not in any draft sheet, keeper list, roster, trade log or document. The workbook's coverage starts in 2016 and Barnidge's notable season was 2015, which is the most likely explanation.",
+    "howToUseIt": "The joke is real per src/lib/league-lore.ts and can be used as a comparison \u2014 'the Gary Barnidge of this draft' \u2014 but no year, round, manager or team can be attached to it. Do not invent one.",
+    "source": "Searched every file outside node_modules; src/lib/league-lore.ts RUNNING_JOKES",
+    "confidence": "unverified"
+   }
+  },
+  "journeymen": [
+   {
+    "player": "Stefon Diggs",
+    "fact": "The most-traded man in league history. He has been drafted or rostered by EIGHT different franchises: Josh Grainger (2017 R4.5 p35), Scott Elbe (2018 R2 p18), Joe Murray (2019 keeper list), Greg Blome (2019 R3 p21), Zach (2020 R4 p40 and 2021 R3 p27), Witte (2023 R1 p5 and 2024 R3 p26), Kyle Mertens (2025 R8 p75), and now Scott Elbe again, arriving by trade and priced at round 7 for 2026.",
+    "source": "data/spreadsheets/, all draft and keeper-list sheets",
+    "confidence": "verified",
+    "whyFunny": "He has now completed a full circle back to Elbe, eight years later."
+   },
+   {
+    "player": "Lamar Jackson",
+    "fact": "Six franchises in seven recorded drafts: Josh (2019 R11, 2020 R10), Scott Johnston (2021 R5), Kyle Mertens (2023 R4), Zach (2024 R2), Greg (2025 R2). He rises roughly a round a year and nobody manages to hold him.",
+    "source": "data/spreadsheets/, all draft sheets",
+    "confidence": "verified"
+   },
+   {
+    "player": "Javonte Williams",
+    "fact": "Zach (2021 R4 p34), Elbe (2023 R5 p47), Stefan (2024 R5 p50), Elbe again (2025 R8 p76), and now Elbe's round-7 keeper.",
+    "source": "data/spreadsheets/",
+    "confidence": "verified"
+   }
+  ],
+  "picksThatAgedBadly": [
+   {
+    "fact": "Colin took Tyreek Hill THIRD OVERALL in 2024. Joe took him in round 2 of 2025. Neither still rosters him and he is on nobody's roster in this league.",
+    "source": "2024 and 2025 draft sheets; absent from data/keeper-eligibility-2026.json",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Of every pick made in the first three rounds of the 2024 draft, four are gone from the league entirely: Tyreek Hill (Colin, 1.03), Cooper Kupp (Josh, 2.14), Rachaad White (Colin, 3.23) and Mark Andrews (Stefan, 3.30). Colin owns two of the four.",
+    "source": "Computed against data/keeper-eligibility-2026.json",
+    "confidence": "derived"
+   },
+   {
+    "fact": "From the 2025 draft's first three rounds, only two are gone: Tyreek Hill (Joe, 2.13) and James Conner (Zach, 3.30).",
+    "source": "Computed against data/keeper-eligibility-2026.json",
+    "confidence": "derived"
+   },
+   {
+    "fact": "Scott Johnston took Travis Kelce at pick 4 OVERALL in the 2023 draft.",
+    "source": "data/spreadsheets/2026-draft__2023-draft.json",
+    "confidence": "verified"
+   },
+   {
+    "fact": "Witte drafted Patrick Mahomes with the very last pick of the 2018 draft \u2014 16.160 \u2014 the season Mahomes threw 50 touchdowns and won MVP.",
+    "source": "data/spreadsheets/2026-draft__2018-draft-by-round.json",
+    "confidence": "verified"
+   }
+  ],
+  "positionalPatterns": [
+   {
+    "manager": "Kyle",
+    "pattern": "Waits longer on a quarterback than anyone alive. First QB by year: 2018 R13, 2019 R13, 2020 R15, 2021 R8, 2023 R4, 2024 R13, 2025 R13. Five of seven at round 13 or later. He does the same at tight end.",
+    "source": "Computed from all seven draft-result sheets",
+    "confidence": "derived"
+   },
+   {
+    "manager": "Witte",
+    "pattern": "Historically the last man to a quarterback and it kept working: 2018 R16 (Mahomes), 2019 R15 (Mahomes), 2020 R14 (Mahomes), 2021 R13, 2023 R12, 2025 R12.",
+    "source": "Computed from all seven draft-result sheets",
+    "confidence": "derived"
+   },
+   {
+    "manager": "Joe",
+    "pattern": "Buys tight ends early and quarterbacks last. TE in round 3 or 4 in 2018, 2024 and 2025; QB in round 16 in 2024 and round 10 in 2025.",
+    "source": "Computed from all seven draft-result sheets",
+    "confidence": "derived"
+   },
+   {
+    "manager": "Stefan",
+    "pattern": "Takes a quarterback in round 2 two years running \u2014 Josh Allen 2023 R2 p20 and 2025 R2 p19 \u2014 which is the opposite of Kyle in every respect.",
+    "source": "2023 and 2025 draft sheets",
+    "confidence": "derived"
+   }
+  ],
+  "banter2024": {
+   "note": "The 2024 draft-result sheet has a Comments column with 107 entries of live draft-room banter, quoted verbatim. It is the single richest source of league voice in the repo and every quote below carries its round and pick. Cite the pick number when using one.",
+   "source": "data/spreadsheets/2026-draft__2024-draft.json, Comments column",
+   "confidence": "verified",
+   "howLoudEachManagerIs": {
+    "Colin": 65,
+    "Stefan": 58,
+    "Kyle": 47,
+    "Joe": 45,
+    "Elbe": 33,
+    "Greg": 20,
+    "Witte": 11,
+    "Scott": 7,
+    "Josh": 5,
+    "Zach": 4
+   },
+   "bestLines": [
+    {
+     "pick": "1.10",
+     "text": "[Joe goes to get beer] 'Oh yeah, you don't have a pick next round' Elbe to Joe; Joe, 'Yeah, Zach fleeced me'"
+    },
+    {
+     "pick": "2.11",
+     "text": "'Those are reaches brotha' Colin to Stefan; 'They aren't reaches because they won't be there when I pick next' Stefan"
+    },
+    {
+     "pick": "2.15",
+     "text": "'Witte, nice keeper in the 2nd round' Stefan; 'Are you keeping him next year?' GG; 'Witte, are you shitting?' collective"
+    },
+    {
+     "pick": "3.26",
+     "text": "'They're all dog shit. I need a RB.' Colin; 'You don't need to, it's a PPR league.' Stefan"
+    },
+    {
+     "pick": "3.30",
+     "text": "'I don't want him' Stefan; 'He won you a title last year, show some respect' Kyle to Stefan"
+    },
+    {
+     "pick": "6.51",
+     "text": "[Complaints about draft board] 'Then you host the draft party, bro!' Stefan; 'Then you make the pizza rolls, bro' Greg, mocking Stefan"
+    },
+    {
+     "pick": "10.92",
+     "text": "'I wasn't happy with where I was drafting. But when you win the ship you don't get to pick where you draft' Stefan"
+    },
+    {
+     "pick": "11.110",
+     "text": "'This draft board is really hard to follow. Can you put a counter on how many times I've said that?' Kyle"
+    },
+    {
+     "pick": "12.115",
+     "text": "'Is he even in the top 300?' Stefan; 'Darnell Mooney really is the worst pick of the draft.' Kyle; 'I'm not even going to mark that off'"
+    },
+    {
+     "pick": "16.160",
+     "text": "Draft ends at 10:27 pm"
+    }
+   ]
+  },
+  "formerMembers": {
+   "fact": "Three former members appear in pre-2019 sheets and are gone: Andy Seibert, Josh Schaefer, Chad McCann.",
+   "source": "data/RECONCILIATION.md, 'Team and manager names'",
+   "confidence": "verified"
+  }
+ },
+ "otherOddities": [
+  {
+   "fact": "The league's keeper rules exist in writing in exactly one place: the recitals of a private contract between two managers. This app derives its rules from that document.",
+   "source": "docs/2025-johnston-blome-trade-agreement.pdf; data/DECISIONS.md, 'Primary source: the Johnston/Blome trade agreement'",
+   "confidence": "verified"
+  },
+  {
+   "fact": "ESPN has had the keeper feature switched OFF for at least five straight seasons, and ESPN structurally cannot represent a keeper clock at all. This app has to be the system of record for keepers; ESPN will never be able to hold them.",
+   "source": "data/RECONCILIATION.md, ESPN section",
+   "confidence": "verified"
+  },
+  {
+   "fact": "The draft order is not derivable from standings even in principle, because it is the record of ten free choices in a slot auction. Any code that computes an order from standings is wrong by construction.",
+   "source": "data/DECISIONS.md; ROADMAP.md",
+   "confidence": "verified"
+  },
+  {
+   "fact": "A free-agent convention change in the 2026 keeper sheet silently repriced 75 free agents by one round \u2014 the 2024 and 2025 sheets wrote the literal string 'FA' and priced at R9, while the 2026 sheet wrote the number 9 and the minus-one formula turned it into R8. It changed exactly one actual keeper: Colston Loveland, ruled back to R9.",
+   "source": "data/RECONCILIATION.md, 'How cost rounds are derived'; data/DECISIONS.md",
+   "confidence": "verified"
+  },
+  {
+   "fact": "Ten managers each held a round-1 player going into 2026 and not one declared him. The round-1 ineligibility ruling therefore codified existing practice rather than introducing a rule \u2014 and it changed nothing on this board.",
+   "source": "data/DECISIONS.md, 'First-round picks can NEVER be kept'; npm run verify:round1",
+   "confidence": "verified"
+  },
+  {
+   "fact": "A round-2 keeper now gets ONE keeper season instead of two \u2014 an accident of two rules that were each decided on their own merits colliding. Nobody chose it, nobody has ever been affected by it, and the commissioner declined to rule on it.",
+   "source": "data/DECISIONS.md, ballot item 5",
+   "confidence": "verified"
+  },
+  {
+   "fact": "The keeper cost basis carries across a trade while the clock resets, so a player can in principle be passed around and held indefinitely at an ever-cheaper round until the formula reaches zero. That is the rule as written.",
+   "source": "data/DECISIONS.md; docs/2025-johnston-blome-trade-agreement.pdf recital",
+   "confidence": "verified"
+  },
+  {
+   "fact": "There is a broken external link in the workbook pointing at a file on a law firm's network share, with cached sheet names 'DHB Sandmen', 'BChen Overall', 'BChen QB', 'BChen TE'. That was the league's old rankings source and it is not in this repo.",
+   "source": "data/RECONCILIATION.md, 'What each workbook contains'",
+   "confidence": "verified"
+  },
+  {
+   "fact": "Nobody in this league is a committed fan of any single NFL team, so jokes about somebody stacking their favourite franchise do not land.",
+   "source": "src/lib/league-lore.ts LEAGUE_HISTORY",
+   "confidence": "verified"
+  }
+ ],
+ "unverified": [
+  {
+   "item": "Which Scott is \"Scottie\" the scribe.",
+   "state": "The operator has stated it is Scott JOHNSTON. Nothing in the repository establishes it. The only physical artefact of a scribe is the 107-entry Comments column in the 2024 draft sheet, and that sheet sits inside Kyle Mertens' workbook, so its authorship is not established by the file. The one piece of circumstantial support is that Scott Johnston is quoted only seven times in his own record \u2014 among the quietest men in a very loud room, consistent with a man typing.",
+   "needsColin": "Confirm Scott Johnston is the scribe, and confirm he authored the 2024 Comments column, before any blurb has him reading notes back.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "WHICH year and round Elbe reached for Lamar Jackson.",
+   "state": "The player and the line are SETTLED by the commissioner's ruling and are not the open question. The date is: no sheet has the pick, and his own 'a couple years ago' lands on 2022, whose result sheet is missing. Inventing a round for a true story is the most embarrassing way there is to be wrong. Quote the line, never a year or a pick number.",
+   "needsColin": "The year and the round, if a blurb ever needs to date it. Until then leave it undated.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "Gary Barnidge.",
+   "state": "Appears nowhere in this repository. The joke is real per src/lib/league-lore.ts; the year, round, manager and team are unknown and probably predate the workbook's 2016 start.",
+   "needsColin": "Who picked him up, and roughly when.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "Whether anyone performed the Friday injury check on Puka Nacua.",
+   "state": "The contingent leg was due 'on the day before the 2026 League Draft' \u2014 Friday Aug 28 2026 \u2014 conditioned on Nacua not being projected by a majority of media outlets to miss six or more weeks. data/DECISIONS.md explicitly flags it: 'Worth a check on Friday before the board is printed.' Every source in this repo assumes the condition was not met; none verifies it.",
+   "needsColin": "Confirm nobody is claiming a Nacua Injury. Do not build a joke on his 2026 health.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "Final standings for 2025 beyond the top three.",
+   "state": "Stefan 1st, Greg 2nd, Colin 3rd is DERIVED from the slot-auction order, not recorded. The other seven finishing positions exist nowhere in this repo.",
+   "needsColin": "The full 2025 finishing order, if a blurb needs it.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "WHICH three seasons Stefan's titles were, and every other franchise's title count.",
+   "state": "His count is SETTLED and is not the open question: Colin states flatly that he has three and a blurb states it flat. The years are the gap \u2014 2023 and 2025 have soft support, the third has no trace \u2014 and nobody else's count is recorded at all. Never a year for one of them, never a count for another manager.",
+   "needsColin": "The three seasons, and anybody else's titles, before a blurb dates one or claims an exclusive.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "The outcome of the $25 Rhamondre Stevenson vs Javonte Williams side bet from the 2024 draft.",
+   "state": "The bet and its acceptance are recorded verbatim. Who paid is not.",
+   "needsColin": "Who won, and whether it was ever settled.",
+   "confidence": "unverified"
+  },
+  {
+   "item": "Whether Kyle Mertens ever expressed a view on the Johnston/Blome agreement at the time it was executed.",
+   "state": "No approval, ratification, objection or veto appears anywhere \u2014 not in DECISIONS.md, not in the governance tables, not in the git history, not in the document. Absence of a record is not a record of absence.",
+   "needsColin": "Did the league discuss it in November 2025, and did anyone besides Colin object?",
+   "confidence": "unverified"
+  },
+  {
+   "item": "Joe Murray's profession.",
+   "state": "Deliberately not recorded. Colin was openly unsure and will ask him.",
+   "needsColin": "Nothing here should be guessed.",
+   "confidence": "unverified"
+  }
+ ]
+}

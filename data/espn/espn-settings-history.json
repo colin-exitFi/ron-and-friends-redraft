@@ -1,0 +1,176 @@
+{
+  "_about": "Ultimate Keeper League (ESPN id 441239) settings across prior seasons, pulled with the commissioners cookies. Shows how stable the league configuration is, and proves ESPN has never held keeper configuration.",
+  "_pulledAt": "2026-08-26T21:16:44.631Z",
+  "_headline": "keeperCount has been 0 in every season checked (2022-2026) and no draft pick has ever been flagged as a keeper. The leagues keepers are administered entirely outside ESPN.",
+  "_stability": "Roster shape, scoring and playoff settings are identical across 2022-2026, so the 2026 values are not a fresh mistake - they are the leagues long-standing configuration.",
+  "seasons": [
+    {
+      "season": 2022,
+      "leagueName": "The Ultimate Keeper League",
+      "size": 10,
+      "keepers": {
+        "keeperCount": 0,
+        "keeperCountFuture": 0,
+        "keeperOrderType": "TRADITIONAL",
+        "picksFlaggedKeeper": 0
+      },
+      "draft": {
+        "type": "OFFLINE",
+        "orderType": "MANUAL",
+        "timePerSelection": 90,
+        "totalPicks": 160
+      },
+      "lineup": "1 QB, 2 RB, 2 WR, 1 TE, 1 D/ST, 7 Bench, 1 IR, 2 FLEX (RB/WR/TE)",
+      "bench": 7,
+      "irSlots": 1,
+      "kickerSlots": 0,
+      "scoring": {
+        "pointsPerReception": 1,
+        "passingTD": 6,
+        "passingYards": 0.04,
+        "rushingYards": 0.1,
+        "receivingYards": 0.1,
+        "rushingTD": 6,
+        "receivingTD": 6,
+        "interceptionThrown": -2,
+        "fumbleLost": -2
+      },
+      "schedule": {
+        "regularSeasonWeeks": 14,
+        "playoffTeamCount": 6,
+        "playoffSeedingRule": "TOTAL_POINTS_SCORED"
+      },
+      "trades": {
+        "deadlineDate": "2022-11-18T08:00:00.000Z",
+        "revisionHours": 48,
+        "vetoVotesRequired": 4
+      }
+    },
+    {
+      "season": 2023,
+      "leagueName": "The Ultimate Keeper League",
+      "size": 10,
+      "keepers": {
+        "keeperCount": 0,
+        "keeperCountFuture": 0,
+        "keeperOrderType": "TRADITIONAL",
+        "picksFlaggedKeeper": 0
+      },
+      "draft": {
+        "type": "OFFLINE",
+        "orderType": "MANUAL",
+        "timePerSelection": 90,
+        "totalPicks": 160
+      },
+      "lineup": "1 QB, 2 RB, 2 WR, 1 TE, 1 D/ST, 7 Bench, 1 IR, 2 FLEX (RB/WR/TE)",
+      "bench": 7,
+      "irSlots": 1,
+      "kickerSlots": 0,
+      "scoring": {
+        "pointsPerReception": 1,
+        "passingTD": 6,
+        "passingYards": 0.04,
+        "rushingYards": 0.1,
+        "receivingYards": 0.1,
+        "rushingTD": 6,
+        "receivingTD": 6,
+        "interceptionThrown": -2,
+        "fumbleLost": -2
+      },
+      "schedule": {
+        "regularSeasonWeeks": 14,
+        "playoffTeamCount": 6,
+        "playoffSeedingRule": "TOTAL_POINTS_SCORED"
+      },
+      "trades": {
+        "deadlineDate": "2023-11-17T08:00:00.000Z",
+        "revisionHours": 48,
+        "vetoVotesRequired": 4
+      }
+    },
+    {
+      "season": 2024,
+      "leagueName": "The Ultimate Keeper League",
+      "size": 10,
+      "keepers": {
+        "keeperCount": 0,
+        "keeperCountFuture": 0,
+        "keeperOrderType": "TRADITIONAL",
+        "picksFlaggedKeeper": 0
+      },
+      "draft": {
+        "type": "OFFLINE",
+        "orderType": "MANUAL",
+        "timePerSelection": 90,
+        "totalPicks": 160
+      },
+      "lineup": "1 QB, 2 RB, 2 WR, 1 TE, 1 D/ST, 7 Bench, 1 IR, 2 FLEX (RB/WR/TE)",
+      "bench": 7,
+      "irSlots": 1,
+      "kickerSlots": 0,
+      "scoring": {
+        "pointsPerReception": 1,
+        "passingTD": 6,
+        "passingYards": 0.04,
+        "rushingYards": 0.1,
+        "receivingYards": 0.1,
+        "rushingTD": 6,
+        "receivingTD": 6,
+        "interceptionThrown": -2,
+        "fumbleLost": -2
+      },
+      "schedule": {
+        "regularSeasonWeeks": 14,
+        "playoffTeamCount": 6,
+        "playoffSeedingRule": "TOTAL_POINTS_SCORED"
+      },
+      "trades": {
+        "deadlineDate": "2024-11-15T08:00:00.000Z",
+        "revisionHours": 48,
+        "vetoVotesRequired": 4
+      }
+    },
+    {
+      "season": 2025,
+      "leagueName": "The Ultimate Keeper League",
+      "size": 10,
+      "keepers": {
+        "keeperCount": 0,
+        "keeperCountFuture": 0,
+        "keeperOrderType": "TRADITIONAL",
+        "picksFlaggedKeeper": 0
+      },
+      "draft": {
+        "type": "OFFLINE",
+        "orderType": "MANUAL",
+        "timePerSelection": 90,
+        "totalPicks": 160
+      },
+      "lineup": "1 QB, 2 RB, 2 WR, 1 TE, 1 D/ST, 7 Bench, 1 IR, 2 FLEX (RB/WR/TE)",
+      "bench": 7,
+      "irSlots": 1,
+      "kickerSlots": 0,
+      "scoring": {
+        "pointsPerReception": 1,
+        "passingTD": 6,
+        "passingYards": 0.04,
+        "rushingYards": 0.1,
+        "receivingYards": 0.1,
+        "rushingTD": 6,
+        "receivingTD": 6,
+        "interceptionThrown": -2,
+        "fumbleLost": -2
+      },
+      "schedule": {
+        "regularSeasonWeeks": 14,
+        "playoffTeamCount": 6,
+        "playoffSeedingRule": "TOTAL_POINTS_SCORED"
+      },
+      "trades": {
+        "deadlineDate": "2025-11-14T08:00:00.000Z",
+        "revisionHours": 48,
+        "vetoVotesRequired": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,863 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* A finger, not a mouse. Deliberately not a width test: a phone turned
+ * sideways is 915px wide and still needs 44px targets, and a narrow desktop
+ * window has a mouse and does not. `coarse` is the primary pointer, so the
+ * laptop driving the projector stays on the desktop sizing even if its screen
+ * happens to touch. */
+@custom-variant touch (@media (pointer: coarse));
+
+/* ==========================================================================
+ * DESIGN TOKENS — the single place to edit when a design lands.
+ *
+ * Three layers:
+ *   1. BRAND RAMP     — raw colours sampled from the league crest. Rename
+ *                       never; these are the artwork's own values.
+ *   2. DESIGN PALETTE — the current skin's own values. This is what the
+ *                       semantic layer points at.
+ *   3. SEMANTIC       — what the UI actually consumes. Components must
+ *                       reference these (or the Tailwind utilities generated
+ *                       from them), never a literal colour.
+ *
+ * Integrating a Figma design should mostly be: repoint the SEMANTIC block.
+ * See BRANDING.md for which surface consumes which token.
+ * ========================================================================== */
+
+:root {
+  /* --- 1. BRAND RAMP — sampled from public/brand/crest-v2.png ------------- */
+  /* Kept as the record of the artwork's real values, and only that — nothing
+   * consumes this ramp. The design palette below is no longer derived from the
+   * crest at all, which is worth knowing: crest.png is still orange and navy,
+   * so it is now the one asset that does not sit inside the palette. */
+  /* Banner / sunburst cream .............................. #f7efe2 */
+  --brand-cream: oklch(0.955 0.019 80);
+  /* Sunset orange, the crest's loudest colour ............ #f84e08 */
+  --brand-orange: oklch(0.657 0.216 37);
+  /* Same orange lifted for legibility on a dark canvas ... #fe6b24 */
+  --brand-orange-bright: oklch(0.702 0.196 42);
+  /* Ring / mountain navy ................................. #002048 */
+  --brand-navy: oklch(0.249 0.084 256);
+  /* Outer ring shadow navy ............................... #001737 */
+  --brand-navy-deep: oklch(0.209 0.07 256);
+  /* Lake steel blue ...................................... #5898b8 */
+  --brand-steel: oklch(0.649 0.081 232);
+  /* Steel lifted for legibility on a dark canvas ......... #58b0db */
+  --brand-steel-bright: oklch(0.72 0.105 232);
+  /* Crest gold, between the orange and the cream ......... #f0b135 */
+  --brand-gold: oklch(0.8 0.15 80);
+
+  /* --- 2. DESIGN PALETTE — "Zinc + Electric Cyan" -------------------------- */
+  /*
+   * Linear / Vercel lineage: a neutral zinc greyscale carrying the whole UI,
+   * with one saturated cyan doing all the accent work. Replaces the previous
+   * warm orange / navy reading of the crest.
+   *
+   * Hex is the design's source of truth; oklch here is the exact conversion
+   * (see scripts/hex-to-oklch.mjs). Note the greyscale is genuinely near-
+   * neutral — chroma 0.004–0.015 — where the old navy ramp ran 0.024–0.063.
+   * That is most of why this reads colder and sharper.
+   */
+  /* Page canvas and sidebar .............................. #09090b */
+  --ds-canvas: oklch(0.141 0.004 285.8);
+  /* Panel / card / board cell surface .................... #18181b */
+  --ds-surface: oklch(0.21 0.006 285.9);
+  /* Hover, popover, raised interactive .................. #27272a */
+  --ds-elevated: oklch(0.274 0.005 286);
+  /* Hairlines and input edges ........................... #3f3f46 */
+  --ds-border: oklch(0.37 0.012 285.8);
+  /* Body text ........................................... #fafafa */
+  --ds-text: oklch(0.985 0 89.9);
+  /* Captions, secondary text. 7.8:1 on canvas ........... #a1a1aa */
+  --ds-text-sec: oklch(0.712 0.013 286.1);
+  /*
+   * Decorative-only grey: sidebar section headings, disabled ....... #52525b
+   *
+   * 2.6:1, which is below AA even for large text — so this is deliberately not
+   * available for anything that has to be *read*. The palette jumps straight
+   * here from #a1a1aa (7.8:1) with nothing in between; where the UI needs a step
+   * between the two, it dims `--muted-foreground` with alpha at the call site
+   * (the board's empty-cell labels are `text-muted-foreground/55`) rather than
+   * carrying a fourth token that only one surface would use.
+   */
+  --ds-muted: oklch(0.442 0.015 285.8);
+  /*
+   * The accent, and the whole personality of the skin .... #06b6d4
+   *
+   * AND NOW NOTHING ELSE. Cyan used to be the accent, the WR hue and the live
+   * cell all at once — the one compromise the Zinc + Electric Cyan repoint could
+   * not design its way out of, and the reason `--live` needed a whole paragraph
+   * explaining why a solid fill was the only thing keeping it distinguishable
+   * from a WR cell. The position palette below moved WR off cyan and handed cyan
+   * back its exclusivity. Nearest position hue is now RB at 42.5°, and cyan is
+   * one of the eight hues the position solve was fitted around — see below.
+   */
+  --ds-cyan: oklch(0.715 0.126 215.2);
+  /* Accent hover — shifts bluer, not just darker ......... #0ea5e9 */
+  --ds-cyan-hover: oklch(0.685 0.148 237.3);
+
+  /*
+   * --- The five position hues ---------------------------------------------
+   *
+   * These five HUES are fixed by the design and are not ours to move:
+   *
+   *   QB   coral pink   349.8°   RB  soft blue  254.6°   WR  mint green  151.7°
+   *   TE   amber         84.4°   DST lavender   305.5°
+   *
+   * What the design shipped was those hues at PASTEL saturation, and that was
+   * the one thing wrong with it. Everything below is the same five hues with
+   * chroma pushed to the gamut wall — no hue moved by even a degree.
+   *
+   * --- WHY SATURATION, AND NOT NEW HUES ------------------------------------
+   *
+   * Worth recording, because two rounds were lost to it. The pastel set drew
+   * complaints that read as hue problems — the blue looked "close to teal", the
+   * pink wanted to be "a hot magenta" — and both were answered by moving hues.
+   * Both were actually the same chroma problem. Measured against the maximum
+   * chroma sRGB offers at each of these hues, the shipped set was running at:
+   *
+   *   QB 64%   RB 70%   WR 79%   TE 95%   DST 60%
+   *
+   * At 64% of its own ceiling, hue 349.8 reads as rose; at 97% the identical hue
+   * reads as hot magenta. Same for the blue. So the fix is chroma, and getting
+   * chroma means LOWERING lightness, because sRGB holds very little chroma above
+   * L 0.80 for anything except green and yellow. Pastel was never a hue choice,
+   * it was the by-product of pinning lightness high and taking what fitted.
+   *
+   * Mean chroma 0.168 -> 0.212, +26%. Per position: QB +52%, RB +38%, DST +30%,
+   * WR +12%, TE -3%.
+   *
+   * --- WHY WR AND TE ARE NOT AT THEIR CEILING ------------------------------
+   *
+   * Those last two are held back on purpose, and the reason is not contrast. It
+   * is that CHROMA AND LIGHTNESS ARE DIFFERENT AXES, and only the second one
+   * decides how loud a cell looks on a full board.
+   *
+   * Saturating all five to their individual maxima produced a palette that was
+   * balanced on chroma and wildly unbalanced on lightness — WR landed at L 0.874
+   * against RB's 0.628, three times the perceived brightness. That is invisible
+   * in a swatch strip and unmissable on a real board, because position frequency
+   * is nowhere near uniform. Measured over a 93-pick draft:
+   *
+   *   WR 38%   RB 30%   QB 17%   TE 12%   DST 3%
+   *
+   * The two brightest hues were half of all cells. The loudest colour had been
+   * handed to the most common position, so the board read as a green board.
+   *
+   * So WR and TE are pulled down until brightness roughly matches frequency:
+   * WR 0.874 -> 0.790 and TE 0.840 -> 0.800, which takes the spread from 3.0x to
+   * 2.2x for 9% and 5% of their chroma respectively. Green is the cheapest place
+   * to buy this, since sRGB holds chroma across a wide lightness range there.
+   *
+   * ~2.2x is close to the practical floor. Green and yellow cannot be dark while
+   * saturated and blue, purple and magenta cannot be light while saturated, so
+   * some spread is forced by the gamut rather than chosen.
+   *
+   * Every contrast floor IMPROVED here, which is why this was free: the steal
+   * ring on a WR cell goes 5.27:1 -> 5.67:1.
+   *
+   * TE is the near-zero, and it is a hard sRGB limit rather than a decision: the
+   * amber band tops out around C 0.17, little more than half what pink or
+   * lavender can reach. It was already at 95% of its ceiling, so there was
+   * nothing to win. TE will always be the least saturated of the five, and no
+   * amount of tuning changes that.
+   *
+   * This also happens to answer "does it read too feminine", which pastel was
+   * the real cause of: saturating drops QB to L 0.660 and DST to L 0.650, so
+   * they land as hot magenta and vivid purple instead of bubblegum and lavender.
+   *
+   * --- THE TWO FLOORS THAT STOPPED IT GOING FURTHER ------------------------
+   *
+   * Chroma is pushed until one of two things gives, and both are legibility
+   * rather than taste:
+   *
+   * 1. The solid chip must keep a knockout above 5:1. All five still take DARK
+   *    text — see `positionChipSolid`.
+   * 2. The position label is drawn IN ITS OWN HUE on the 18% cell tint, and that
+   *    must clear 4.5:1. This is the one that actually binds, and it is the
+   *    reason the set is not deeper still: a hue's contrast against a tint of
+   *    itself depends on the hue's own luminance, so a genuinely dark position
+   *    colour cannot label its own cell. Dropping the tint from 18% to 10% moves
+   *    that ratio by less than 0.2 — it is not a knob that helps.
+   *
+   * Floors as shipped: chip 5.5:1 (QB/DST), label 4.54:1 (QB).
+   */
+  /* QB ..... coral pink, saturated ...................... #fc19a9 */
+  --ds-pink: oklch(0.660 0.267 349.8);
+  /* RB ..... soft blue, saturated. Also info ............ #1187fc */
+  --ds-blue: oklch(0.628 0.198 254.6);
+  /* WR ..... mint green, saturated then weighted ........ #1fdf75 */
+  --ds-mint: oklch(0.790 0.204 151.7);
+  /* DST .... lavender, saturated ........................ #b25cfc */
+  --ds-lavender: oklch(0.650 0.230 305.5);
+  /*
+   * TE amber, and also `--warning` for exceptional cautions off the grid.
+   *
+   * One token for both on purpose. Kept separate they sat 14.3° apart (TE 84.4°,
+   * warning 70.1°) — closer than any two positions, which is the exact defect
+   * the `--keeper` note below complains about. The amber band is too narrow to
+   * hold two values that mean different things, and these two never co-occur:
+   * amber is banned from the board grid as a STATUS, while TE is a position.
+   */
+  --ds-amber: oklch(0.800 0.159 84.4);
+
+  /* Success, votes for, the steal ring .................. #10b981 */
+  --ds-green: oklch(0.696 0.149 162.5);
+  /* Errors, votes against, the reach ring .............. #ef4444 */
+  --ds-red: oklch(0.637 0.208 25.3);
+  /*
+   * No hue here for trade attribution or keeper, deliberately — see `--trade`
+   * below. With eight hues now placed around the wheel the remaining gaps are
+   * all tighter than the board's own tightest pair, so those marks are carried
+   * by lightness instead of hue.
+   */
+}
+
+/*
+ * Dark-only product: :root and .dark share the same values so there is no
+ * flash and no half-baked light mode.
+ */
+:root,
+.dark {
+  /* --- 3. SEMANTIC — surfaces -------------------------------------------- */
+  --background: var(--ds-canvas);
+  --foreground: var(--ds-text);
+
+  --card: var(--ds-surface);
+  --card-foreground: var(--ds-text);
+  /* Popover takes the elevated step, so dropdowns read as floating over a
+   * panel. This palette gives a real value for it rather than an interpolation. */
+  --popover: var(--ds-elevated);
+  --popover-foreground: var(--ds-text);
+
+  --secondary: var(--ds-surface);
+  --secondary-foreground: var(--ds-text);
+  --muted: var(--ds-surface);
+  --muted-foreground: var(--ds-text-sec);
+  --accent: var(--ds-elevated);
+  --accent-foreground: var(--ds-text);
+
+  /* --- SEMANTIC — actions and state -------------------------------------- */
+  --primary: var(--ds-cyan);
+  /*
+   * Dark knockout, not light — and this is the one accessibility win the reskin
+   * hands over for free. The old accent took cream on orange at 3.3:1, which
+   * cleared AA for large text only and needed a warning attached to it. Cyan is
+   * a light hue (L 0.715), so white on it would be 2.33:1 and fail outright,
+   * while the canvas on it is 8.19:1 and clears AAA at any size. The palette's
+   * own Primary button swatch shows dark-on-cyan for the same reason.
+   */
+  --primary-foreground: var(--ds-canvas);
+  /* Hover shifts hue toward blue rather than just dimming the fill. */
+  --primary-hover: var(--ds-cyan-hover);
+  /*
+   * These two are not just off-board status — they are drawn as rings around
+   * position-tinted cells on the final board, which makes them board hues and
+   * makes them fixed points that the position palette had to be solved around.
+   * Don't repoint either without re-running `scripts/hex-to-oklch.mjs`.
+   */
+  --destructive: var(--ds-red);
+  --success: var(--ds-green);
+  --info: var(--ds-blue);
+  /* Same token as the TE position hue, deliberately — see `--ds-amber`. */
+  --warning: var(--ds-amber);
+
+  /*
+   * Draft-board state colours. The cell fill is the *position* hue; keeper and
+   * traded are marks layered on top (a lock glyph, and a strip naming the new
+   * owner). So these are about the marks, not the cell background.
+   */
+  /*
+   * Neutral, for the same reason `--trade` below is: a keeper is not a position,
+   * and on this board hue is what "position" means.
+   *
+   * This was `--ds-amber` (70°), and amber turned out to be the worst-placed
+   * value in the whole system — 14.3° off the TE hue of the day, against a bar
+   * of 44° set by the board's own tightest position pair. Under a third. The
+   * excuse for it was that a lock is a shape before it is a colour, which is
+   * true and is not a licence to put the shape in TE's hue.
+   *
+   * That verdict aged into something stronger, not weaker: the warm end of the
+   * wheel is now a single `--ds-amber` serving BOTH the TE position and
+   * `--warning`, so the separation this token was rejected for being too small is
+   * exactly 0°. Same value, same token.
+   *
+   * Cyan was the other candidate and was worse at the time: WR *was* cyan, so a
+   * cyan lock landed on a cyan cell beside cyan position text. WR is mint now,
+   * which frees cyan — and this stays neutral anyway, because cyan is the accent
+   * and the live cell, and a lock is not an action.
+   *
+   * Same value as `--trade`, and deliberately so. They are told apart by
+   * TREATMENT, which the brief requires anyway since a cell can be both: keeper
+   * is a glyph beside the position, traded is a filled strip along the bottom
+   * edge. Neither has to win a hue argument for both to be readable.
+   */
+  --keeper: var(--ds-text);
+  /*
+   * NEUTRAL, AND NOT BECAUSE OWNERSHIP DESERVES TO BE QUIET.
+   *
+   * This token has been five things, so the history is the argument:
+   *
+   * 1. The old QB orange — the same colour as `--live` then was, which let
+   *    twenty-nine traded picks shout as loudly as the one cell on the clock.
+   * 2. `--ds-slate` — a neutral, on the theory that ownership is not a position
+   *    so it should get no hue. Right instinct, and it still failed: a MID-grey
+   *    strip on a slate cell is 2:1, and the thing it names is the single most
+   *    misreadable fact on the board.
+   * 3. Ice cyan — the one bright hue outside the five positions, so it read as
+   *    an annotation rather than a position claim. Correct until this palette
+   *    made cyan the accent and gave WR the same hue.
+   * 4. Magenta (350°) — the last hue with no other job. It worked, at 7.5:1,
+   *    and it was dropped on looks: thirty pink bars is a lot of pink.
+   * 5. Here. Neutral again, at the opposite end of the lightness scale from
+   *    where #2 sat.
+   *
+   * Footnote to #4 that settles the question for good: that magenta WAS the QB
+   * hue — `#f472b6` is the coral pink the design locked for QB, and `--ds-pink`
+   * is now that same hue saturated. Had this token kept it, the board would be
+   * printing ownership in literally the QB colour, which is the collision every
+   * revision above was trying to avoid.
+   *
+   * Step 2 is the one worth reading twice, because it is the reason this looks
+   * like a repeat and is not one. #2 failed on LIGHTNESS, not on hue — it put a
+   * mid-tone on a mid-tone. Nothing about "no hue" was the problem, so the fix
+   * is a neutral at maximum separation rather than another hue.
+   *
+   * And there is no hue left to move to anyway — less than ever, now that the
+   * palette is solved against all eight board hues and the wheel is that much
+   * more crowded. Ranking candidates by their distance to the nearest claimed
+   * hue: cyan 0° off the accent, amber 0° off TE, mint 0° off WR, magenta 0°
+   * off QB, orange 12.4° off `--destructive`, teal 20° off `--success`. The
+   * board's tightest position pair is 44.3°, so every remaining hue is a closer
+   * call than two positions are to each other — i.e. it would be misread as a
+   * position or a status. A neutral is not a compromise between
+   * those, it is the only mark on the board that cannot be mistaken for a
+   * position, because hue is what "position" is encoded in and this has none.
+   *
+   * Pays for itself in contrast: 19.1:1 with `--background` knocked out of it,
+   * against magenta's 7.5:1. `--ds-text` rather than pure white ON PURPOSE —
+   * tying the fill to the board's brightest ink means the strip can never
+   * become a brighter rung than the type beside it, which is what keeps thirty
+   * of them from out-shouting the one cell on the clock. The live cell wins on
+   * area and glow (a full cell against a ~10px bar), not on being brighter.
+   *
+   * The board's own ownership strip no longer takes this value neat: it draws
+   * itself off-white at 80% instead, because twenty-nine strips at full ink read
+   * as flashes across a black grid. See `TradeBanner` in `draft-surface.tsx`.
+   * The token is unchanged, and every other consumer of it still is `--ds-text`.
+   *
+   * Knock-on worth knowing before "fixing" it: `text-trade` now resolves to the
+   * same value as `text-foreground`. The handful of places that use it ("via
+   * ZACH", "TRADED FROM ZACH", the footer legend arrow) all sit among
+   * `--muted-foreground` siblings, so they still read as emphasis — carried by
+   * lightness against their neighbours, exactly like the strip. The class stays
+   * because it is the right name for what it marks.
+   */
+  --trade: var(--ds-text);
+  /*
+   * Live / on-the-clock: shares the accent, which is now uncontroversial. It
+   * used to collide with the WR hue — cyan was the accent AND a position — and
+   * this comment used to argue that a solid cyan cell could not be confused with
+   * a 13% cyan tint. True, but it was a defence, not a design. WR is mint now
+   * and the nearest position to cyan is RB at 39.4°, so `--live` is unambiguous
+   * by hue as well as by treatment. Cyan was one of the fixed points the
+   * position palette was fitted around, which is what guarantees that gap.
+   *
+   * Only one cell wears it at a time, which is why sharing the accent was always
+   * the right call regardless.
+   */
+  --live: var(--ds-cyan);
+
+  /* --- SEMANTIC — the draft board's own surface ---------------------------- */
+  /*
+   * The board screen runs deeper than the rest of the app, and it is the one
+   * place that deliberately does not use the `--card` panel value *anywhere* —
+   * not for the cells, and not for the chrome either.
+   *
+   * `--card` (#18181b) is right for the dashboard, where a card is an object you
+   * look *at*. The board is not a set of objects, it is one instrument, and panel
+   * grey did two things wrong on it. An un-drafted cell rendered *brighter* than
+   * a completed pick, because a filled cell's tint composited down over the
+   * canvas while an empty one sat opaque at panel grey — so the empty slots were
+   * the brightest field on the board, which is backwards. And the franchise
+   * headers, round labels, on-the-clock bar and roster panel were all the same
+   * grey as the cells, so the grey never actually separated anything; it just
+   * lifted the whole screen off black for no gain.
+   *
+   * Everything on the board therefore sits on one value, the canvas itself, and
+   * structure is carried by hairlines and type instead of by steps in lightness.
+   * Position fills are then the only lightness the screen has, which is what
+   * makes them read from across a room.
+   *
+   * Floating overlays are excluded on purpose: the pick menu, the delete
+   * confirmation and the keeper warning still use `--popover` / `--card`, because
+   * those have to separate from the board rather than join it.
+   */
+  --board-base: var(--ds-canvas);
+  /*
+   * Opaque position fills, mixed over the board base rather than layered on it as
+   * a translucent tint. Two reasons:
+   *
+   * 1. A translucent fill samples whatever is behind it, so the same position
+   *    read slightly differently depending on where the cell fell relative to the
+   *    canvas washes. These are flat, so QB looks like QB in all sixteen rounds.
+   * 2. Strength becomes one number in one place instead of a magic `/[0.13]`
+   *    repeated across five class strings.
+   *
+   * 18% where the translucent version was 13%: the base underneath is darker
+   * now, so the old strength read weaker against it. This is the knob for board
+   * contrast — raise it and the positions shout, lower it and the grid calms.
+   *
+   * Worth knowing before reacting to how saturated the hues above look on their
+   * own: at 18% over a near-black base they land around #0d2137 to #331030, so
+   * the grid itself stays dark and the saturation shows up in the borders, the
+   * position labels and the chips. The full-strength hue never covers a whole
+   * cell — the one exception is `--live`, which is the point of it.
+   *
+   * Do not reach for this number to fix label contrast. The label is drawn in the
+   * cell's own hue, and that ratio is governed by the hue's luminance rather than
+   * by this percentage: 18% -> 10% moves it by under 0.2. Change the hue's
+   * lightness instead.
+   */
+  --cell-qb: color-mix(in oklch, var(--ds-pink) 18%, var(--board-base));
+  --cell-rb: color-mix(in oklch, var(--ds-blue) 18%, var(--board-base));
+  --cell-wr: color-mix(in oklch, var(--ds-mint) 18%, var(--board-base));
+  --cell-te: color-mix(in oklch, var(--ds-amber) 18%, var(--board-base));
+  --cell-dst: color-mix(in oklch, var(--ds-lavender) 18%, var(--board-base));
+
+  /* --- SEMANTIC — lines and focus ----------------------------------------- */
+  /*
+   * Opaque rather than a white alpha, so panels keep a crisp edge against both
+   * --background and --card. This palette's border (#3f3f46) is a full step
+   * lighter than the old one relative to its canvas — 1.9:1 instead of ~1.3:1.
+   * That is the "razor-sharp" part of the brief and it is deliberate: on the
+   * board it means the 160-cell grid is legible as a grid.
+   */
+  --border: var(--ds-border);
+  --input: var(--ds-border);
+  --ring: var(--ds-cyan);
+
+  --chart-1: var(--ds-cyan);
+  --chart-2: var(--ds-blue);
+  --chart-3: var(--ds-amber);
+  --chart-4: var(--ds-lavender);
+  --chart-5: var(--ds-green);
+
+  /* --- SEMANTIC — sidebar -------------------------------------------------- */
+  /* The design runs the rail at the same value as the page canvas, separated
+   * by a hairline rather than by a step in lightness. */
+  --sidebar: var(--ds-canvas);
+  --sidebar-foreground: var(--ds-text-sec);
+  --sidebar-primary: var(--ds-cyan);
+  --sidebar-primary-foreground: var(--ds-canvas);
+  --sidebar-accent: var(--ds-surface);
+  --sidebar-accent-foreground: var(--ds-text);
+  --sidebar-border: var(--ds-border);
+  --sidebar-ring: var(--ds-cyan);
+  /*
+   * Section headings above each nav group. The palette's Muted (#52525b) is
+   * 2.6:1 — too low to read as text, which is exactly right here: at 9px bold
+   * with 2px tracking these are structure, not content, and they must stay
+   * subordinate to the items under them.
+   */
+  --sidebar-section: var(--ds-muted);
+
+  /* --- SEMANTIC — geometry -------------------------------------------------- */
+  /*
+   * Was 8px/4px. The reference frames for this palette sit noticeably rounder,
+   * so this moves one notch to 10px on cards and panels and 5px on badges,
+   * chips, buttons and board cells. Everything else is derived, so this single
+   * value is the whole knob — put it back to 0.5rem for the old geometry.
+   */
+  --radius: 0.625rem;
+
+  /* --- SEMANTIC — elevation and glow ---------------------------------------- */
+  /* Tighter and blacker than before, because the canvas underneath it is now
+   * near-black and a soft 40% shadow simply disappeared into it. */
+  --shadow-raised:
+    inset 0 1px 0 0 oklch(1 0 0 / 5%), 0 1px 2px 0 oklch(0 0 0 / 60%);
+  /*
+   * Alpha variants are written out rather than derived with `oklch(from …)`,
+   * which Lightning CSS cannot yet downlevel. Keep them in step with --primary.
+   */
+  --primary-a10: oklch(0.715 0.126 215.2 / 0.1);
+  --primary-a32: oklch(0.715 0.126 215.2 / 0.32);
+  --primary-a45: oklch(0.715 0.126 215.2 / 0.45);
+  --primary-a60: oklch(0.715 0.126 215.2 / 0.6);
+
+  /* On-the-clock emphasis. Consumed by the `glow-live` utility. */
+  --shadow-glow-live:
+    0 0 0 1px var(--primary-a45), 0 0 24px -4px var(--primary-a60);
+  /* Halo behind the small brand mark. Neutral for the same reason as
+   * `--shadow-crest`: the halo sits directly behind orange artwork. */
+  --shadow-glow-brand: 0 0 12px -2px oklch(1 0 0 / 0.14);
+
+  /* Soft halo under the full-size accent button. */
+  --shadow-glow-cta: 0 0 20px -6px var(--primary-a45);
+
+  /*
+   * Depth under the full-size crest on the dashboard masthead. A `filter` list
+   * rather than a box-shadow: the crest is a transparent PNG, so the shadow has
+   * to follow the artwork instead of its bounding box.
+   *
+   * Neutral, where this used to be a tinted halo in the accent. The crest
+   * artwork is still orange and navy, and a cyan halo directly behind an orange
+   * mark is a complementary clash — the one place in the app where the new
+   * accent actively fights an asset. Depth only, no hue.
+   */
+  --shadow-crest: drop-shadow(0 10px 26px oklch(0 0 0 / 0.65))
+    drop-shadow(0 0 30px oklch(1 0 0 / 0.07));
+
+  /* --- SEMANTIC — ambient page washes ---------------------------------------- */
+  /*
+   * One cyan bloom in the entire canvas, and it is weaker than the orange it
+   * replaces (0.07 vs 0.09) because cyan at L 0.715 carries much further on a
+   * near-black ground than orange at L 0.628 did on a navy one. Scarcity is the
+   * point: "premium cyan highlights" stops being a highlight if the whole page
+   * is lit with it.
+   */
+  --wash-primary: oklch(0.715 0.126 215.2 / 0.07);
+  /*
+   * The secondary lift is now genuinely neutral. It used to be navy
+   * (chroma 0.06 at 264°), which gave every page a blue cast that made sense
+   * under the old palette and would now be the only warm-cool tension left on
+   * an otherwise achromatic canvas.
+   */
+  --wash-cool: oklch(0.55 0.008 286 / 0.14);
+
+  /*
+   * The micro-grid. Defined once here so the page canvas and any opaque surface
+   * that has to redraw it draw exactly the same texture. Nudged up from 0.025
+   * to hold the same apparent strength against a darker canvas.
+   */
+  --grid-line: oklch(1 0 0 / 0.032);
+  --grid-size: 40px;
+
+  --selection-bg: var(--primary-a32);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-family), ui-monospace, monospace;
+  --font-heading:
+    var(--font-display-family), var(--font-sans-family), sans-serif;
+  --color-sidebar-section: var(--sidebar-section);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --color-keeper: var(--keeper);
+  --color-trade: var(--trade);
+  --color-live: var(--live);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-navy-deep: var(--brand-navy-deep);
+  --color-brand-steel: var(--brand-steel);
+  --color-brand-gold: var(--brand-gold);
+  /*
+   * Position hues. Exposed as real theme colours so the draft board can tint a
+   * cell by position with `bg-pos-rb/13 border-pos-rb` instead of reaching for
+   * a hardcoded palette class. These five must stay mutually distinct — that is
+   * how the board is read at a glance — so they are the one group that is not
+   * derived from the accent. See BRANDING.md.
+   *
+   * Hues, fixed by the design: TE 84.4°, WR 151.7°, RB 254.6°, DST 305.5°,
+   * QB 349.8°. Tightest position pair is DST/QB at 44.3°. Only the SATURATION of
+   * these was ours to set — see the `--ds-pink` block for that whole argument.
+   *
+   * Three non-position hues also render inside the grid and are worth knowing
+   * about before touching anything: `--destructive` 25.3° and `--success` 162.5°
+   * are the reach and steal rings on the final board, drawn AROUND a
+   * position-tinted cell, and `--ds-cyan` 215.2° is the accent and the live cell.
+   *
+   * WR mint sits 10.8° from the steal ring, which is the one real overlap in the
+   * system and is accepted rather than solved. It survives on treatment: the ring
+   * is full strength on an 18% tint, so what the eye compares is the ring against
+   * the cell, at 5.27:1 — not mint against green, which is 1.87:1 and would be
+   * unreadable. Do not repoint `--success` expecting to improve this; the fix
+   * that matters already happened, and it was saturating mint so its lightness
+   * pulls away from the ring's.
+   *
+   * `node scripts/hex-to-oklch.mjs` prints every gap, names the tightest pair, and
+   * prints the ring-against-cell ratios. Run it before changing any of these.
+   *
+   * No position shares the accent. WR used to *be* `--ds-cyan`, which cost
+   * `--live` and `positionCell` a paragraph each explaining why a solid cyan cell
+   * could not be mistaken for a 13% cyan tint. Moving WR to mint retired that.
+   */
+  --color-pos-qb: var(--ds-pink);
+  --color-pos-rb: var(--ds-blue);
+  --color-pos-wr: var(--ds-mint);
+  --color-pos-te: var(--ds-amber);
+  --color-pos-dst: var(--ds-lavender);
+  /*
+   * The board's deep base and its five opaque cell fills. Separate from
+   * `--color-pos-*`, which stay the full-strength hues used for borders, chips
+   * and label text. See the board block above.
+   */
+  --color-board-base: var(--board-base);
+  --color-cell-qb: var(--cell-qb);
+  --color-cell-rb: var(--cell-rb);
+  --color-cell-wr: var(--cell-wr);
+  --color-cell-te: var(--cell-te);
+  --color-cell-dst: var(--cell-dst);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background bg-canvas text-foreground;
+    /* Inter: disambiguated 1/l/I, and a straight-tailed l. */
+    font-feature-settings: "cv05", "cv11";
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--ds-text);
+  }
+  /* Refined scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.98 0 0 / 12%) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: oklch(0.98 0 0 / 12%);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.98 0 0 / 20%);
+  }
+}
+
+/* The broadcast headline treatment: condensed, tight, uppercase-friendly. */
+/*
+ * The wordmark / display face. The design uses Space Grotesk Bold with positive
+ * tracking rather than the tightened condensed setting this used to be.
+ */
+@utility font-display {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+/*
+ * Eyebrow above a page title: the design sets these in mono, 10px, bold, with
+ * 1.2px tracking — which at 10px is ~0.12em.
+ */
+@utility text-eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+/*
+ * Chevron for native <select>. Lives here rather than as an arbitrary Tailwind
+ * background value because the inline SVG contains spaces, which cannot survive
+ * a utility class name.
+ */
+@utility select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%2394a3b8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 0.7rem;
+}
+
+/* Accent gradient for the wordmark / key numerals: electric cyan, top-lit. */
+@utility text-accent-gradient {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--primary), white 18%),
+    var(--primary)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Elevated panel surface with a faint inner top highlight. */
+@utility surface-raised {
+  background-image: linear-gradient(180deg, var(--secondary), var(--card));
+  box-shadow: var(--shadow-raised);
+}
+
+@utility bg-field {
+  background-image: linear-gradient(
+    180deg,
+    var(--secondary),
+    var(--background)
+  );
+}
+
+/* Live / on-the-clock emphasis on the draft board. */
+@utility glow-live {
+  box-shadow: var(--shadow-glow-live);
+}
+
+/* Halo behind the small brand mark in the sidebar and mobile header. */
+@utility glow-brand {
+  box-shadow: var(--shadow-glow-brand);
+}
+
+/* Faint grid texture on its own, for a surface that wants it without the washes. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+/*
+ * The page canvas: micro-grid over two ambient washes, every layer fixed to the
+ * viewport so the texture reads as the surface the app sits on rather than a
+ * pattern that scrolls past.
+ *
+ * Layers paint first-listed on top, so the grid sits over the ambient light and
+ * catches it instead of being buried under it.
+ *
+ * The body wears this, which is what puts it on every page. It is a utility
+ * rather than only a body rule because a full-viewport opaque overlay — the
+ * draft board — covers the body and has to redraw the same texture itself.
+ */
+@utility bg-canvas {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(
+      ellipse 90% 55% at 12% -8%,
+      var(--wash-primary),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 100% 0%,
+      var(--wash-cool),
+      transparent 55%
+    ),
+    /* A second anchor in the opposite corner, so a long or card-heavy page still
+       has some ambient light in view instead of all of it living above the fold.
+       This used to be a second accent bloom; it is the neutral now, which leaves
+       exactly one cyan source on the canvas. */
+      radial-gradient(
+        ellipse 55% 45% at 100% 100%,
+        var(--wash-cool),
+        transparent 60%
+      );
+  background-size:
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size),
+    auto,
+    auto,
+    auto;
+  background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed;
+}
+
+/*
+ * Halo under the accent CTA. Deliberately not called `glow-accent` — that name
+ * used to mean an acid-green glow in the source app and was retired; reusing it
+ * would make old references look current.
+ */
+@utility glow-cta {
+  box-shadow: var(--shadow-glow-cta);
+}
+
+/* Depth under the full-size crest. See `--shadow-crest`. */
+@utility crest-lift {
+  filter: var(--shadow-crest);
+}
+
+/*
+ * Accent light inside a panel, thrown from its top-left corner. Used by the
+ * accent-toned stat tile — a tint reads better than a halo on a rectangle that
+ * sits in a row of identical rectangles.
+ */
+@utility bg-wash-accent {
+  background-image: radial-gradient(
+    ellipse 120% 100% at 0% 0%,
+    var(--primary-a10),
+    transparent 70%
+  );
+}
+
+/* Ambient wash used by page headers and the dashboard hero. */
+@utility bg-wash-primary {
+  background-image: radial-gradient(
+    ellipse 50% 100% at 0% 0%,
+    var(--wash-primary),
+    transparent 70%
+  );
+}
+
+@utility bg-wash-hero {
+  background-image:
+    radial-gradient(
+      ellipse 55% 90% at 8% -10%,
+      var(--wash-primary),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 50% 80% at 100% 110%,
+      var(--wash-cool),
+      transparent 60%
+    );
+}

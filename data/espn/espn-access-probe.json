@@ -1,0 +1,104 @@
+{
+  "_about": "Log of every ESPN endpoint tried against league 441239, so nobody has to re-derive what works.",
+  "_probedAt": "2026-08-26",
+  "leagueId": 441239,
+  "season": 2026,
+  "verdict": "Anonymous read is NOT possible. Authenticated read works fully.",
+  "workingEndpoint": {
+    "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings&view=mTeam&view=mRoster&view=mDraftDetail&view=mMatchup&view=mNav",
+    "auth": "Cookie: espn_s2=<ESPN_S2>; SWID=<ESPN_SWID>",
+    "result": "HTTP 200, full settings / teams / rosters / draft board",
+    "note": "Prior seasons work too by swapping the seasonId. The league has ESPN history back to 2012."
+  },
+  "anonymousAttempts": [
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE",
+      "message": "You are not authorized to view this League."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239 (no view param)",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE"
+    },
+    {
+      "url": ".../leagues/441239?view=mNav",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE"
+    },
+    {
+      "url": ".../leagues/441239?view=mTeam&view=mDraftDetail",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE"
+    },
+    {
+      "url": ".../leagues/441239?view=mDraftDetail&view=mSettings&view=mTeam&view=mRoster&view=mMatchup&view=mNav",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE"
+    },
+    {
+      "url": ".../leagues/441239/teams/4",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE"
+    },
+    {
+      "url": ".../leagues/441239/communication/?view=kona_league_communication",
+      "status": 401,
+      "errorType": "AUTH_COMMUNICATION_NOT_VISIBLE"
+    },
+    {
+      "url": "seasons/2025, 2024, 2023 segments/0/leagues/441239?view=mSettings",
+      "status": 401,
+      "errorType": "AUTH_LEAGUE_NOT_VISIBLE",
+      "note": "Older seasons of a private league are private too."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/leagueHistory/441239?seasonId=2025&view=mSettings",
+      "status": 404,
+      "errorType": "GENERAL_NOT_FOUND",
+      "note": "The leagueHistory endpoint shape does not serve this league."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v2/games/ffl/seasons/2026/segments/0/leagues/441239",
+      "status": 404,
+      "note": "apis/v2 is gone. v3 is the live version."
+    },
+    {
+      "url": "https://fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/441239?view=mSettings",
+      "status": 202,
+      "note": "The legacy fantasy.espn.com host answers 202 with an EMPTY body - it is behind bot defence and is not usable for scripted reads. Use lm-api-reads.fantasy.espn.com."
+    }
+  ],
+  "controlsProvingTheUrlShapeIsCorrect": [
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leagues/1241838?view=mSettings",
+      "status": 200,
+      "note": "A PUBLIC league returns full settings anonymously from the exact same URL shape. This proves the 401 on 441239 is a privacy setting, not a wrong endpoint."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leaguedefaults/3?view=mSettings",
+      "status": 200,
+      "note": "ESPN's built-in 'FFL PPR Scoring' preset. No auth needed. Decoded into espn-ppr-preset-2026-decoded.json."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/players?scoringPeriodId=0&view=players_wl",
+      "status": 200,
+      "note": "Player pool needs no auth."
+    },
+    {
+      "url": "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2025/segments/0/leaguedefaults/3?view=kona_player_info (with x-fantasy-filter)",
+      "status": 200,
+      "note": "Real player season stats, no auth. Used to verify the statId decoding."
+    }
+  ],
+  "usefulViewParams": [
+    "mSettings - scoring, roster, schedule, draft, trade, waiver, finance settings",
+    "mTeam - teams, abbreviations, owners, records",
+    "mRoster - roster entries per team (empty before the draft)",
+    "mDraftDetail - the full pick board incl. keeper / reservedForKeeper flags",
+    "mMatchup - schedule",
+    "mNav - league nav metadata",
+    "Several can be combined by repeating &view="
+  ]
+}
