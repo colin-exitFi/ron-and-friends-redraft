@@ -189,6 +189,61 @@ import { gradeRubric, type GradeInput, type GradeSubject } from "@/lib/recap-gra
 import type { PassedKeeper, RecapDossier } from "@/lib/recap-dossier";
 
 /**
+ * Dossier fields that exist only to describe keepers, dropped from the payload
+ * the model is shown when the league is not playing a keeper season.
+ *
+ * See the note in `recapUserMessage` for why this is here rather than in
+ * `@/lib/recap-dossier`. Keyed by field NAME because `JSON.stringify`'s
+ * replacer is keyed that way, which also means it strips them at whatever depth
+ * they appear — `keeperConsumedRounds` sits inside `pickCapital` and
+ * `keeperShare` inside a projected-standings row.
+ */
+const KEEPER_ONLY_FIELDS = new Set([
+  "keepersOutOfPool",
+  "keepers",
+  "passedOnKeepers",
+  "passedOnKeepersTotal",
+  "unusedKeeperSlots",
+  "keeperConsumedRounds",
+  "keeperShare",
+  "viaKeeper",
+  "spentOnKeeper",
+]);
+
+/**
+ * Fields withheld before a pick exists, because they are the ADP board turned
+ * into a forecast of who each manager is going to take.
+ *
+ * ============================================================================
+ * "DERRICK HENRY AT 1.03", WHICH IS A SHIPPED PRE-DRAFT BLURB
+ * ============================================================================
+ *
+ * `topTalentPlayers` names, for one franchise, which of the twenty best players
+ * the board expects to be gone at the slots that franchise owns. AFTER a draft
+ * that is a fair comparison — here is what the board thought you would get,
+ * here is what you did. BEFORE one it is a mock draft with the manager's name
+ * on it, and handing it over is an instruction to predict.
+ *
+ * The model duly did, and got it wrong in the most checkable way available. The
+ * franchise picking third had `topTalentPlayers: ["Ja'Marr Chase", "Derrick
+ * Henry"]` — Chase being the board's expectation at his pick 3 and Henry at his
+ * pick 18 — and the blurb welded the two together into a prediction that he was
+ * taking Derrick Henry at 1.03. Henry's ADP is 16.33. He is a second-round
+ * player in a ten-team league and the payload never said otherwise.
+ *
+ * THE DATA WAS NOT WRONG, WHICH IS WHY THIS IS THE FIX. The pool is current
+ * FantasyPros ADP for this season and the top of it reads exactly as it should.
+ * What was wrong was giving a model a list of names against a man's slots on a
+ * night when nobody has picked, and then being surprised it wrote a forecast.
+ *
+ * `topTalentCaptured` — the COUNT — survives, and should: how many of the top
+ * twenty the board expects to be gone at your slots is a fact about the seat
+ * you drew, which is the material a pre-draft roast is supposed to run on. It
+ * is the names that turn a structural fact into a prophecy.
+ */
+const PREDRAFT_WITHHELD_FIELDS = new Set(["topTalentPlayers"]);
+
+/**
  * Framings that write a franchise off, and are therefore banned.
  *
  * THE COMMISSIONER'S RULING, IN HIS WORDS: "It is a highly competitive league.
@@ -642,7 +697,11 @@ Everybody has the same fifteen picks. **The only thing that differs is WHERE IN 
 
 - **\`earlyPicks\`** — draftable picks in rounds 1 through \`earlyThroughRound\`. **\`earlyPicksLeagueMedian\`, \`earlyPicksVsMedian\` and \`earlyCapitalRank\` are already computed.** Use those. Do not count anybody's picks to work out where a man stands.
 - **\`medianDraftableOverall\`** — the middle pick number of everything he could draft with. A blunt one-number answer to "when did this man actually pick", and lower is earlier.
-- **\`topTalentCaptured\`** — of the \`topTalentWindow\` best players on the board, how many were expected to be gone at slots THIS franchise owned. It is the talent-weighted version of the draft slot, and the two can disagree. \`topTalentPlayers\` names who the board expected at those slots — that is a fact about the BOARD's expectation, never a claim he got the man.
+- **\`topTalentCaptured\`** — of the \`topTalentWindow\` best players on the board, how many were expected to be gone at slots THIS franchise owned. It is the talent-weighted version of the draft slot, and the two can disagree.${
+          predraft
+            ? " **\\`topTalentPlayers\\` is withheld tonight** — the names are a forecast of who each man takes before anybody has taken anybody, which is the mock draft Part 0 forbids. The count is the fact; use it."
+            : " `topTalentPlayers` names who the board expected at those slots — that is a fact about the BOARD's expectation, never a claim he got the man."
+        }
 
 ${
           predraft
@@ -1043,11 +1102,45 @@ export function recapUserMessage(
   const capital = keepers || FEATURES.tradedPicks ? `${capitalSentences(dossier)}\n\n` : "";
   const economics = keepers ? `${keeperEconomics(dossier)}\n\n` : "";
 
+  /*
+   * THE DOSSIER ITSELF STILL SPEAKS KEEPER, AND ONE OF ITS FIELDS IS A LIE.
+   *
+   * Gating the PROSE was only half the job. `JSON.stringify(dossier)` hands the
+   * model the whole shape, and on a redraft board that shape still carries
+   * `keepers: []`, `passedOnKeepers: []`, `keeperConsumedRounds: []` and —
+   * the one that matters — **`unusedKeeperSlots: {count: 2, deliberate: false}`
+   * on every single franchise.**
+   *
+   * That last one is not an empty array a model can ignore. It is a positive
+   * numeric claim that each of these ten men left two keeper slots unused, and
+   * the 2 comes from `KEEPERS.maxPerTeam`, which `@/lib/league-config`
+   * documents as the PREVIOUS league's placeholder kept only so the keeper
+   * modules still compile. So the payload was asserting a fact about this
+   * league that is false, in a field whose explanation the prose gating had
+   * just removed — the worst combination available, because an unexplained
+   * number is the one a model reaches for when it wants something concrete.
+   * "He left both his keeper slots empty" is a sentence this board could have
+   * produced, read out to ten people who have no keeper slots.
+   *
+   * Stripped at serialisation rather than in `@/lib/recap-dossier`, and that is
+   * deliberate: the dossier is shared with the recap page, the grade payload
+   * and the verifiers, all of which want the full shape. What the MODEL is
+   * shown is this layer's business, the same as every other gate above it, and
+   * flipping `FEATURES.keepers` restores the fields untouched.
+   */
+  const withheld = new Set([
+    ...(keepers ? [] : KEEPER_ONLY_FIELDS),
+    ...(stage === "predraft" ? PREDRAFT_WITHHELD_FIELDS : []),
+  ]);
+  const board = withheld.size
+    ? JSON.stringify(dossier, (key, value) => (withheld.has(key) ? undefined : value))
+    : JSON.stringify(dossier);
+
   return `${state} ${pool}
 ${ties ? `\n${ties}\n` : ""}
 ${capital}${economics}${scope}
 
-${JSON.stringify(dossier)}${
+${board}${
     grade
       ? `
 
@@ -1493,11 +1586,13 @@ Read this before anything below it. It overrides every later section it contradi
 - **No rosters.** \`openStarterSlots\` and \`oddities\` will report that a franchise has no quarterback, no tight end, no defence and cannot field a lineup. **THAT IS TRUE OF ALL TEN**, because nobody has drafted anybody. "He has no quarterback" is a joke about nobody, and ten of them in a row is the specific failure that put this instruction here. \`weakestSlot\` is meaningless with no players in any slot.
 - **NO PROJECTED STANDINGS, AND THIS IS A COMMISSIONER'S RULING.** Nobody has any players, so there is nothing to project. Whatever \`projectedStandings\` holds tonight — null, or ten franchises on nothing — it is not a table and you may not narrate one. Do not give anybody a projected finish, a points total, playoff odds or a title chance. Do not say the field is tight, bunched or separated. There is no field yet.
 - **No keepers, no declarations, no passed-over keepers.** This is a pure redraft: nobody kept anybody, nobody had the option, and there is no keeper audit tonight or on any other night this season. See Part 3. Keepers are a thing the room ARGUES about, and Part 5 records who is arguing.
-- **Nothing about the future.** Not one word about a pick somebody is going to make, a player somebody is going to take, or how you expect anybody to draft. No "he'll be reaching for a quarterback by round three". A prediction is the easiest invention to write and the fastest to be proved wrong, out loud, within the hour.
+- **NO PLAYER IS ANYBODY'S PICK YET, AND THIS IS THE RULE THIS SECTION EXISTS FOR.** Not one word about a pick somebody is going to make, a player somebody is going to take, or how you expect anybody to draft. **Never put a named player into a named slot.** "He's taking Derrick Henry at 1.03" is a mock draft, not a roast — it is boring, it is nobody's decision, and it gets checked against reality within the hour by ten people sitting in the room. That exact sentence shipped off this page and the player in it was a second-round ADP the payload never claimed otherwise about. A prediction is the easiest invention to write and the fastest to be proved wrong out loud.
+
+  **What you may do with players instead:** talk about the board in AGGREGATE. Positional scarcity, where the tiers break, how many of the top twenty are gone by the turn, whether the run on a position tends to start before somebody's second pick. Those are facts about the draft everyone can see. If you name a player at all, it has to be commentary on the BOARD — "the board has four running backs it likes before the eighth pick" — and never a forecast of one man's choice. When in doubt, name no player. There will be a hundred and fifty of them to talk about in an hour.
 
 ## What you do have. It is five things and it is enough.
 
-1. **Where he is sitting, and what that seat is worth.** This is a ${DRAFT.rounds}-round snake, so the slot is a real and permanent fact about his night: \`draftSlot\` is his seat, \`pickCapital.medianDraftableOverall\` says how early he picks on the whole, and \`topTalentPlayers\` names who the board expects to be there when his turn comes. The man on a turn takes two in a row and then waits nearly twenty picks; the man in the middle never waits long and never gets the top of a round. That is a genuine difference between ten men who are otherwise holding identical boards, and it is most of tonight's material.
+1. **Where he is sitting, and what that seat is worth.** This is a ${DRAFT.rounds}-round snake, so the slot is a real and permanent fact about his night and it is most of tonight's material. \`draftSlot\` is his seat. \`pickCapital.medianDraftableOverall\` says how early he picks across the whole draft. \`topTalentCaptured\` says how many of the \`topTalentWindow\` best players the board expects to be gone by the time his slots come round — **a count, and the count is the joke; the names are deliberately withheld tonight and you are not to reconstruct them.** The man on a turn takes two in a row and then waits nearly twenty picks. The man picking first gets a player everybody agrees on and then sits through nineteen. The man in the middle never waits long and never gets the top of a round. That is a real difference between ten men holding otherwise identical boards, and none of it requires guessing who anybody takes.
 2. **His franchise name.** \`franchiseName\` is fair game and several of them are doing a lot of work already.
 3. **Who is brand new**, and what that is worth against nine people who are not. Part 5 says who.
 4. **Who is the defending champion**, which is a fact and not a prediction. Part 5 again, and note the fence on it there.
