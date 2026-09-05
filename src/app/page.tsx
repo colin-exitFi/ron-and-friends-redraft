@@ -17,6 +17,7 @@ import { getDashboardView } from "@/lib/dashboard-view";
 import {
   CURRENT_SEASON,
   DRAFT,
+  FEATURES,
   LEAGUE,
   TOTAL_PICKS,
   draftDayLabel,
@@ -95,10 +96,13 @@ function DashboardHeader({
             blurs: a wide one to lift the crest off the canvas and a tighter one
             to keep the light behind the artwork itself.
 
-            Neutral white rather than the accent. The crest artwork is orange and
-            navy, so a cyan bloom behind it reads as a complementary clash at the
-            exact centre of the masthead. White light lifts the same silhouette
-            without arguing with it.
+            Neutral white rather than the accent, and it stays neutral now that
+            the crest is itself charcoal and cyan: a cyan bloom behind cyan rim
+            light reads as a smear rather than a glow. White separates the two.
+
+            The crest is portrait, so `object-contain` in a square box is what
+            keeps it undistorted — the box stays square deliberately, because
+            every element beside it is positioned off that width.
           */}
           <span className="relative hidden shrink-0 sm:block">
             <span className="absolute -inset-2 -z-10 rounded-full bg-white/12 blur-3xl" />
@@ -106,7 +110,7 @@ function DashboardHeader({
             <Image
               src="/brand/crest-v2.png"
               alt={`${LEAGUE.name} crest`}
-              width={512}
+              width={464}
               height={512}
               priority
               className="crest-lift relative h-[146px] w-[146px] object-contain md:h-[184px] md:w-[184px] xl:h-[224px] xl:w-[224px]"
@@ -138,12 +142,18 @@ function DashboardHeader({
           </div>
         </div>
 
+        {/*
+          The masthead's one action. It pointed at the keeper list, which on a
+          redraft is an empty page about a thing this league does not do — so it
+          points at the board, which is what anybody opening this app tonight
+          came for anyway.
+        */}
         <Link
-          href="/keepers"
+          href={FEATURES.keepers ? "/keepers" : "/draft"}
           className="bg-primary text-primary-foreground hover:bg-primary/85 flex shrink-0 items-center gap-2 self-start rounded-sm px-5 py-3 text-[10px] font-bold tracking-[0.15em] uppercase transition-colors touch:min-h-11 lg:self-auto"
         >
-          <Lock className="h-3 w-3" />
-          Review keeper list
+          {FEATURES.keepers ? <Lock className="h-3 w-3" /> : <ListOrdered className="h-3 w-3" />}
+          {FEATURES.keepers ? "Review keeper list" : "Open the draft board"}
         </Link>
       </div>
     </header>
@@ -194,12 +204,16 @@ function CommandGrid({
       desc: `${DRAFT.rounds} rounds · ${TOTAL_PICKS} picks · run in person`,
       icon: ListOrdered,
     },
-    {
-      href: "/keepers",
-      label: "Keepers",
-      desc: `${counts.keepersDeclared} declared on a ${CURRENT_SEASON} clock`,
-      icon: Lock,
-    },
+    ...(FEATURES.keepers
+      ? [
+          {
+            href: "/keepers",
+            label: "Keepers",
+            desc: `${counts.keepersDeclared} declared on a ${CURRENT_SEASON} clock`,
+            icon: Lock,
+          },
+        ]
+      : []),
     {
       href: "/trades",
       label: "Trades",

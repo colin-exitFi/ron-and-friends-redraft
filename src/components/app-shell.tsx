@@ -26,8 +26,21 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { CURRENT_SEASON, LEAGUE } from "@/lib/league-config";
+import { CURRENT_SEASON, FEATURES, LEAGUE } from "@/lib/league-config";
 import { SHEET_TENURE_TERM } from "@/lib/keeper-clock";
+import { DRAFT, TOTAL_PICKS } from "@/lib/league-config";
+
+/*
+ * The footer slot the design gives to the signed-in manager. This app has no
+ * accounts, so it carries the thing that is always true and worth having on
+ * screen — and what that IS depends on whether the league keeps players. On a
+ * redraft the keeper clock is not a fact about the season, it is a fact about a
+ * different league, so the slot states the shape of the draft instead.
+ */
+const SEASON_LABEL = FEATURES.keepers ? "keeper season" : "redraft season";
+const SEASON_NOTE = FEATURES.keepers
+  ? `${SHEET_TENURE_TERM}-year keeper clock`
+  : `${DRAFT.rounds} rounds · ${TOTAL_PICKS} picks`;
 import { Button } from "@/components/ui/button";
 import { CommandPalette } from "@/components/command-palette";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -63,12 +76,22 @@ const NAV: NavGroup[] = [
       { href: "/draft/final", label: "Final Board", icon: Trophy, ready: true },
       { href: "/draft/recap", label: "Recap", icon: Flame, ready: true },
       /*
+       * Draft Notes and Keepers are HIDDEN, NOT REMOVED, and the switches are in
+       * `league-config`. This league has no scribe taking notes all night, and
+       * 2026 is a pure redraft with the keeper framework deferred to a 2027
+       * vote — so both routes stay on disk, importable and working, and the
+       * league turns them on by flipping a flag rather than by rebuilding them.
+       *
        * Next to Recap because they are the two retrospective pages and people
        * arrive wanting "the thing about the draft night" without much care which.
        */
-      { href: "/draft/notes", label: "Draft Notes", icon: NotebookPen, ready: true },
+      ...(FEATURES.draftNotes
+        ? [{ href: "/draft/notes", label: "Draft Notes", icon: NotebookPen, ready: true }]
+        : []),
       { href: "/mock", label: "Mock Draft", icon: Bot, ready: true },
-      { href: "/keepers", label: "Keepers", icon: Lock, ready: true },
+      ...(FEATURES.keepers
+        ? [{ href: "/keepers", label: "Keepers", icon: Lock, ready: true }]
+        : []),
     ],
   },
   {
@@ -213,9 +236,9 @@ function BrandHeader({ collapsible }: { collapsible?: boolean }) {
         <Image
           src="/brand/crest-v2-256.png"
           alt=""
-          width={36}
+          width={33}
           height={36}
-          className="shrink-0 rounded-[3px] object-cover"
+          className="shrink-0 rounded-[3px] object-contain"
           priority
         />
       </span>
@@ -325,11 +348,7 @@ function SidebarFooter({ collapsible }: { collapsible?: boolean }) {
     <div className="border-sidebar-border flex items-center border-t pt-3 pb-3">
       <span
         className={ICON_SLOT}
-        title={
-          collapsible
-            ? `${CURRENT_SEASON} keeper season · ${SHEET_TENURE_TERM}-year keeper clock`
-            : undefined
-        }
+        title={collapsible ? `${CURRENT_SEASON} ${SEASON_LABEL} · ${SEASON_NOTE}` : undefined}
       >
         <span className="bg-primary text-primary-foreground flex size-[30px] shrink-0 items-center justify-center rounded-[3px] text-[11px] font-extrabold">
           {CURRENT_SEASON.toString().slice(-2)}
@@ -342,10 +361,10 @@ function SidebarFooter({ collapsible }: { collapsible?: boolean }) {
         )}
       >
         <span className="text-foreground truncate text-[12px] leading-none font-semibold">
-          {CURRENT_SEASON} keeper season
+          {CURRENT_SEASON} {SEASON_LABEL}
         </span>
         <span className="text-sidebar-section truncate text-[9px] leading-none">
-          {SHEET_TENURE_TERM}-year keeper clock
+          {SEASON_NOTE}
         </span>
       </span>
       <Link
@@ -469,9 +488,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Image
             src="/brand/crest-v2-256.png"
             alt=""
-            width={28}
+            width={26}
             height={28}
-            className="shrink-0 rounded-[3px]"
+            className="shrink-0 rounded-[3px] object-contain"
           />
           <span className="font-display text-foreground text-[11px] font-bold uppercase tracking-[0.14em]">
             {LEAGUE.shortName}

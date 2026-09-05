@@ -122,6 +122,13 @@ export const FEATURES = {
    * every one of the 140 cells is open. This flag gates SURFACES only.
    */
   keepers: false,
+  /**
+   * The draft-notes surface: a scribe's account of the night, typed up and
+   * matched to picks. The previous league had somebody who did that all night
+   * and read it back to the room. Ron and Friends does not, so the surface is
+   * hidden — the route and the code stay, and this is the switch.
+   */
+  draftNotes: false,
   /** Dues, transaction fees and payouts are tracked outside this app for now. */
   treasury: false,
   /** @fromProposal 2026 order was drawn by lottery; the result is already set. */

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { FEATURES } from "@/lib/league-config";
 import { positionStyle } from "@/lib/positions";
 
 type NavDest = {
@@ -28,12 +29,21 @@ type NavDest = {
   group: string;
 };
 
+/*
+ * Gated on the league's feature switches, exactly as the sidebar is. A hidden
+ * destination that is still reachable from ⌘K is not hidden — the palette is
+ * how anybody who knows the app actually navigates it.
+ */
 const NAV_DESTS: NavDest[] = [
   { label: "Dashboard", href: "/", icon: LayoutGrid, group: "Overview" },
   { label: "Draft Board", href: "/draft", icon: ListOrdered, group: "Draft" },
-  { label: "Keepers", href: "/keepers", icon: Lock, group: "Draft" },
+  ...(FEATURES.keepers
+    ? [{ label: "Keepers", href: "/keepers", icon: Lock, group: "Draft" }]
+    : []),
   { label: "Trades", href: "/trades", icon: Repeat, group: "Draft" },
-  { label: "Draft Notes", href: "/draft/notes", icon: NotebookPen, group: "Draft" },
+  ...(FEATURES.draftNotes
+    ? [{ label: "Draft Notes", href: "/draft/notes", icon: NotebookPen, group: "Draft" }]
+    : []),
   { label: "Franchises", href: "/teams", icon: Users, group: "League" },
   { label: "Calendar", href: "/calendar", icon: CalendarDays, group: "League" },
   { label: "Governance", href: "/governance", icon: Landmark, group: "League" },

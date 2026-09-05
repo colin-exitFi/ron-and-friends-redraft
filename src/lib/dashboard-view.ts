@@ -1,9 +1,11 @@
 import {
   CURRENT_SEASON,
   DRAFT,
+  FEATURES,
   KEEPERS,
   LEAGUE,
   SCORING_FORMAT,
+  TOTAL_PICKS,
   daysUntilDraft,
   draftDayLabel,
 } from "@/lib/league-config";
@@ -83,8 +85,17 @@ export async function getDashboardView(): Promise<DashboardView> {
    */
   const lockDaysBefore = Math.ceil(DRAFT.keeperLockHoursBeforeDraft / 24);
   const daysUntilLock = Math.max(0, days - lockDaysBefore);
-  const phaseNote =
-    days === 0
+  /*
+   * A redraft has no declaration window, so the phase note cannot be about one.
+   * Reporting "keeper declarations locked" to a league that does not keep
+   * anybody is the sort of confident wrongness that makes a room stop trusting
+   * the rest of the numbers on the page.
+   */
+  const phaseNote = !FEATURES.keepers
+    ? days === 0
+      ? "Every pick is live — nobody is kept"
+      : `${TOTAL_PICKS} picks across ${DRAFT.rounds} rounds`
+    : days === 0
       ? "Draft day"
       : daysUntilLock === 0
         ? "Keeper declarations locked"
@@ -96,18 +107,32 @@ export async function getDashboardView(): Promise<DashboardView> {
     season: CURRENT_SEASON,
     phase: days === 0 ? "Draft day" : "Preseason phase",
     phaseNote,
-    tagline: `A ${LEAGUE.teams}-team ${SCORING_FORMAT} keeper league on ${LEAGUE.platform}, drafted in person.`,
+    tagline: `A ${LEAGUE.teams}-team ${SCORING_FORMAT} ${
+      FEATURES.keepers ? "keeper league" : "redraft league"
+    } on ${LEAGUE.platform}, drafted in person.`,
     stats: [
       {
         label: "Season",
         value: String(CURRENT_SEASON),
-        hint: `${SCORING_FORMAT} keeper`,
+        hint: `${SCORING_FORMAT} ${FEATURES.keepers ? "keeper" : "redraft"}`,
       },
-      {
-        label: "Keepers declared",
-        value: `${declared} / ${keeperSlots}`,
-        hint: `${KEEPERS.maxPerTeam} per franchise`,
-      },
+      /*
+       * The keeper tile is replaced rather than left showing "0 / 20", which
+       * reads as twenty declarations nobody has made yet. On a redraft the
+       * equivalent fact — and the one the room actually wants on draft day — is
+       * how much of the board is still to come.
+       */
+      FEATURES.keepers
+        ? {
+            label: "Keepers declared",
+            value: `${declared} / ${keeperSlots}`,
+            hint: `${KEEPERS.maxPerTeam} per franchise`,
+          }
+        : {
+            label: "Picks on the board",
+            value: String(TOTAL_PICKS),
+            hint: `${DRAFT.rounds} rounds · ${LEAGUE.teams} franchises`,
+          },
       {
         label: "Trades logged",
         value: String(tradeBoard.log.length),
@@ -144,6 +169,16 @@ function buildAlert(
   keeperSlots: number,
   declared: number,
 ): DashboardView["alert"] {
+  /*
+   * EVERY ALERT BELOW IS ABOUT KEEPERS, AND ON A REDRAFT EVERY ONE OF THEM
+   * FIRES WRONG. `pending` lists a franchise whenever it has declared fewer
+   * keepers than the maximum, so with keepers off it lists ALL TEN and the
+   * dashboard opens with "10 franchises have not answered on keepers" — about a
+   * question nobody was asked. That is the empty-data failure this whole page
+   * is most exposed to, and it would have been the first thing on the screen.
+   */
+  if (!FEATURES.keepers) return null;
+
   const awaiting = keeperBoard.pending.filter((p) => p.status === "awaiting");
   if (awaiting.length) {
     const names = awaiting.map((p) => p.manager).join(", ");
