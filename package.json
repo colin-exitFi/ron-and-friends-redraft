@@ -26,6 +26,7 @@
     "verify:mock:browser": "node scripts/verify-mock-browser.mjs",
     "verify:draft:realtime": "node --env-file=.env.local scripts/verify-draft-realtime.mjs",
     "verify:draft:remote": "node --env-file=.env.local scripts/verify-draft-two-clients.mjs",
+    "verify:draft:read-paths": "node --env-file=.env.local scripts/verify-draft-read-paths.mjs",
     "pull:players": "node scripts/smartdraft-players.mjs",
     "auth:fantasypros": "node --env-file-if-exists=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/fantasypros-auth.mjs",
     "pull:fantasypros": "node --env-file-if-exists=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/fantasypros-players.mjs",
