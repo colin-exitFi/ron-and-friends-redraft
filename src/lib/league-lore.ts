@@ -70,6 +70,8 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { CURRENT_SEASON } from "@/lib/league-config";
+
 /**
  * The manager the savage blurb is aimed at, or null for "whoever earned it".
  *
@@ -130,14 +132,18 @@ const MANAGER_PERSONAS: Record<string, string> = {
     "Franchise BigboofieBiff, and everybody calls him Biff. THE DEFENDING " +
     "CHAMPION — say it flat and never attach a year, a score, a margin or a " +
     "beaten opponent to it, because none of that is recorded and this board " +
-    "has no previous season on it. Right now he is loudly bitching that the " +
-    "draft is offline and in the room, because he cannot research off his " +
-    "phone, and he hates the idea of a keeper league; he and Ryan hate change " +
-    "and new things and are dorks about it. One of the four Rainman guys. In " +
-    "Vegas, extremely fucked up, he puked on the ground and narrated it as it " +
-    "came — \"Here comes another one. Oh, that's a good one.\" — while Tom " +
-    "hollered \"Take a walk, motherfucker\" at him from a safe distance. He is " +
-    "going to be honking boobies.",
+    "has no previous season on it. He is the loudest man in the league right " +
+    "now and he is complaining about two things, and both complaints are " +
+    "primarily HIS — Ryan is the backing vocal, not the co-author. FIRST: he " +
+    "has never done an offline draft in his life. He is a Yahoo app man, " +
+    "drafting off his phone from the couch, and a draft held in a room with " +
+    "actual people is the new and frightening thing; his specific gripe is " +
+    "that he cannot research off his phone. SECOND: he hates the idea of a " +
+    "keeper league, and he has made it his entire personality this week. One " +
+    "of the four Rainman guys. In Vegas, extremely fucked up, he puked on the " +
+    "ground and narrated it as it came — \"Here comes another one. Oh, that's " +
+    "a good one.\" — while Tom hollered \"Take a walk, motherfucker\" at him " +
+    "from a safe distance. He is going to be honking boobies.",
 
   Scott:
     "Franchise ScottBrennanstl. Brand new: this is very likely the first " +
@@ -185,11 +191,14 @@ const MANAGER_PERSONAS: Record<string, string> = {
     "the room. See the shared lore on the voice and the restraint note with " +
     "it. He once shot a goose with a bow and arrow. He got in " +
     "a fight on the University of Illinois campus — the one Tom yelled \"Roast " +
-    "him!\" at. He is bitching alongside Chris about the draft being offline " +
-    "and about the keeper idea; the two of them hate change and new things and " +
-    "are dorks about it. HE IS NOT A RAINMAN GUY. That group is Colin, Nick, " +
-    "Chris and Tom, and putting Ryan in it is exactly the misattribution this " +
-    "section exists to prevent.",
+    "him!\" at. Like Chris he has never done an offline draft — another Yahoo " +
+    "app man, out of his element in a room — and he is grumbling along about " +
+    "that and about the keeper idea. HE IS THE SECOND VOICE ON BOTH: Chris " +
+    "owns those grievances and Ryan is agreeing with him, so do not split them " +
+    "evenly. The two of them hate change and new things and are dorks about " +
+    "it. HE IS NOT A RAINMAN GUY. That group is Colin, Nick, Chris and Tom, " +
+    "and putting Ryan in it is exactly the misattribution this section exists " +
+    "to prevent.",
 
   Keith:
     "Franchise JollyRushers. Brand new: very likely the first fantasy football " +
@@ -216,6 +225,36 @@ const MANAGER_PERSONAS: Record<string, string> = {
  * it is four men and not ten.
  */
 const ORAL_ONLY: string[] = [
+  "**THE KEEPER ARGUMENT, WHICH IS A PROPOSAL AND NOT THIS SEASON'S FORMAT.** " +
+    "Somebody floated the idea of turning this into a keeper league. It was " +
+    `not adopted, ${CURRENT_SEASON} is a pure redraft, and NOTHING IN A BLURB ` +
+    "MAY IMPLY OTHERWISE — nobody kept anybody, nobody could have. What is " +
+    "real is the row about it, and Chris is the one having it. His words, " +
+    "recorded: **\"Why the fuck do I want to do a keeper league? I'm keeping " +
+    "Puka because he had Puka on his team last year.\"** The joke is that this " +
+    "is not what a keeper league is, at all, and he is saying it with total " +
+    "confidence. **HE IS VERIFIED AS TO THE SAYING AND NOT AS TO THE CLAIM** — " +
+    "quote him, attribute it to him, and do not let one word of it become a " +
+    "statement of your own about Puka, about anybody's roster, or about how " +
+    "keeping works. And the commissioner's own footnote, which is what stops " +
+    "this being a joke at one man's expense: honestly nobody in this league " +
+    "understands what a keeper league is.",
+
+  "**THE OFFLINE DRAFT, AND THEY HAVE IT EXACTLY BACKWARDS.** Chris and Ryan " +
+    "have never drafted anywhere but Yahoo on their phones — the handy dandy " +
+    "app, from the couch — so a draft held in a room with other people is new " +
+    "and they are mourning it loudly. What they have not worked out is that " +
+    "the app is the one that punishes you: online everybody is on a clock and " +
+    "there are no breaks. In the room you can take your time, smoke pot, " +
+    "drink beers, honk boobies, dick around and actually have a good time. " +
+    "**They are grieving the loss of a timer.** And the second half of it, " +
+    "which is better than the first: Colin built this whole app around them " +
+    "so that they could do exactly what they are used to doing, so the " +
+    "complaint is aimed at the one man who had already solved it. Any of " +
+    "those three angles is available — the phone drafters out of their " +
+    "element, the clock they escaped without noticing, or the commissioner " +
+    "who pre-emptively fixed a grievance they insisted on having anyway.",
+
   "**Boofy / boofied** is the league's collective word for a fart, and it " +
     "conjugates freely: \"Did you boofy?\", \"get boofied\", \"Don't get " +
     "boofied\", \"You're going to get fucked — here comes the boofy.\"",

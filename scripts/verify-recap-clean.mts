@@ -224,6 +224,46 @@ check(
   new Set(roster.map((s) => s.toLowerCase())).size === roster.length,
 );
 
+section("8. The keeper row is recorded as an argument, never as this season's format");
+/*
+ * THE ONE PLACE "KEEPER" IS ALLOWED TO APPEAR IN THE LORE, AND WHY IT IS FENCED.
+ *
+ * Chris is loudly against a keeper league that was floated and not adopted, and
+ * the commissioner wanted the row recorded because it is the funniest thing
+ * happening in the room tonight. It is also the single easiest way for a blurb
+ * to state that this league has keepers — `FEATURES.keepers` is false and 2026
+ * is a pure redraft — so the lore has to carry the grievance AND the fact that
+ * it is about a proposal, and his quote has to stay a thing he said rather than
+ * a thing that is true.
+ */
+check(
+  "the lore records the keeper league as a proposal that was not adopted",
+  /A PROPOSAL AND NOT THIS SEASON'S FORMAT/.test(lore) &&
+    new RegExp(`${LEAGUE.currentSeason} is a pure redraft`).test(lore),
+);
+check(
+  "Chris's own words are quoted, and fenced as saying rather than as claim",
+  /Why the fuck do I want to do a keeper league/.test(lore) &&
+    /VERIFIED AS TO THE SAYING AND NOT AS TO THE CLAIM/.test(lore),
+);
+/*
+ * THE INVERSION, ASSERTED BECAUSE IT WAS RECORDED BACKWARDS ONCE. Chris and
+ * Ryan have never done an OFFLINE draft — they are Yahoo-app phone drafters and
+ * a room full of people is the new thing. Written the other way round the joke
+ * still reads perfectly and is the exact opposite of true about two men who
+ * will be sitting here while it is read out.
+ */
+check(
+  "the offline draft is the new thing for them, not the online one",
+  /never done an offline draft/.test(lore) &&
+    /Yahoo app man/.test(lore) &&
+    !/never done an online draft/i.test(lore),
+);
+check(
+  "…and the grievance is weighted to Chris rather than split with Ryan",
+  /HE IS THE SECOND VOICE ON BOTH/.test(lore) && /do not split them evenly/.test(lore),
+);
+
 console.log(`\n  ${checks} checks, ${failures.length} failed.\n`);
 if (failures.length) {
   console.log("FAILED:");
