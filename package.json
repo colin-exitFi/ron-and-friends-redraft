@@ -62,6 +62,7 @@
     "verify:draft:notes": "DRAFT_STORE=database node --env-file=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-draft-notes.mts",
     "verify:recap": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap.mts",
     "verify:recap:clean": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-clean.mts",
+    "verify:recap:predraft": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-predraft.mts",
     "verify:recap:browser": "node scripts/verify-recap-browser.mjs",
     "audit:recap:layout": "node scripts/audit-recap-layout.mjs",
     "audit:nav:pane": "node scripts/audit-nav-pane.mjs",
