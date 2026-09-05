@@ -78,16 +78,16 @@ export default async function DraftExportPage() {
             <Download className="h-4 w-4" /> Rosters CSV
           </Button>
           {/*
-            The one to actually use on ESPN. Ordered to match LM Tools → Input
-            Offline Draft Results, which takes no file and is filled in by
-            typing, one franchise at a time.
+            The one to actually use when entering the result on Sleeper. Ordered
+            by roster slot, because the platform's offline-draft form takes no
+            file and is filled in by typing, one franchise at a time.
           */}
           <Button
             nativeButton={false}
-            title="Roster-slot order, for typing into ESPN's offline draft form"
+            title="Roster-slot order, for typing the result into Sleeper"
             render={<a href="/api/draft/export?what=espn" />}
           >
-            <Download className="h-4 w-4" /> ESPN entry CSV
+            <Download className="h-4 w-4" /> Lineup entry CSV
           </Button>
           <PrintButton />
         </div>

@@ -11,11 +11,10 @@ export const dynamic = "force-dynamic";
 
 const DESCRIPTION =
   "The league ballot, officers, vote tallies, and the log of commissioner " +
-  "rulings. Kyle Mertens is the commissioner and the league's only officer. " +
-  "Five items are on the ballot, each recorded as a motion awaiting a vote — " +
-  "this app records the questions and does not decide them. The league has no " +
-  "ratified constitution, so the vote thresholds come from league-config and " +
-  "are defaults until the league adopts them.";
+  "rulings. This app records the questions and does not decide them. The " +
+  "thresholds come from the 2026 Season Proposal, section 9: a simple majority " +
+  "for a standard rule change, two-thirds for anything structural — scoring, " +
+  "rosters, or money.";
 
 export default async function GovernancePage() {
   if (!hasDatabase()) {
@@ -26,14 +25,13 @@ export default async function GovernancePage() {
         reason={
           "Unlike the other pages, there is no snapshot that can stand in here. " +
           "Motions, seconds and votes are new facts the league creates by voting — " +
-          "they do not exist in the Smart Draft room, the ESPN league, or the " +
-          "commissioner's workbooks, so there is nothing to read them from."
+          "nothing on Sleeper records them, so there is nothing to read them from."
         }
         needs={[
           {
-            label: "The ballot — five motions",
+            label: "Motions",
             detail:
-              "the Puka Nacua keeper timeline, the trade-and-reset loophole, whether contingent trades are permitted at all, how future-season picks may be traded, and the round-2 keeper consequence. All five are written up in full in data/DECISIONS.md, each with the question stated neutrally, what turns on it, and its deadline — two of them must be settled before the 2027 keeper clocks are computed",
+              "a proposal, a second, a short discussion and then a vote, per section 9 of the proposal. Nothing is on the ballot yet — 2026's ruleset was settled before the draft and the rules are locked for the season once it starts",
           },
           {
             label: "Votes",
@@ -43,19 +41,19 @@ export default async function GovernancePage() {
           {
             label: "Officers",
             detail:
-              "Kyle Mertens is the commissioner and the only officer — no vice commissioner, no treasurer. Recorded against his franchise id rather than the name 'Kyle', because that string is also Kyle Witte's first name",
+              "the commissioner, recorded against a franchise id rather than a name, so the office cannot detach from the man if he renames his team",
           },
           {
             label: "The decisions log",
             detail:
-              "the commissioner's rulings, so the league can see what was decided unilaterally and why — Nacua to Scott at R11, the Smart Draft draft order over ESPN's, Loveland at R9, and Ted Buckman being Zach Rakowski",
+              "the commissioner's rulings, so the league can see what was decided unilaterally and why",
           },
         ]}
         worksToday={
           "Everything that only needs to be read already works: the draft board, " +
-          "the player pool, the ten franchises, every declared keeper with his tenure, " +
-          "and the full trade log. The rulings above are applied to those pages " +
-          "today — they just are not yet recorded here as votable decisions."
+          "the player pool, the ten franchises and their rosters. Governance is the " +
+          "one surface that has nothing to fall back on, because its content does " +
+          "not exist until somebody votes."
         }
       />
     );

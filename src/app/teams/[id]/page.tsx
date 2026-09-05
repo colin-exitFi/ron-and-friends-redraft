@@ -289,7 +289,7 @@ export default async function FranchisePage({
         <DataSourceNote
           fromDatabase={source.fromDatabase}
           fallbackReason={source.fallbackReason}
-          snapshotLabel="data/managers.json and the Smart Draft room snapshot"
+          snapshotLabel="data/managers.json and the board snapshot, both read from Sleeper"
         />
       </PageBody>
     </>

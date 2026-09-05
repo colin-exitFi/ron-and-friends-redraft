@@ -16,7 +16,7 @@ import { LEAGUE, SCORING_FORMAT } from "@/lib/league-config";
 export const metadata = { title: `Players · ${LEAGUE.name}` };
 export const dynamic = "force-dynamic";
 
-const RANKED_LIMIT = 400; // everyone Smart Draft has an ADP for, and then some
+const RANKED_LIMIT = 400; // everyone the base pool has an ADP for, and then some
 const ALL_LIMIT = 250;
 
 export default async function PlayersPage({
@@ -52,12 +52,12 @@ export default async function PlayersPage({
   );
 
   const fetchedAt = new Date(getPoolFetchedAt());
-  // Smart Draft's API defaults to half-PPR, so a pool pulled at the wrong scope
+  // The base pool's ADP was pulled at a stated scope, so a pool pulled at the wrong one
   // would look identical here while quietly undervaluing receivers.
   const poolScope = getPoolScoringFormat();
   const scopeMatchesLeague = poolScope === SCORING_FORMAT;
   // Where the ADP in this table actually came from. FantasyPros covers the
-  // players anyone is drafting and Smart Draft covers the tail, so saying "as
+  // players anyone is drafting and the base pool covers the tail, so saying "as
   // of" once over the whole table would be a claim about the wrong file.
   const { fantasyPros } = getPoolProvenance();
 
@@ -89,7 +89,7 @@ export default async function PlayersPage({
         ? `FantasyPros could not be reached, so these are the last good numbers, from ${when(live.fetchedAt)}. ${live.reason ?? ""}`
         : live.source === "snapshot"
           ? `FantasyPros could not be reached, so these are the committed snapshot's numbers, pulled ${when(live.fetchedAt)}. ${live.reason ?? ""}`
-          : `No FantasyPros data is available, so this is Smart Draft's board. ${live.reason ?? ""}`;
+          : `No FantasyPros data is available, so this is the base pool's board. ${live.reason ?? ""}`;
 
   function href(next: { pos?: string; view?: string }) {
     const params = new URLSearchParams();
@@ -107,7 +107,7 @@ export default async function PlayersPage({
       <PageHeader
         eyebrow="Player pool"
         title="Players"
-        description={`FantasyPros' live consensus board, with Smart Draft behind it for the players FantasyPros does not rank. ${SCORING_FORMAT} scoring, and no kickers: the K position is not used in this league.`}
+        description={`FantasyPros' live consensus board, with the base pool behind it for the players FantasyPros does not rank. ${SCORING_FORMAT} scoring, and no kickers: the K position is not used in this league.`}
       />
       <PageBody>
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -153,7 +153,7 @@ export default async function PlayersPage({
               {fantasyPros && (
                 <>
                   {" "}
-                  Below FantasyPros&apos; ranked pool everyone keeps Smart Draft&apos;s
+                  Below FantasyPros&apos; ranked pool everyone keeps the base pool&apos;s
                   number — it stops around ADP 270, a hundred picks past the end of
                   this draft, so nobody the room will reach is affected.
                 </>

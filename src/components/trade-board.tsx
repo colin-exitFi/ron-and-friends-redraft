@@ -48,7 +48,7 @@ function SideColumn({ side }: { side: TradeLogSide }) {
               {!p.playerId && (
                 <span
                   className="text-muted-foreground shrink-0 text-[11px]"
-                  title="This name did not match anyone in the Smart Draft pool — it is shown exactly as it was typed in the trade log."
+                  title="This name did not match anyone in the player pool — it is shown exactly as it was typed in the trade log."
                 >
                   (unmatched)
                 </span>
@@ -93,7 +93,7 @@ function TradeCard({ trade }: { trade: TradeLogEntry }) {
             {trade.unapplied && !trade.provisional && (
               <Badge
                 variant="outline"
-                title="Recorded as history but not applied to the pick ledger. The imported workbook trades sit here on purpose — the Smart Draft room snapshot already reflects their net 2026 result."
+                title="Recorded as history but not applied to the pick ledger. An imported trade sits here on purpose — the board snapshot already reflects its net result."
               >
                 Not applied
               </Badge>

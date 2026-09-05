@@ -61,9 +61,9 @@ export async function GET(request: Request) {
     let name: string;
 
     if (what === "espn") {
-      name = `ukl-${CURRENT_SEASON}-espn-entry.csv`;
+      name = `ron-and-friends-${CURRENT_SEASON}-lineup-entry.csv`;
       rows = [
-        ["Franchise", "Manager", "Slot", "Type in ESPN", "Pos", "NFL", "Bye", "Keeper", "Drafted"],
+        ["Franchise", "Manager", "Slot", "Type in Sleeper", "Pos", "NFL", "Bye", "Keeper", "Drafted"],
       ];
       for (const lineup of buildFranchiseLineups(view, readLineupProjectionPoints())) {
         const line = (
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         for (const player of lineup.overflow) line("OVER ROSTER CAP", player);
       }
     } else if (what === "rosters") {
-      name = `ukl-${CURRENT_SEASON}-rosters.csv`;
+      name = `ron-and-friends-${CURRENT_SEASON}-rosters.csv`;
       rows = [
         ["Franchise", "Manager", "Pick", "Round", "Position", "Player", "NFL", "Bye", "Keeper"],
       ];
@@ -113,7 +113,7 @@ export async function GET(request: Request) {
         }
       }
     } else {
-      name = `ukl-${CURRENT_SEASON}-board.csv`;
+      name = `ron-and-friends-${CURRENT_SEASON}-board.csv`;
       rows = [
         [
           "Overall",

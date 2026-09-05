@@ -930,7 +930,7 @@ function Header({
         <Image
           src="/brand/crest-v2-256.png"
           alt=""
-          width={64}
+          width={58}
           height={64}
           className="h-[2.4vh] w-[2.4vh] shrink-0 rounded object-contain max-md:h-4 max-md:w-4"
           priority

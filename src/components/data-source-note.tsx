@@ -12,7 +12,7 @@ export function DataSourceNote({
   fromDatabase,
   fallbackReason,
   fetchedAt,
-  snapshotLabel = "the Smart Draft room snapshot",
+  snapshotLabel = "the board snapshot in data/",
 }: {
   fromDatabase: boolean;
   fallbackReason?: string | null;

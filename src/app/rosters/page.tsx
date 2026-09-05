@@ -98,12 +98,9 @@ export default async function RostersPage() {
         <RosterBoard view={view} projectedPoints={readLineupProjectionPoints()} />
 
         <p className="text-muted-foreground/70 text-[13px] leading-relaxed">
-          Left and right arrows switch franchises. Keepers carry a{" "}
-          <Lock className="inline h-3 w-3" aria-hidden /> and sit at the board
-          cell they cost; a pick acquired in a trade names the franchise it came
-          from. Read from the live board in{" "}
-          <span className="font-mono">data/</span> and from the Smart Draft
-          snapshot &mdash; the same two sources the draft room uses.
+          Left and right arrows switch franchises. Read from the live board and
+          the snapshot in <span className="font-mono">data/</span> &mdash; the
+          same two sources the draft room uses.
         </p>
       </PageBody>
     </>

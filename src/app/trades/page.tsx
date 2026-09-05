@@ -64,7 +64,7 @@ export default async function TradesPage() {
           fromDatabase={board.fromDatabase}
           fallbackReason={board.fallbackReason}
           fetchedAt={board.fetchedAt}
-          snapshotLabel="the Smart Draft room snapshot and the commissioner's trade log"
+          snapshotLabel="the board snapshot and the commissioner's trade log"
         />
       </PageBody>
     </>

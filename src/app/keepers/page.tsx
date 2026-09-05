@@ -38,7 +38,7 @@ export default async function KeepersPage() {
           fromDatabase={board.fromDatabase}
           fallbackReason={board.fallbackReason}
           fetchedAt={board.fetchedAt}
-          snapshotLabel="the Smart Draft room, cross-referenced against the 2026 keeper sheets"
+          snapshotLabel="the board snapshot in data/"
         />
       </PageBody>
     </>

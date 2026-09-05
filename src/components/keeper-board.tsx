@@ -162,7 +162,7 @@ function RoomSyncNote({ board }: { board: KeeperBoardView }) {
     <div className="border-border bg-muted/30 flex flex-wrap items-start gap-x-3 gap-y-1.5 rounded-md border px-3 py-2">
       <span className="flex items-center gap-1.5 text-xs font-medium">
         <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" />
-        Not yet in Smart Draft
+        Not yet on the board
       </span>
       <span className="text-muted-foreground text-xs">
         {missing.length === 1
@@ -172,7 +172,7 @@ function RoomSyncNote({ board }: { board: KeeperBoardView }) {
         <Link href="/draft" className="underline underline-offset-2 max-md:py-4">
           the draft board
         </Link>{" "}
-        already show them; Smart Draft will not until they are keyed in.
+        already show them.
       </span>
       <ul className="flex w-full flex-wrap gap-x-4 gap-y-1 pt-0.5">
         {missing.map((m) => (
