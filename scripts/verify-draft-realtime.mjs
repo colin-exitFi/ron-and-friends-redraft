@@ -25,6 +25,8 @@
  */
 import { createClient } from "@supabase/supabase-js";
 
+import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
+
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -39,10 +41,14 @@ const TIMEOUT_MS = 15_000;
 
 /** Subscribes as a BROWSER would: anon key, no service privileges. */
 const watcher = createClient(url, anon, {
+  db: { schema: DB_SCHEMA },
   auth: { persistSession: false },
   realtime: { params: { eventsPerSecond: 20 } },
 });
-const writer = createClient(url, service, { auth: { persistSession: false } });
+const writer = createClient(url, service, {
+  db: { schema: DB_SCHEMA },
+  auth: { persistSession: false },
+});
 
 const received = [];
 let resolveFirst;
@@ -53,7 +59,14 @@ const firstEvent = new Promise((r) => {
 const channel = watcher.channel("verify-draft-live");
 channel.on(
   "postgres_changes",
-  { event: "*", schema: "public", table: "draft_live_state" },
+  /*
+   * `DB_SCHEMA`, not `"public"`. This is the assertion that matters most in the
+   * whole file: a subscription naming the wrong schema still reports SUBSCRIBED
+   * and simply never delivers, so hardcoding `"public"` here would make this
+   * script fail against a correctly configured app — or, worse, pass against a
+   * `public` deployment while the app itself watched `redraft`.
+   */
+  { event: "*", schema: DB_SCHEMA, table: "draft_live_state" },
   (payload) => {
     received.push(payload);
     resolveFirst?.(payload);

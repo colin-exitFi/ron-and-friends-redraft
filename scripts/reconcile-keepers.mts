@@ -44,6 +44,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { DB_SCHEMA } from "@/lib/db-schema.mjs";
 import { readRoom } from "@/lib/draft-service";
 import { CURRENT_SEASON } from "@/lib/league-config";
 
@@ -127,7 +128,10 @@ try {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase env vars not loaded (use --env-file=.env.local)");
   const { createClient } = await import("@supabase/supabase-js");
-  const db = createClient(url, key, { auth: { persistSession: false } });
+  const db = createClient(url, key, {
+    db: { schema: DB_SCHEMA },
+    auth: { persistSession: false },
+  });
 
   const { data: teams } = await db.from("teams").select("id, short_name");
   const teamName = new Map((teams ?? []).map((t) => [t.id, t.short_name]));

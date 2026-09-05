@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { DB_SCHEMA } from "@/lib/db-schema.mjs";
 
 type Status = "connecting" | "live" | "error";
 
@@ -47,7 +48,16 @@ export function RealtimeRefresher({
     for (const table of tableKey.split(",")) {
       channel.on(
         "postgres_changes",
-        { event: "*", schema: "public", table },
+        /*
+         * `schema` IS NOT INHERITED FROM THE CLIENT'S `db` OPTION. It was
+         * hardcoded `"public"` here, which on this project is the live R&F app's
+         * schema — so every subscription would have reported SUBSCRIBED, watched
+         * the wrong league's tables, and refreshed this app for changes that had
+         * nothing to do with it while never seeing its own. There is no error to
+         * find when this is wrong; the pill just sits on "Live" and nothing
+         * updates.
+         */
+        { event: "*", schema: DB_SCHEMA, table },
         () => {
           if (timer.current) clearTimeout(timer.current);
           timer.current = setTimeout(() => router.refresh(), debounceMs);

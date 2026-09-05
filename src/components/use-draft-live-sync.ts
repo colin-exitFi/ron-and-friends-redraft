@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { DB_SCHEMA } from "@/lib/db-schema.mjs";
+
 export type LiveStatus = "off" | "connecting" | "live" | "polling";
 
 /**
@@ -195,7 +197,18 @@ export function useDraftLiveSync({
 
         channel.on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "draft_live_state" },
+          /*
+           * `schema` is configured HERE and not by the client's `db` option,
+           * which governs `.from(...)` only. Left on the default `"public"` this
+           * subscribes to the live R&F app's schema — which has no
+           * `draft_live_state` at all — reports SUBSCRIBED, and then delivers
+           * nothing for the rest of the night. The board would fall back to the
+           * ten-second poll and look merely slow rather than broken, which is
+           * the failure nobody notices until picks are arriving late in front of
+           * ten people. `npm run verify:draft:realtime` is the check that this
+           * is right.
+           */
+          { event: "*", schema: DB_SCHEMA, table: "draft_live_state" },
           () => {
             /*
              * The payload carries the whole draft document, and it is ignored on

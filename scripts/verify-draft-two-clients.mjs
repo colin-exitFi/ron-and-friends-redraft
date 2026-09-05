@@ -55,6 +55,8 @@
  */
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
+
+import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
 import { createHash } from "node:crypto";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:3131";
@@ -138,7 +140,16 @@ if (!url || !service) {
   process.exit(1);
 }
 
-const db = createClient(url, service, { auth: { persistSession: false } });
+/*
+ * `db.schema`: this snapshots and RESTORES the real draft board, so a client
+ * on the wrong schema would read an empty snapshot, "restore" it over the live
+ * row, and report success. The one test that borrows the live board has to be
+ * the most certain about which board it is holding.
+ */
+const db = createClient(url, service, {
+  db: { schema: DB_SCHEMA },
+  auth: { persistSession: false },
+});
 
 const entered = await serverPicks().catch((err) => {
   console.error(`Could not read ${BASE}/api/draft/state: ${err.message}`);

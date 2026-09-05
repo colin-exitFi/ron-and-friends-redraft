@@ -12,32 +12,7 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  public: {
+  redraft: {
     Tables: {
       commissioner_actions: {
         Row: {
@@ -266,7 +241,7 @@ export type Database = {
           current_overall_pick: number | null
           paused_at: string | null
           season: number
-          status: Database["public"]["Enums"]["draft_status"]
+          status: Database["redraft"]["Enums"]["draft_status"]
           updated_at: string
         }
         Insert: {
@@ -275,7 +250,7 @@ export type Database = {
           current_overall_pick?: number | null
           paused_at?: string | null
           season: number
-          status?: Database["public"]["Enums"]["draft_status"]
+          status?: Database["redraft"]["Enums"]["draft_status"]
           updated_at?: string
         }
         Update: {
@@ -284,7 +259,7 @@ export type Database = {
           current_overall_pick?: number | null
           paused_at?: string | null
           season?: number
-          status?: Database["public"]["Enums"]["draft_status"]
+          status?: Database["redraft"]["Enums"]["draft_status"]
           updated_at?: string
         }
         Relationships: [
@@ -442,7 +417,7 @@ export type Database = {
           seasons_kept: number
           sheet_tenure_year: number | null
           source: string | null
-          status: Database["public"]["Enums"]["keeper_status"]
+          status: Database["redraft"]["Enums"]["keeper_status"]
           team_id: string
           updated_at: string
         }
@@ -460,7 +435,7 @@ export type Database = {
           seasons_kept?: number
           sheet_tenure_year?: number | null
           source?: string | null
-          status?: Database["public"]["Enums"]["keeper_status"]
+          status?: Database["redraft"]["Enums"]["keeper_status"]
           team_id: string
           updated_at?: string
         }
@@ -478,7 +453,7 @@ export type Database = {
           seasons_kept?: number
           sheet_tenure_year?: number | null
           source?: string | null
-          status?: Database["public"]["Enums"]["keeper_status"]
+          status?: Database["redraft"]["Enums"]["keeper_status"]
           team_id?: string
           updated_at?: string
         }
@@ -580,8 +555,8 @@ export type Database = {
           proposer_team: string | null
           season: number
           seconded_by_team: string | null
-          status: Database["public"]["Enums"]["motion_status"]
-          threshold: Database["public"]["Enums"]["motion_threshold"]
+          status: Database["redraft"]["Enums"]["motion_status"]
+          threshold: Database["redraft"]["Enums"]["motion_threshold"]
           type: string
         }
         Insert: {
@@ -594,8 +569,8 @@ export type Database = {
           proposer_team?: string | null
           season: number
           seconded_by_team?: string | null
-          status?: Database["public"]["Enums"]["motion_status"]
-          threshold?: Database["public"]["Enums"]["motion_threshold"]
+          status?: Database["redraft"]["Enums"]["motion_status"]
+          threshold?: Database["redraft"]["Enums"]["motion_threshold"]
           type: string
         }
         Update: {
@@ -608,8 +583,8 @@ export type Database = {
           proposer_team?: string | null
           season?: number
           seconded_by_team?: string | null
-          status?: Database["public"]["Enums"]["motion_status"]
-          threshold?: Database["public"]["Enums"]["motion_threshold"]
+          status?: Database["redraft"]["Enums"]["motion_status"]
+          threshold?: Database["redraft"]["Enums"]["motion_threshold"]
           type?: string
         }
         Relationships: [
@@ -641,30 +616,30 @@ export type Database = {
           created_at: string
           id: string
           manager: string | null
-          role: Database["public"]["Enums"]["officer_role"]
+          role: Database["redraft"]["Enums"]["officer_role"]
           season: number
           since: string | null
-          status: Database["public"]["Enums"]["officer_status"]
+          status: Database["redraft"]["Enums"]["officer_status"]
           team_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           manager?: string | null
-          role: Database["public"]["Enums"]["officer_role"]
+          role: Database["redraft"]["Enums"]["officer_role"]
           season: number
           since?: string | null
-          status?: Database["public"]["Enums"]["officer_status"]
+          status?: Database["redraft"]["Enums"]["officer_status"]
           team_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           manager?: string | null
-          role?: Database["public"]["Enums"]["officer_role"]
+          role?: Database["redraft"]["Enums"]["officer_role"]
           season?: number
           since?: string | null
-          status?: Database["public"]["Enums"]["officer_status"]
+          status?: Database["redraft"]["Enums"]["officer_status"]
           team_id?: string | null
         }
         Relationships: [
@@ -809,7 +784,7 @@ export type Database = {
       }
       trade_assets: {
         Row: {
-          asset_type: Database["public"]["Enums"]["trade_asset_type"]
+          asset_type: Database["redraft"]["Enums"]["trade_asset_type"]
           created_at: string
           from_team: string
           id: string
@@ -819,7 +794,7 @@ export type Database = {
           trade_id: string
         }
         Insert: {
-          asset_type: Database["public"]["Enums"]["trade_asset_type"]
+          asset_type: Database["redraft"]["Enums"]["trade_asset_type"]
           created_at?: string
           from_team: string
           id?: string
@@ -829,7 +804,7 @@ export type Database = {
           trade_id: string
         }
         Update: {
-          asset_type?: Database["public"]["Enums"]["trade_asset_type"]
+          asset_type?: Database["redraft"]["Enums"]["trade_asset_type"]
           created_at?: string
           from_team?: string
           id?: string
@@ -935,7 +910,7 @@ export type Database = {
           season: number
           source: string | null
           source_ref: string | null
-          status: Database["public"]["Enums"]["trade_status"]
+          status: Database["redraft"]["Enums"]["trade_status"]
           traded_at: string | null
         }
         Insert: {
@@ -948,7 +923,7 @@ export type Database = {
           season: number
           source?: string | null
           source_ref?: string | null
-          status?: Database["public"]["Enums"]["trade_status"]
+          status?: Database["redraft"]["Enums"]["trade_status"]
           traded_at?: string | null
         }
         Update: {
@@ -961,7 +936,7 @@ export type Database = {
           season?: number
           source?: string | null
           source_ref?: string | null
-          status?: Database["public"]["Enums"]["trade_status"]
+          status?: Database["redraft"]["Enums"]["trade_status"]
           traded_at?: string | null
         }
         Relationships: [
@@ -984,21 +959,21 @@ export type Database = {
       votes: {
         Row: {
           cast_at: string
-          choice: Database["public"]["Enums"]["vote_choice"]
+          choice: Database["redraft"]["Enums"]["vote_choice"]
           id: string
           motion_id: string
           team_id: string
         }
         Insert: {
           cast_at?: string
-          choice: Database["public"]["Enums"]["vote_choice"]
+          choice: Database["redraft"]["Enums"]["vote_choice"]
           id?: string
           motion_id: string
           team_id: string
         }
         Update: {
           cast_at?: string
-          choice?: Database["public"]["Enums"]["vote_choice"]
+          choice?: Database["redraft"]["Enums"]["vote_choice"]
           id?: string
           motion_id?: string
           team_id?: string
@@ -1057,18 +1032,23 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+// PATCHED AFTER GENERATION: "public" -> "redraft". See the note at the foot of
+// this file. The generator hardcodes `"public"` as the default schema, and this
+// app's tables are not there — `Extract<keyof Database, "public">` is `never`
+// on a redraft-only generation, which silently collapses `Tables<>`, `Enums<>`
+// and every alias built on them to `never`.
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "redraft">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1092,11 +1072,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1117,11 +1097,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1142,11 +1122,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1159,11 +1139,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1173,10 +1153,7 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
-  public: {
+  redraft: {
     Enums: {
       draft_status: ["not_started", "in_progress", "paused", "complete"],
       keeper_status: ["declared", "confirmed", "placed", "withdrawn"],
@@ -1211,10 +1188,27 @@ export const Constants = {
 // names the application imports, kept here so a regeneration is a copy-paste of
 // the block above rather than a refactor of every call site.
 //
-// `npm run db:types` OVERWRITES THIS FILE, so this block has to be pasted back
-// after every regeneration. Dropping it takes `next build` down — eight modules
-// import these names — which is a production build failure rather than a
-// warning. Check `npx tsc --noEmit` before committing a regenerated schema.
+// `npm run db:types` OVERWRITES THIS FILE, so TWO THINGS have to be put back
+// after every regeneration:
+//
+//   1. This block. Dropping it takes `next build` down — eight modules import
+//      these names — which is a production build failure rather than a warning.
+//
+//   2. The `DefaultSchema` line, roughly 1035 lines up. The generator hardcodes
+//      the default schema as `"public"`; this app lives in `redraft` and the
+//      generation is `--schema redraft`, so `Extract<keyof Database, "public">`
+//      comes out `never` and every helper above quietly becomes `never`. That
+//      one is worse than a missing alias because it does not name itself: the
+//      errors land on unrelated call sites.
+//
+// Both are why the schema is generated for `redraft` ALONE and not for
+// `public,redraft`. Including `public` would make `DefaultSchema` resolve on
+// its own, and it would resolve to the LIVE R&F APP'S SCHEMA — whose
+// `keeper_status` carries a `forfeited` value this league does not have and
+// whose `trade_status` carries `review`. The types would compile and describe
+// the wrong league.
+//
+// Check `npx tsc --noEmit` before committing a regenerated schema.
 
 export type DraftStatus = Enums<"draft_status">;
 export type KeeperStatus = Enums<"keeper_status">;

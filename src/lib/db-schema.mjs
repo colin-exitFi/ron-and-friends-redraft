@@ -27,6 +27,19 @@
  * proving the app works would talk to another.
  *
  * ============================================================================
+ * WHY IT IS NOT IN `lib/supabase/`, WHERE IT OBVIOUSLY BELONGS
+ * ============================================================================
+ * `verify:draft` walks the import graph from `/draft` and fails if anything
+ * reachable from it imports `@supabase/*` or `@/lib/supabase/*`. That guard is
+ * the offline guarantee: the board has to work with the venue's wifi unplugged,
+ * so the Supabase client is loaded lazily and must not be in that bundle.
+ *
+ * This file is an inert string and could not break that promise, but the guard
+ * matches on path and cannot know it. Living here means the guard stays at full
+ * strength with no exception carved into it — a weakened check is worth more
+ * than a tidy directory.
+ *
+ * ============================================================================
  * TWO PLACES NEED IT, AND THEY ARE CONFIGURED SEPARATELY
  * ============================================================================
  * 1. `createClient(..., { db: { schema: DB_SCHEMA } })` — the REST/PostgREST

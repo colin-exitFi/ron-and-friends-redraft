@@ -21,6 +21,8 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+
+import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -60,7 +62,10 @@ if (!url || !key) {
   process.exit(0);
 }
 
-const db = createClient(url, key, { auth: { persistSession: false } });
+const db = createClient(url, key, {
+  db: { schema: DB_SCHEMA },
+  auth: { persistSession: false },
+});
 
 const { data: teams, error } = await db
   .from("teams")

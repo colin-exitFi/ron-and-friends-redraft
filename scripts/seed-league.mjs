@@ -35,6 +35,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
+
 const ROOT = process.cwd();
 const SEASON = 2026;
 const NEXT_SEASON = SEASON + 1;
@@ -96,12 +98,20 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
   console.error(
     "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.\n" +
       "Fill them into .env.local. Retrieve the keys with:\n" +
-      "  supabase projects api-keys --project-ref xqhkhcmphvytoibjewqi",
+      "  supabase projects api-keys --project-ref opxyeajywipsitwecgcz",
   );
   process.exit(1);
 }
 
+/*
+ * `db.schema` is not optional here. This client holds the SERVICE-ROLE key, so
+ * it bypasses RLS, and `public` on this project is the live backend for
+ * ron-and-friends-fantasy.vercel.app. The seed upserts `teams`, `trades`,
+ * `leagues` and more — all names that exist in BOTH schemas — so without this
+ * the seed would not fail, it would overwrite the other league's rows.
+ */
 const db = createClient(SUPABASE_URL, SERVICE_KEY, {
+  db: { schema: DB_SCHEMA },
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
