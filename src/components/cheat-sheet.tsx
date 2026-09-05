@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDown, ArrowLeftRight, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
+import { ArrowDown, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDraftLiveSync } from "@/components/use-draft-live-sync";
@@ -38,7 +38,7 @@ import {
  * that cannot break when the table is wider than the sum of its columns, which
  * is every desktop screen.
  */
-const FROZEN_ID = "sticky left-0 w-[11.5rem] max-md:w-[10.25rem] px-2";
+const FROZEN_ID = "sticky left-0 w-[10.75rem] max-md:w-[9.5rem] px-1.5";
 
 /**
  * The projected-stat columns, in order, with the headings that fit.
@@ -403,18 +403,6 @@ export function CheatSheet({
         </p>
       )}
 
-      {/*
-        THE SWIPE, SAID IN WORDS AS WELL AS SHOWN.
-        The edge fade is the visual cue; this is the one that survives somebody
-        glancing at the page for four seconds before the clock starts. It also
-        says the identity column stays put, which is the fact that makes swiping
-        feel safe rather than like losing your place.
-      */}
-      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-        <ArrowLeftRight className="text-primary h-3.5 w-3.5 shrink-0" />
-        Scroll the table sideways for the rest of the columns — the rank, name and
-        position stay put. Tap any heading to sort the whole pool by it.
-      </p>
 
       {/*
         THE SPREADSHEET.
@@ -485,7 +473,7 @@ export function CheatSheet({
                     value="lastSeason"
                     sort={sort}
                     onSort={setSort}
-                    className="w-16 text-right"
+                    className="w-14 text-right"
                   />
                 )}
                 <SortHeader
@@ -493,7 +481,7 @@ export function CheatSheet({
                   value="points"
                   sort={sort}
                   onSort={setSort}
-                  className="w-16 text-right"
+                  className="w-14 text-right"
                 />
                 {STAT_HEADERS.map((c) => (
                   <SortHeader
@@ -502,7 +490,7 @@ export function CheatSheet({
                     value={c.value}
                     sort={sort}
                     onSort={setSort}
-                    className="w-16 text-right"
+                    className="w-14 text-right"
                   />
                 ))}
                 <SortHeader
@@ -510,10 +498,10 @@ export function CheatSheet({
                   value="adp"
                   sort={sort}
                   onSort={setSort}
-                  className="w-16 text-right"
+                  className="w-14 text-right"
                 />
-                <th className="w-12 px-2 py-2.5 text-right font-medium">Tier</th>
-                <th className="w-12 px-2 py-2.5 text-right font-medium">Bye</th>
+                <th className="w-11 px-1.5 py-2.5 text-right font-medium">Tier</th>
+                <th className="w-11 px-1.5 py-2.5 text-right font-medium">Bye</th>
               </tr>
             </thead>
             <tbody>
@@ -543,18 +531,26 @@ export function CheatSheet({
           </table>
         </div>
         {/*
-          THE EDGE FADE, WHICH IS THE ONLY THING THAT TELLS ANYBODY TO SWIPE.
-          A row that appears to end at the right edge of the card reads as
+          THE EDGE FADE, AND IT IS THE WHOLE AFFORDANCE ON PURPOSE.
+          A row that appears to stop at the right edge of the card reads as
           finished, and nobody drags a table they think they can already see all
-          of. Outside the scroll container so it stays put, and
-          `pointer-events-none` so it does not eat the drag it exists to invite.
+          of. The fade makes the last column read as continuing off-screen, which
+          is all the invitation this needs — there was a sentence here telling
+          people to scroll and what stayed pinned, and the commissioner asked for
+          it off: "you don't need to call out rank, name, and position stay put".
+          Outside the scroll container so it stays put, and `pointer-events-none`
+          so it does not eat the drag it exists to invite.
         */}
-        <div className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent" />
+        <div
+          data-scroll-cue
+          className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
+        />
       </div>
 
       <div className="text-muted-foreground grid max-w-prose gap-1.5 text-xs">
         <p>
-          <span className="text-foreground font-medium">Rk</span> is FantasyPros&apos;
+          <span className="text-foreground font-medium">Rk</span>{" "}
+          is FantasyPros&apos;
           expert consensus{" "}
           {meta.board?.scopedToLeague ? (
             <>
@@ -568,7 +564,8 @@ export function CheatSheet({
           )}
         </p>
         <p>
-          <span className="text-foreground font-medium">Proj</span> is projected season
+          <span className="text-foreground font-medium">Proj</span>{" "}
+          is projected season
           points in <span className="text-foreground">{meta.scoringFormat}</span>,
           computed here from raw projected stat lines — a tight end&apos;s catch is worth{" "}
           {meta.tePremiumReception} and a passing touchdown {meta.passTd}. Sorting by it
@@ -579,7 +576,8 @@ export function CheatSheet({
         {meta.lastSeason && (
           <p>
             <span className="text-foreground font-medium">{meta.lastSeason.season}</span>{" "}
-            is what he <span className="text-foreground">actually scored</span> last
+            is what he <span className="text-foreground">actually scored</span>{" "}
+            last
             season — Sleeper&apos;s real stat lines, re-scored here under these same
             league rules, with the season total on top and points per game under it.
             This is the one number nobody else can show you: at a full point per tight
@@ -592,7 +590,8 @@ export function CheatSheet({
           </p>
         )}
         <p>
-          <span className="text-foreground font-medium">ADP</span> is the market&apos;s
+          <span className="text-foreground font-medium">ADP</span>{" "}
+          is the market&apos;s
           average draft position on ordinary scoring, kept precisely because it
           disagrees — the gap between it and Rk is where this league values a player
           differently from the room. The small figure beneath it is FantasyPros&apos;
@@ -601,7 +600,8 @@ export function CheatSheet({
           should.{" "}
           {meta.board?.tierScope === "generic" && (
             <>
-              <span className="text-foreground font-medium">Tier</span> is FantasyPros&apos;
+              <span className="text-foreground font-medium">Tier</span>{" "}
+              is FantasyPros&apos;
               grouping from its <span className="text-foreground">generic</span> board,
               not the league-scoped one, so a tier boundary will not line up exactly
               with the Rk order. Useful for spotting where a run starts; not a league
@@ -665,7 +665,7 @@ function SortHeader({
 }) {
   const active = sort === value;
   return (
-    <th className={cn("px-3 py-2.5 font-medium max-md:px-2", className)}>
+    <th className={cn("px-2 py-2.5 font-medium max-md:px-1.5", className)}>
       <button
         type="button"
         onClick={() => onSort(value)}
@@ -708,7 +708,7 @@ function Num({
   return (
     <td
       className={cn(
-        "text-foreground/80 px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]",
+        "text-foreground/80 px-1.5 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]",
         className,
       )}
     >
@@ -857,7 +857,7 @@ function PlayerRow({
         zero, since "no season" and "a bad season" must not read the same.
       */}
       {showLastSeason && (
-        <td className="px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
+        <td className="px-1.5 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
           {row.lastSeasonPoints != null ? (
             <span className="inline-flex flex-col items-end leading-tight">
               <span
@@ -890,7 +890,7 @@ function PlayerRow({
         </td>
       )}
 
-      <td className="px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
+      <td className="px-1.5 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
         {row.points != null ? (
           <span className="inline-flex flex-col items-end leading-tight">
             <span className={cn("text-foreground", taken && "text-muted-foreground")}>
@@ -930,7 +930,7 @@ function PlayerRow({
       <Num value={stat("recTd")} decimals={1} />
       <Num value={stat("fumblesLost")} decimals={1} />
 
-      <td className="text-muted-foreground/70 px-2 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
+      <td className="text-muted-foreground/70 px-1.5 py-2 text-right font-mono text-xs tabular-nums max-md:text-[11px]">
         {row.adp != null ? (
           <span className="inline-flex flex-col items-end leading-tight">
             <span>{row.adp.toFixed(1)}</span>

@@ -537,9 +537,35 @@ const run = async () => {
         disclosure.replace(/\s+/g, " ").slice(0, 150),
       );
       console.log(`  · “${disclosure.replace(/\s+/g, " ").slice(0, 120)}…”`);
+      /*
+       * THE SCROLL CUE IS A FADE, NOT A SENTENCE, and that is deliberate. There
+       * was instructional copy across the top of the table telling people to
+       * scroll and naming what stayed pinned; the commissioner asked for it off
+       * — "you don't need to call out rank, name, and position stay put" — so
+       * the affordance is the last column reading as continuing off-screen.
+       * Asserted as present and as NOT eating the drag it exists to invite,
+       * because a `pointer-events: auto` overlay across the right edge would
+       * swallow every swipe that started there.
+       */
+      const cue = await page.locator("[data-scroll-cue]").evaluate((el) => ({
+        events: getComputedStyle(el).pointerEvents,
+        image: getComputedStyle(el).backgroundImage,
+        width: el.getBoundingClientRect().width,
+      }));
       check(
-        "…and so is the invitation to scroll sideways",
-        await page.locator("text=/Scroll the table sideways/").first().isVisible(),
+        "the right edge fades, so the row reads as continuing off-screen",
+        cue.width >= 16 && cue.image.includes("gradient"),
+        `${Math.round(cue.width)}px, ${cue.image.slice(0, 40)}`,
+      );
+      check(
+        "…and the cue does not swallow the swipe it invites",
+        cue.events === "none",
+        cue.events,
+      );
+      check(
+        "no instructional copy was left across the top of the table",
+        (await page.locator("text=/Scroll the table sideways/").count()) === 0 &&
+          (await page.locator("text=/stay put/").count()) === 0,
       );
 
       // Sorting from a stat heading, which is what a spreadsheet does.
