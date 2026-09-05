@@ -91,6 +91,7 @@ import {
   type PositionalNormsInput,
 } from "@/lib/recap-grade";
 import { readGradeHistory } from "@/lib/recap-grade-source";
+import { FEATURES } from "@/lib/league-config";
 import {
   HISTORY_SEASONS,
   fixtureDossier,
@@ -182,9 +183,20 @@ check(
     GRADE_BANDS.every((b) => b.means.length > 120) &&
     !GRADE_BANDS.some((b) => /percentile|top \d+%/i.test(b.means)),
 );
+/*
+ * THE HAND IS NOT THE PLAY, AND WHAT "THE HAND" IS DEPENDS ON THE FORMAT.
+ *
+ * In a keeper league a man walks in holding an inherited roster; in a redraft
+ * he walks in holding nothing but the seat the lottery gave him. Either way the
+ * F band has to say that the thing he did not choose is not what the letter is
+ * for. Asserted in both wordings, plus the shared clause — which makes this
+ * check stricter than the one it replaces, not looser.
+ */
+const fBand = GRADE_BANDS.find((b) => b.band === "F")!.means;
 check(
-  "the F band explicitly refuses to punish an inherited roster",
-  /thin roster/i.test(GRADE_BANDS.find((b) => b.band === "F")!.means),
+  "the F band explicitly refuses to punish the hand a manager was dealt",
+  /the grade is the play/i.test(fBand) &&
+    (FEATURES.keepers ? /thin roster/i.test(fBand) : /bad seat in the order/i.test(fBand)),
 );
 
 /*

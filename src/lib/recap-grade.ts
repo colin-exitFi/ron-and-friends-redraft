@@ -138,7 +138,7 @@
  * `@/lib/recap-grade-source` and passed in.
  */
 
-import { KEEPERS, isPostDraftSlot } from "@/lib/league-config";
+import { FEATURES, KEEPERS, isPostDraftSlot } from "@/lib/league-config";
 import { describeDisputedClock, findTenureDispute } from "@/lib/keeper-tenure-dispute";
 import type {
   DossierKeeper,
@@ -203,27 +203,49 @@ export function gradeBand(letter: GradeLetter): "A" | "B" | "C" | "D" | "F" {
  *
  * These are the sentences the model is graded against and the sentences a card
  * can print under a letter, so they describe DECISIONS: value captured against
- * the board's own expectation, keeper prices against what redrafting would have
- * cost, capital converted into startable slots, holes left open. None of them
- * mentions where a franchise projects to finish, because that is mostly a fact
- * about players kept in February.
+ * the board's own expectation, capital converted into startable slots, holes
+ * left open. None of them mentions where a franchise projects to finish,
+ * because a projection is mostly a fact about the players rather than about the
+ * night anybody had.
+ *
+ * THE KEEPER CLAUSES FOLLOW THE LEAGUE'S OWN SWITCH. Three of these bands were
+ * written for a keeper league and priced declarations inside their own
+ * definitions — "keeper prices well under what redrafting would have cost", "a
+ * keeper slot passed on a player who then went several rounds earlier". In a
+ * redraft those are not lenient descriptions, they are conditions no franchise
+ * can meet or fail, and a band that cannot be met quietly widens the one next
+ * to it. The redraft wordings say the same thing about the one decision that
+ * does exist here: what a pick cost against where the board had the player.
+ *
+ * The F band's last clause survives both ways round because it is the rule
+ * rather than the flavour — the grade is the play and never the hand. What
+ * differs is what the hand IS: an inherited roster in a keeper league, and in a
+ * redraft the seat the lottery gave him.
  */
 export const GRADE_BANDS: { band: "A" | "B" | "C" | "D" | "F"; means: string }[] = [
   {
     band: "A",
-    means:
-      "Took value the board did not have to give up: several picks that beat their " +
-      "slot, keeper prices well under what redrafting would have cost, early capital " +
-      "turned into players who actually start, and no starting slot left unfillable. " +
-      "An A is a night where the decisions, not the inheritance, are why this roster " +
-      "is better than it was.",
+    means: FEATURES.keepers
+      ? "Took value the board did not have to give up: several picks that beat their " +
+        "slot, keeper prices well under what redrafting would have cost, early capital " +
+        "turned into players who actually start, and no starting slot left unfillable. " +
+        "An A is a night where the decisions, not the inheritance, are why this roster " +
+        "is better than it was."
+      : "Took value the board did not have to give up: several picks that beat their " +
+        "slot by a real margin, the early rounds turned into players who actually " +
+        "start, a position filled a round before the run on it, and no starting slot " +
+        "left unfillable. An A is a night where the decisions, not the draft slot, are " +
+        "why this roster is better than the seat he sat down in.",
   },
   {
     band: "B",
-    means:
-      "A good draft with one soft spot. Value captured on the whole, keepers priced " +
-      "sensibly, the lineup legal — but one reach that cost real slots, or one " +
-      "position handled late, or capital spent on depth the roster did not need.",
+    means: FEATURES.keepers
+      ? "A good draft with one soft spot. Value captured on the whole, keepers priced " +
+        "sensibly, the lineup legal — but one reach that cost real slots, or one " +
+        "position handled late, or capital spent on depth the roster did not need."
+      : "A good draft with one soft spot. Value captured on the whole and the lineup " +
+        "legal — but one reach that cost real slots, or one position handled late, or " +
+        "a middle round spent on depth the roster did not need.",
   },
   {
     band: "C",
@@ -235,19 +257,27 @@ export const GRADE_BANDS: { band: "A" | "B" | "C" | "D" | "F"; means: string }[]
   },
   {
     band: "D",
-    means:
-      "Gave value back. Reaches that cost more slots than the steals returned, or a " +
-      "keeper paid for ahead of his redraft price, or a keeper slot passed on a player " +
-      "who then went several rounds earlier than keeping him would have cost, or a " +
-      "starting slot nobody on the roster can fill.",
+    means: FEATURES.keepers
+      ? "Gave value back. Reaches that cost more slots than the steals returned, or a " +
+        "keeper paid for ahead of his redraft price, or a keeper slot passed on a player " +
+        "who then went several rounds earlier than keeping him would have cost, or a " +
+        "starting slot nobody on the roster can fill."
+      : "Gave value back. Reaches that cost more slots than the steals returned, or a " +
+        "position taken so far ahead of the board that the same player was there two " +
+        "rounds later, or a run he sat out and then paid full retail to catch, or a " +
+        "starting slot nobody on the roster can fill.",
   },
   {
     band: "F",
-    means:
-      "Several of the D failures at once, compounding, and self-inflicted. Reserved " +
-      "for a draft that made the roster worse than the picks and keepers walking in " +
-      "should have produced. A thin roster inherited is NOT an F — a thin roster is " +
-      "the hand, and the grade is the play.",
+    means: FEATURES.keepers
+      ? "Several of the D failures at once, compounding, and self-inflicted. Reserved " +
+        "for a draft that made the roster worse than the picks and keepers walking in " +
+        "should have produced. A thin roster inherited is NOT an F — a thin roster is " +
+        "the hand, and the grade is the play."
+      : "Several of the D failures at once, compounding, and self-inflicted. Reserved " +
+        "for a draft that made the roster worse than the draft slot should have " +
+        "produced. A bad seat in the order is NOT an F — the seat is the hand, and the " +
+        "grade is the play.",
   },
 ];
 
