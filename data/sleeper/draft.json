@@ -1,0 +1,69 @@
+{
+ "_pulledAt": "2026-09-05T16:49:17.542Z",
+ "created": 1786806848078,
+ "creators": [
+  "1394370721353854976"
+ ],
+ "draft_id": "1394372619985227776",
+ "draft_order": {
+  "1369512244987052032": 5,
+  "1371372982882025472": 6,
+  "1393416786937925632": 3,
+  "1394370721353854976": 7,
+  "1394473780184625152": 8,
+  "1394482315228381184": 1,
+  "1394486368863817728": 4,
+  "1394742502304514048": 9,
+  "1395086291325964288": 2,
+  "1395203014372909056": 10
+ },
+ "last_message_id": "1394372619985227776",
+ "last_message_time": 1786806848078,
+ "last_picked": null,
+ "league_id": "1394372619427381248",
+ "metadata": {
+  "description": "",
+  "league_type": "0",
+  "name": "Ron and Friends",
+  "scoring_type": "half_ppr"
+ },
+ "season": "2026",
+ "season_type": "regular",
+ "settings": {
+  "alpha_sort": 0,
+  "autopause_enabled": 0,
+  "autopause_end_time": 1020,
+  "autopause_start_time": 300,
+  "autostart": 0,
+  "cpu_autopick": 1,
+  "nomination_timer": 60,
+  "pick_timer": 120,
+  "player_type": 0,
+  "reversal_round": 0,
+  "rounds": 14,
+  "slots_bn": 5,
+  "slots_def": 1,
+  "slots_flex": 2,
+  "slots_qb": 1,
+  "slots_rb": 2,
+  "slots_te": 1,
+  "slots_wr": 2,
+  "teams": 10
+ },
+ "slot_to_roster_id": {
+  "1": 4,
+  "2": 10,
+  "3": 8,
+  "4": 5,
+  "5": 2,
+  "6": 9,
+  "7": 1,
+  "8": 3,
+  "9": 7,
+  "10": 6
+ },
+ "sport": "nfl",
+ "start_time": 1788654600000,
+ "status": "pre_draft",
+ "type": "snake"
+}
