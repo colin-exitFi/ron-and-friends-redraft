@@ -1,29 +1,13 @@
 {
-  "note": "Keeper declarations the commissioner has received but which are NOT yet entered in the Smart Draft room. The room is the source of truth for declarations; this file is the overflow for ones that arrive verbally or by text before the room is updated. Once a declaration appears in the room it is deduplicated automatically, so an entry left here after the room catches up is harmless.",
-  "howToAddOne": [
-    "1. Add or extend an entry below. `managerShortName` MUST be the short name from data/managers.json — 'Elbe' not 'Scott Elbe', 'Kyle' not 'Kyle Mertens'. Four managers share a first name, so a first name is rejected.",
-    "2. List the players by name only. DO NOT write a cost round: it is derived from data/keeper-eligibility-2026.json by the rule 'last season's round minus one', or round 9 for a free-agent acquisition. Hand-entering it is how a wrong number reaches the board.",
-    "3. Set `closesList: true` when the manager has given his FINAL answer and is deliberately leaving keeper slots empty. Nobody is required to fill every slot. Without this flag a short list reads as 'has not answered yet', and the commissioner keeps chasing a manager who already replied.",
-    "4. Run `npm run db:seed`. If the eligibility data cannot price a player, or the franchise holds no pick in the required round, the seed FAILS with the reason instead of guessing.",
-    "5. Run `npm run db:verify` to confirm the page reads it."
-  ],
-  "costRoundIsDerivedNotDeclared": true,
-  "declarations": [
-    {
-      "managerShortName": "Zach",
-      "players": ["Justin Jefferson", "Ladd McConkey"],
-      "declaredAt": "2026-08-26",
-      "recordedBy": "commissioner",
-      "note": "Declared to the commissioner on the evening of Aug 26, ahead of the Aug 29 draft. Not yet entered in the Smart Draft room, so the room still shows Zach with no keepers."
-    },
-    {
-      "managerShortName": "Joe",
-      "players": ["Jayden Daniels"],
-      "declaredAt": "2026-08-27",
-      "recordedBy": "commissioner",
-      "closesList": true,
-      "noteRendersOnThePage": "This text is shown to the league under Rulings on /keepers. Keep it plain — no field names, no backticks.",
-      "note": "Joe's final answer, given on Aug 27 ahead of the Aug 29 draft. He is keeping one, not two: no franchise is required to fill every keeper slot, so his second slot is a deliberate pass rather than an answer still outstanding."
-    }
-  ]
+ "note": "EMPTY ON PURPOSE. Ron and Friends 2026 is a REDRAFT — every player goes back in the pool and nobody is kept. This file is the input to the keeper overlay that pre-places keepers on the board (src/lib/keeper-overlay.ts), so an empty `declarations` list is what makes the board render 140 open cells instead of pre-filling some of them.",
+
+ "whyTheFileStillExists": "The league intends to move to keepers in a future season and the keeper machinery is deliberately kept on disk and importable. Deleting this file would break the readers; emptying it is what turns keepers off in the data, which is the layer that actually decides what lands on the board.",
+
+ "howToAddOne": [
+  "Add an object to `declarations` with `managerShortName` (the SHORT name from data/managers.json, never a first name if two managers ever share one) and `players` (an array of player names as spelled in data/smartdraft-players.json).",
+  "Never write a cost round here. It is derived — see below.",
+  "Re-run `npm run build:board` if the board shape also changed, then reload the board."
+ ],
+ "costRoundIsDerivedNotDeclared": true,
+ "declarations": []
 }
