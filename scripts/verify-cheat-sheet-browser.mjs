@@ -398,6 +398,285 @@ const run = async () => {
       }
     }
 
+    /*
+     * ========================================================================
+     * 1d. FLEX — "SHOW ME EVERYONE I WOULD ACTUALLY CONSIDER"
+     * ========================================================================
+     * The commissioner's framing, and it is the right one: late in the draft he
+     * does not know whether he wants a back, a receiver or a tight end, he wants
+     * the best player available. So FLEX is not a sixth position filter, it is
+     * the RB/WR/TE pool in one list.
+     *
+     * THE ORDER IS THE FEATURE, so it is what is asserted hardest. A combined
+     * list in an arbitrary order is three lists stapled together and is worth
+     * nothing under a clock; the sort has to run ACROSS the pool. Both sorts a
+     * manager would use are checked — the league-scoped board order this page
+     * defaults to, and projected points.
+     *
+     * AT 375×667, because the failure mode of adding a sixth button to a row
+     * sized for five is that it runs off the side of the narrowest phone in the
+     * league. The whole section runs there rather than at 390.
+     */
+    section("1d. FLEX: backs, receivers and tight ends in one ordered list");
+
+    {
+      const flex = await browser.newPage({
+        viewport: { width: 375, height: 667 },
+        deviceScaleFactor: 3,
+        hasTouch: true,
+        isMobile: true,
+      });
+      try {
+        await flex.goto(`${BASE}/players`, { waitUntil: "domcontentloaded" });
+        await flex.waitForSelector("[data-player-id]");
+
+        /*
+         * Every row as the page has it: id, position, league rank and projected
+         * points, read off the DOM rather than off the library that produced it.
+         * `verify:cheat-sheet` already proves the pure function; the only thing
+         * worth proving in a browser is that what is ON SCREEN agrees with it.
+         */
+        const readRows = () =>
+          flex.evaluate(() =>
+            [...document.querySelectorAll("[data-player-id]")].map((tr) => {
+              const cells = tr.querySelectorAll(":scope > td");
+              const num = (i) => {
+                const m = cells[i]?.textContent?.match(/-?\d[\d,]*\.?\d*/);
+                return m ? parseFloat(m[0].replace(/,/g, "")) : null;
+              };
+              return {
+                id: tr.getAttribute("data-player-id"),
+                pos:
+                  tr.querySelector("[data-position-badge]")?.getAttribute(
+                    "data-position-badge",
+                  ) ?? null,
+                rank: num(0),
+                proj: num(3),
+              };
+            }),
+          );
+
+        const everyone = await readRows();
+        const expected = everyone.filter((r) => ["RB", "WR", "TE"].includes(r.pos));
+        check(
+          "the unfiltered sheet carries a position badge on every row",
+          everyone.length > 50 && everyone.every((r) => r.pos),
+          `${everyone.filter((r) => !r.pos).length} of ${everyone.length} rows with no badge`,
+        );
+
+        const flexButton = flex.getByRole("button", { name: "FLEX", exact: true });
+        check("a FLEX filter is offered", await flexButton.isVisible());
+
+        // The five it was added next to are still there, in their original
+        // order. A new filter that displaced the muscle memory of the row would
+        // cost more than it gave.
+        const order = await flex.evaluate(() => {
+          const labels = ["All pos", "QB", "RB", "WR", "TE", "DST", "FLEX"];
+          return [...document.querySelectorAll("button")]
+            .map((b) => b.textContent?.trim())
+            .filter((t) => labels.includes(t));
+        });
+        check(
+          "…alongside the original five, in their original order",
+          order.join(",") === "All pos,QB,RB,WR,TE,DST,FLEX",
+          order.join(",") || "(no filter row found)",
+        );
+
+        const box = await flexButton.boundingBox();
+        check(
+          "…as a thumb-sized target, like the others",
+          (box?.height ?? 0) >= 44 && (box?.width ?? 0) >= 40,
+          `${Math.round(box?.width ?? 0)}×${Math.round(box?.height ?? 0)}`,
+        );
+
+        /*
+         * THE ROW WITH SIX BUTTONS IN IT, ON A 375px SCREEN.
+         *
+         * Overflow of the page is checked elsewhere; this checks the filter row
+         * ITSELF — that it wrapped rather than scrolled, and that every control
+         * in it is inside the viewport. A button whose right edge is at 402px is
+         * unreachable and the document-level check would not notice, because a
+         * flex row can clip its own children without widening the page.
+         */
+        const row = await flexButton.evaluate((el) => {
+          const parent = el.parentElement;
+          const buttons = [...parent.querySelectorAll("button")];
+          return {
+            overflow: parent.scrollWidth - parent.clientWidth,
+            widest: Math.max(...buttons.map((b) => b.getBoundingClientRect().right)),
+            offLeft: Math.min(...buttons.map((b) => b.getBoundingClientRect().left)),
+            lines: new Set(
+              buttons.map((b) => Math.round(b.getBoundingClientRect().top)),
+            ).size,
+            shortest: Math.min(
+              ...buttons.map((b) => b.getBoundingClientRect().height),
+            ),
+          };
+        });
+        check(
+          "the filter row wraps rather than overflowing at 375px",
+          row.overflow <= 1,
+          `${row.overflow}px of overflow inside the row`,
+        );
+        check(
+          "…with every filter inside the screen",
+          row.widest <= 375 + 1 && row.offLeft >= -1,
+          `rightmost edge at ${Math.round(row.widest)}px, leftmost at ${Math.round(row.offLeft)}px`,
+        );
+        check(
+          "…and none of them squashed by the extra button",
+          row.shortest >= 44,
+          `shortest filter is ${Math.round(row.shortest)}px tall`,
+        );
+        console.log(`  · the six filters wrap onto ${row.lines} line(s) at 375px`);
+        check(
+          "…and the page still does not overflow sideways",
+          (await flex.evaluate(
+            () => document.documentElement.scrollWidth - window.innerWidth,
+          )) <= 1,
+        );
+
+        await flexButton.tap();
+        await flex.waitForTimeout(400);
+
+        const inFlex = await readRows();
+        const ids = (list) => list.map((r) => r.id).sort().join(",");
+        check(
+          "FLEX lists exactly the backs, receivers and tight ends",
+          ids(inFlex) === ids(expected),
+          `${inFlex.length} shown, ${expected.length} expected`,
+        );
+        check(
+          "…and no quarterback or defence among them",
+          !inFlex.some((r) => r.pos === "QB" || r.pos === "DST"),
+          [...new Set(inFlex.map((r) => r.pos))].join(", "),
+        );
+        for (const pos of ["RB", "WR", "TE"]) {
+          check(
+            `…with ${pos}s present`,
+            inFlex.some((r) => r.pos === pos),
+            `0 of ${inFlex.length}`,
+          );
+        }
+
+        /*
+         * THE ORDER, ACROSS THE COMBINED POOL. Two claims, and the second is the
+         * one that matters: monotonic in the sorted column, and INTERLEAVED —
+         * a list that happens to be RBs then WRs then TEs would pass a
+         * monotonic check on a per-position sort and be useless.
+         */
+        const blocks = (list) =>
+          list.reduce((n, r, i) => (i > 0 && r.pos === list[i - 1].pos ? n : n + 1), 0);
+
+        const rankOrdered = inFlex.every(
+          (r, i) =>
+            i === 0 ||
+            (inFlex[i - 1].rank ?? Infinity) <= (r.rank ?? Infinity),
+        );
+        check(
+          "the league board's order runs straight down the combined pool",
+          rankOrdered,
+          "a rank goes backwards, so the sort is scoped per position",
+        );
+        check(
+          "…and the three positions interleave rather than sitting in blocks",
+          blocks(inFlex) > 20,
+          `only ${blocks(inFlex)} runs of one position in ${inFlex.length} rows`,
+        );
+
+        // Projected points, which is the other thing he said he sorts on.
+        await flex.getByRole("button", { name: "Proj", exact: true }).tap();
+        await flex.waitForTimeout(400);
+        const byProj = await readRows();
+        check(
+          "sorting by Proj re-orders the whole flex pool, not one position",
+          ids(byProj) === ids(expected) &&
+            byProj.every(
+              (r, i) =>
+                i === 0 || (byProj[i - 1].proj ?? -Infinity) >= (r.proj ?? -Infinity),
+            ),
+          "projected points go back up somewhere in the list",
+        );
+        check(
+          "…and the pool is still mixed after the re-sort",
+          blocks(byProj) > 20,
+          `${blocks(byProj)} runs of one position`,
+        );
+
+        /*
+         * WHERE THE TIGHT END PREMIUM BECOMES VISIBLE.
+         *
+         * This view is the only place a manager directly compares a tight end
+         * against a back or a receiver, and it is where this league's scoring
+         * diverges hardest from instinct — a full point a catch for a tight end
+         * and half for everybody else. So the assertion is not "a tight end is
+         * somewhere in the list": it is that the leading tight end is priced
+         * INTO the top of the mixed order, above backs and receivers, by the
+         * Proj column the list is sorted on.
+         */
+        const topTe = byProj.findIndex((r) => r.pos === "TE");
+        const te = byProj[topTe];
+        const above = byProj
+          .slice(0, topTe)
+          .reduce((n, r) => (r.pos === "TE" ? n : n + 1), 0);
+        console.log(
+          `  · the leading tight end is #${topTe + 1} of ${byProj.length} on projected points (${te?.proj}), ahead of ${byProj.length - topTe - 1} backs and receivers`,
+        );
+        check(
+          "a premium tight end holds his own against backs and receivers",
+          topTe >= 0 && topTe < 24,
+          `the best TE is only #${topTe + 1} in the flex pool`,
+        );
+        check(
+          "…and it is the Proj column putting him there",
+          te != null && te.proj != null && byProj[above]?.proj != null,
+          "the tight end carries no projected figure to be ordered on",
+        );
+
+        // The badge, which in a mixed list is the only thing telling two
+        // adjacent rows apart. It is asserted for size, not merely presence.
+        const badge = await flex.evaluate(() => {
+          const el = document.querySelector("[data-position-badge]");
+          const r = el.getBoundingClientRect();
+          return {
+            text: el.textContent.trim(),
+            size: parseFloat(getComputedStyle(el).fontSize),
+            visible: r.width > 0 && r.height > 0,
+          };
+        });
+        check(
+          "every row still says which position it is",
+          badge.visible && /^(RB|WR|TE)\d*$/.test(badge.text),
+          `“${badge.text}”`,
+        );
+        check(
+          "…legibly on a phone, at 10px or more",
+          badge.size >= 10,
+          `${badge.size}px`,
+        );
+
+        /*
+         * Two shots, because the two claims are 600px apart on a phone: the
+         * filter row that had to absorb a sixth button, and the mixed list it
+         * produces. The second is taken back on the league board's order, which
+         * is what a manager opening the page in round eleven will see.
+         */
+        await flex.evaluate(() => window.scrollTo(0, 0));
+        await flex.waitForTimeout(200);
+        await flex.screenshot({ path: path.join(OUT, "cheat-sheet-flex-phone.png") });
+
+        await flex.getByRole("button", { name: "Rk", exact: true }).tap();
+        await flex.waitForTimeout(400);
+        await flex.evaluate(() =>
+          document.querySelector("table").scrollIntoView({ block: "start" }),
+        );
+        await flex.waitForTimeout(200);
+        await flex.screenshot({ path: path.join(OUT, "cheat-sheet-flex-rows.png") });
+      } finally {
+        await flex.close();
+      }
+    }
+
     section("2. The live indicator tells the truth");
 
     const liveText = await page
@@ -428,7 +707,26 @@ const run = async () => {
 
     section("3. A pick entered elsewhere reaches the phone, untouched");
 
-    // The player at the top of the sheet, who is definitely on screen.
+    /*
+     * RUN IN THE FLEX VIEW, which is the point of doing it here rather than in
+     * a second copy of this section. Every claim below is the one this harness
+     * has always made — the row goes on its own, nothing navigates, the
+     * half-typed name survives — and running it with the combined RB/WR/TE
+     * filter on proves the same of the view he will be looking at in the last
+     * ten rounds. A filter that quietly re-derived its own pool from a cached
+     * list would pass every check in section 1d and strand a drafted player
+     * here.
+     */
+    await page.getByRole("button", { name: "FLEX", exact: true }).tap();
+    await page.waitForTimeout(400);
+    const flexCount = await page.locator("[data-player-id]").count();
+    check(
+      "the FLEX filter is on, and narrower than the whole pool",
+      flexCount > 50 && flexCount < rowCount,
+      `${flexCount} of ${rowCount}`,
+    );
+
+    // The player at the top of the flex list, who is definitely on screen.
     const target = page.locator("[data-player-id]").first();
     const targetId = await target.getAttribute("data-player-id");
     const targetName = (await target.locator("td").nth(1).innerText()).split("\n")[0];
@@ -446,7 +744,7 @@ const run = async () => {
     await page.waitForTimeout(300);
     check(
       "the search box narrows the sheet as it is typed into",
-      (await page.locator("[data-player-id]").count()) < rowCount,
+      (await page.locator("[data-player-id]").count()) < flexCount,
     );
 
     const navigationsBefore = navigations;
@@ -473,7 +771,7 @@ const run = async () => {
       .then(() => true)
       .catch(() => false);
     check(
-      "the drafted player leaves the available list with nobody touching the phone",
+      "the drafted player leaves the FLEX list with nobody touching the phone",
       vanished,
       `still listed after ${PROPAGATION_MS / 1000}s`,
     );
@@ -498,6 +796,9 @@ const run = async () => {
     section("4. He is not hidden, he is struck through");
 
     await search.fill("");
+    // Back to the whole pool, so what follows is about availability rather than
+    // about the position filter section 3 left switched on.
+    await page.getByRole("button", { name: "All pos", exact: true }).click();
     await page.getByRole("button", { name: "All", exact: true }).click();
     await page.waitForTimeout(400);
 

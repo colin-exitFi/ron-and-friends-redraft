@@ -21,6 +21,8 @@ import {
   projectedStatLine,
   projectionBreakdown,
   valueGap,
+  FLEX_FILTER,
+  FLEX_POSITIONS,
   type Availability,
   type CheatSheetMeta,
   type CheatSheetRow,
@@ -228,6 +230,37 @@ export function CheatSheet({
               {p}
             </button>
           ))}
+          {/*
+            FLEX, WHICH IS NOT A POSITION.
+
+            Late in the draft the question is not "which receiver" — it is "who
+            is the best player I would actually start", and the answer can be a
+            back, a receiver or a tight end. So this widens the pool to the three
+            positions this league's FLEX slots accept and leaves the sort alone,
+            which is the whole feature: the order across the combined pool is
+            what makes it an answer rather than three lists at once.
+
+            LAST IN THE ROW, AFTER THE FIVE REAL POSITIONS, because it is a
+            different kind of thing from them and the row is muscle memory by
+            now. It carries the ring-and-tint treatment the positions use rather
+            than "All pos"' solid fill, since it selects a subset the same way
+            they do.
+          */}
+          <button
+            type="button"
+            onClick={() =>
+              setPosition(position === FLEX_FILTER ? "" : FLEX_FILTER)
+            }
+            title={`Running backs, receivers and tight ends together — the ${FLEX_POSITIONS.join("/")} pool, in whatever order is sorted`}
+            className={cn(
+              "inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-xs font-semibold ring-1 transition-colors touch:min-h-11 touch:min-w-11",
+              position === FLEX_FILTER
+                ? "bg-primary/15 text-primary ring-primary/40"
+                : "bg-secondary text-muted-foreground ring-transparent hover:text-foreground",
+            )}
+          >
+            {FLEX_FILTER}
+          </button>
 
           <span className="text-muted-foreground ml-auto text-xs tabular-nums">
             <span className="text-foreground font-mono font-medium">
@@ -404,6 +437,7 @@ export function CheatSheet({
                     onToggle={toggle}
                     columns={meta.lastSeason ? 9 : 8}
                     meta={meta}
+                    mixedPositions={position === FLEX_FILTER}
                   />
                 ))
               )}
@@ -666,6 +700,7 @@ function PlayerRow({
   onToggle,
   columns,
   meta,
+  mixedPositions,
 }: {
   row: CheatSheetRow;
   taken: { by: string; label: string } | null;
@@ -676,6 +711,16 @@ function PlayerRow({
   /** How many cells the breakdown panel has to span. */
   columns: number;
   meta: CheatSheetMeta;
+  /**
+   * Whether the list this row sits in holds more than one position — the FLEX
+   * filter.
+   *
+   * In a single-position view the badge is a restatement of the filter and can
+   * afford to be the smallest thing on the row. In FLEX it is the ONLY thing
+   * distinguishing two adjacent names, so the phone layout gives it the same
+   * text size as the meta line around it rather than a size smaller.
+   */
+  mixedPositions: boolean;
 }) {
   const gap = valueGap(row);
   const statLine = projectedStatLine(row);
@@ -762,9 +807,13 @@ function PlayerRow({
             sliding off the side — the pattern this table already used. */}
         <span className="text-muted-foreground/70 mt-0.5 hidden flex-wrap items-center gap-x-1.5 font-mono text-[10px] max-md:flex">
           <span
+            data-position-badge={row.position}
             className={cn(
-              "inline-flex h-4 min-w-[1.75rem] items-center justify-center rounded px-1 font-sans text-[9px] font-bold ring-1",
+              "inline-flex items-center justify-center rounded px-1 font-sans font-bold ring-1",
               positionStyle(row.position),
+              mixedPositions
+                ? "h-[1.125rem] min-w-8 text-[10px]"
+                : "h-4 min-w-[1.75rem] text-[9px]",
             )}
           >
             {row.position}

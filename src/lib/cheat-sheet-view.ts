@@ -397,7 +397,7 @@ export type Availability = "available" | "all" | "drafted";
 
 export type CheatSheetQuery = {
   q: string;
-  /** "" for every position. */
+  /** "" for every position, `FLEX_FILTER` for the combined RB/WR/TE pool. */
   position: string;
   availability: Availability;
   sort: SortKey;
@@ -422,6 +422,36 @@ function matches(query: string, name: string): boolean {
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "DST"];
 
 /**
+ * The `position` value that means "the whole flex pool", not one position.
+ *
+ * Late in a draft the question stops being "which receiver" and becomes "who is
+ * the best player I would actually start", and the answer can be a back, a
+ * receiver or a tight end. That is not a position filter, so it is not a
+ * position — it is a sentinel `applyCheatSheet` widens into the three.
+ */
+export const FLEX_FILTER = "FLEX";
+
+/**
+ * What this league's two FLEX slots accept — @fromConfig `STARTING_LINEUP`'s
+ * `{ slot: "FLEX", note: "RB / WR / TE" }`.
+ *
+ * Kicked out to a constant so the filter cannot drift from the lineup card. A
+ * flex filter that quietly included quarterbacks would put four names nobody
+ * can start at the top of the list at the exact moment a manager is trusting
+ * the order.
+ */
+export const FLEX_POSITIONS = ["RB", "WR", "TE"] as const;
+
+/** Whether a row survives the position filter. `""` admits everybody. */
+function positionMatches(filter: string, position: string): boolean {
+  if (!filter) return true;
+  if (filter === FLEX_FILTER) {
+    return (FLEX_POSITIONS as readonly string[]).includes(position);
+  }
+  return position === filter;
+}
+
+/**
  * Apply the filters and the sort. Pure; the single source of what is on screen.
  *
  * A DRAFTED PLAYER IS FILTERED OUT AT `available`, NOT DIMMED. The complaint
@@ -430,6 +460,14 @@ const POSITION_ORDER = ["QB", "RB", "WR", "TE", "DST"];
  * they serve different moments: `available` is what you want while deciding,
  * and `all` — which keeps him in place with a line through him — is what you
  * want when you are checking whether the guy you were waiting on has just gone.
+ *
+ * THE SORT IS APPLIED AFTER THE FILTER, ACROSS WHATEVER SURVIVED IT, which is
+ * what makes `FLEX_FILTER` worth having rather than merely present. A flex list
+ * is only useful if it is ordered: a back, a receiver and a tight end ranked
+ * against each other on the league's own board — or on projected points, where
+ * the tight end premium shows up — is the answer to "best player available".
+ * The same three positions in an arbitrary order is three lists stapled
+ * together.
  */
 export function applyCheatSheet(
   rows: CheatSheetRow[],
@@ -437,7 +475,7 @@ export function applyCheatSheet(
   { q, position, availability, sort }: CheatSheetQuery,
 ): CheatSheetRow[] {
   const filtered = rows.filter((row) => {
-    if (position && row.position !== position) return false;
+    if (!positionMatches(position, row.position)) return false;
     const isDrafted = drafted[row.id] != null;
     if (availability === "available" && isDrafted) return false;
     if (availability === "drafted" && !isDrafted) return false;

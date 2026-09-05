@@ -28,11 +28,13 @@ import {
   projectedStatLine,
   projectionBreakdown,
   valueGap,
+  FLEX_FILTER,
+  FLEX_POSITIONS,
   type DraftedBy,
 } from "@/lib/cheat-sheet-view";
 import { pointsFromStats, receptionValue } from "@/lib/projections";
 import { pointsFromSleeperSeason } from "@/lib/sleeper-season";
-import { SCORING_SPEC } from "@/lib/league-config";
+import { SCORING_SPEC, STARTING_LINEUP } from "@/lib/league-config";
 import type { DraftRoomView, LiveSlot } from "@/lib/draft-types";
 
 let failures = 0;
@@ -942,6 +944,111 @@ section("4. The controls");
   check(
     "the position filter admits only that position",
     wr.length > 0 && wr.every((r) => r.position === "WR"),
+  );
+}
+
+{
+  /*
+   * FLEX — the one filter that is not a position.
+   *
+   * Two things have to hold and they are asserted separately, because a
+   * combined list that is right about WHO and wrong about the ORDER is worse
+   * than no filter at all: a manager reaching for "best player available" in
+   * round eleven would read the top of an arbitrary list as an answer.
+   *
+   * The membership check is against the league's own FLEX slot definition
+   * rather than a literal, so a lineup change cannot leave the filter behind.
+   */
+  const flexNote = STARTING_LINEUP.find((s) => s.slot === "FLEX")?.note ?? "";
+  check(
+    `the FLEX pool matches the lineup card's “${flexNote}”`,
+    FLEX_POSITIONS.every((p) => flexNote.includes(p)) &&
+      FLEX_POSITIONS.length === flexNote.split("/").length,
+    `filter covers ${FLEX_POSITIONS.join("/")}`,
+  );
+
+  const flex = applyCheatSheet(rows, {}, { ...base, availability: "all", position: FLEX_FILTER });
+  const expected = rows.filter((r) => (FLEX_POSITIONS as readonly string[]).includes(r.position));
+  check(
+    "FLEX admits exactly the backs, receivers and tight ends",
+    flex.length === expected.length &&
+      new Set(flex.map((r) => r.id)).size === expected.length &&
+      expected.every((r) => flex.some((f) => f.id === r.id)),
+    `${flex.length} rows against ${expected.length} in the pool`,
+  );
+  check(
+    "…and admits no quarterback or defence",
+    !flex.some((r) => r.position === "QB" || r.position === "DST"),
+    [...new Set(flex.map((r) => r.position))].join(", "),
+  );
+  for (const pos of FLEX_POSITIONS) {
+    check(`…and is not missing the ${pos}s`, flex.some((r) => r.position === pos));
+  }
+
+  /*
+   * THE SORT RUNS ACROSS THE COMBINED POOL, not within each position. Checked
+   * on both orders a manager would use — the league-scoped board, and projected
+   * points — and checked for INTERLEAVING as well as monotonicity, because a
+   * per-position sort concatenated together would satisfy monotonicity within
+   * each block and look ordered while being useless.
+   */
+  const runsOfOnePosition = (list: typeof rows) =>
+    list.reduce((n, r, i) => (i > 0 && r.position === list[i - 1].position ? n : n + 1), 0);
+
+  for (const sort of ["rank", "points"] as const) {
+    const ordered = applyCheatSheet(rows, {}, { ...base, availability: "all", position: FLEX_FILTER, sort });
+    const key = (r: (typeof rows)[number]) =>
+      sort === "rank" ? (r.leagueRank ?? Infinity) : -(r.points ?? -Infinity);
+    check(
+      `the ${sort} order runs straight down the whole flex pool`,
+      ordered.every((r, i) => i === 0 || key(ordered[i - 1]) <= key(r)),
+      "it goes backwards somewhere, so the sort is scoped per position",
+    );
+    check(
+      `…and the three positions interleave under ${sort}`,
+      runsOfOnePosition(ordered) > 20,
+      `only ${runsOfOnePosition(ordered)} runs of one position in ${ordered.length} rows`,
+    );
+    check(
+      `…and FLEX under ${sort} is the whole-pool order with QBs and defences removed`,
+      ordered.map((r) => r.id).join() ===
+        applyCheatSheet(rows, {}, { ...base, availability: "all", sort })
+          .filter((r) => (FLEX_POSITIONS as readonly string[]).includes(r.position))
+          .map((r) => r.id)
+          .join(),
+    );
+  }
+
+  /*
+   * WHERE THE TIGHT END PREMIUM SHOWS UP. FLEX is the only view in which a
+   * manager compares a tight end against a back directly, which makes it the
+   * view where this league's scoring diverges most from what he expects. The
+   * claim is that the premium puts the leading tight end INTO the top of the
+   * mixed order on projected points, not merely somewhere in the list.
+   */
+  const byProj = applyCheatSheet(rows, {}, { ...base, availability: "all", position: FLEX_FILTER, sort: "points" });
+  const topTe = byProj.findIndex((r) => r.position === "TE");
+  console.log(
+    `  · leading tight end in the flex pool: ${byProj[topTe]?.name} at #${topTe + 1} of ${byProj.length} (${byProj[topTe]?.points} pts)`,
+  );
+  check(
+    "a premium tight end is priced into the top of the flex pool",
+    topTe >= 0 && topTe < 24,
+    `the best TE is #${topTe + 1}`,
+  );
+
+  // A drafted flex player leaves the flex list, which is the page's one job.
+  const gone: DraftedBy = { [byProj[0].id]: { by: "Steve", label: "1.01" } };
+  const left = applyCheatSheet(rows, gone, {
+    ...base,
+    availability: "available",
+    position: FLEX_FILTER,
+    sort: "points",
+  });
+  check(
+    "a drafted flex player is gone from the flex list too",
+    left.length === byProj.length - 1 && !left.some((r) => r.id === byProj[0].id),
+    `${left.length} left of ${byProj.length}`,
   );
 }
 
