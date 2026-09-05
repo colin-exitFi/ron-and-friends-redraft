@@ -91,6 +91,7 @@ import {
 } from "@/lib/recap-source";
 import { defaultAssignment, runWholeMock, toMockPool } from "@/lib/mock-draft-run";
 import { getBoard, getPlayerPool } from "@/lib/smartdraft";
+import { FEATURES } from "@/lib/league-config";
 
 let failures = 0;
 function check(label: string, condition: boolean, detail = ""): void {
@@ -118,6 +119,47 @@ function mulberry32(seed: number): () => number {
 
 const board = getBoard();
 const pool = getPlayerPool();
+
+/*
+ * ============================================================================
+ * THIS HARNESS IS THE PREVIOUS LEAGUE'S, AND IT DOES NOT APPLY TO A REDRAFT
+ * ============================================================================
+ *
+ * It asserts, across twenty-three sections, that the recap knows things Ron and
+ * Friends does not have: keepers on the board and their counterfactual cost,
+ * positional prices computed off the old league's spreadsheets, a keeper table
+ * in the history file, a nominated target for the savage blurb, and specific
+ * facts about Witte, Stefan and Elbe — three managers who are not in this room.
+ *
+ * Those assertions do not merely go stale here, they INVERT. 25bb1bb and
+ * 40f940b deliberately emptied the lore so the recap cannot invent a past for
+ * ten managers who have none, and `verify:recap:clean` exists to prove exactly
+ * that — including that the savage blurb is aimed at nobody and the positional
+ * price block is empty. So the two harnesses now demand opposite things, and
+ * this one is the superseded half.
+ *
+ * IT EXITS HERE RATHER THAN PRINTING A DOZEN CONTRADICTORY FAILURES. A red
+ * script nobody can explain at deploy time is how a real failure gets waved
+ * through as "oh, that one's known" — which is the specific outcome this guard
+ * is for. The sections below are kept, not deleted: they are the harness for a
+ * keeper league, and this league votes on keepers for 2027.
+ */
+if (!FEATURES.keepers) {
+  section("Not applicable — 2026 is a pure redraft");
+  console.log(
+    "  This harness checks a KEEPER league's recap: keeper counterfactuals,\n" +
+      "  positional prices off the league's own draft history, and named facts\n" +
+      "  about managers from the league this app was forked from.\n\n" +
+      "  Ron and Friends has no keepers, no draft history and none of those\n" +
+      "  managers, so every one of those assertions would fail on the LEAGUE\n" +
+      "  rather than on a bug.\n\n" +
+      "  What covers the recap for this league instead, and does pass:\n" +
+      "    npm run verify:recap:clean    no foreign lore reaches the model\n" +
+      "    npm run verify:recap:spread   the verdicts still spread across grades\n\n" +
+      "  Turning FEATURES.keepers on for 2027 runs everything below again.",
+  );
+  process.exit(0);
+}
 
 section("Running a whole mock draft through the real engine");
 const { view, steps } = runWholeMock({
