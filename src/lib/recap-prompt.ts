@@ -289,11 +289,13 @@ export const PREDRAFT_MARKER = "NO PICKS HAVE BEEN MADE";
  * which all ten blurbs came back at an identical temperature, and the room's
  * reaction to that set is the whole acceptance criterion.
  *
- * The savage slot in that list now has a name on it, `ASSIGNED_SAVAGE`, and the
- * reasoning is in `@/lib/league-lore` beside it: the commissioner asked for one
- * manager by name, and the loud blurb is worth more aimed at the man who will
- * argue back out loud than at whoever happened to have the worst arithmetic.
- * The name is interpolated rather than written here so it exists once.
+ * The savage slot can carry a name, `ASSIGNED_SAVAGE`, and the reasoning is in
+ * `@/lib/league-lore` beside it: where a commissioner nominates a manager, the
+ * loud blurb is worth more aimed at the man who will argue back out loud than
+ * at whoever happened to have the worst arithmetic. It is NULL for this league
+ * — nobody has been nominated and picking a stranger would be gratuitous — so
+ * the slot falls back to its original behaviour and the board chooses. The name
+ * is interpolated rather than written here so it exists once.
  */
 export const RANGE_MARKER = "TEN BLURBS AT ONE TEMPERATURE";
 
@@ -580,7 +582,11 @@ A previous generation of this page came back with ten blurbs that were all accur
 
 So the range is assigned, not hoped for. Before you write, decide where each of the ten sits, and across the set there must be **at least one of each of these**:
 
-- **One that is genuinely savage, and it is aimed: it is ${ASSIGNED_SAVAGE}'s.** Not arch, not wry — actually brutal, profanity included, aimed squarely at his decisions. The order, why the league wants it pointed there and the material to do it with are in Part 5 under his name; read that before you decide what this blurb is about, and note that it moves not one of the accuracy rules below. One savage blurb is the floor rather than the ceiling — if somebody else in the room did something indefensible tonight, his blurb can be merciless too.
+- ${
+  ASSIGNED_SAVAGE
+    ? `**One that is genuinely savage, and it is aimed: it is ${ASSIGNED_SAVAGE}'s.** Not arch, not wry — actually brutal, profanity included, aimed squarely at his decisions. The order, why the league wants it pointed there and the material to do it with are in Part 5 under his name; read that before you decide what this blurb is about, and note that it moves not one of the accuracy rules below. One savage blurb is the floor rather than the ceiling — if somebody else in the room did something indefensible tonight, his blurb can be merciless too.`
+    : `**One that is genuinely savage, and the board picks the target.** Not arch, not wry — actually brutal, profanity included, aimed squarely at the decisions of whoever had the worst night by the numbers in front of you. Nobody has been nominated, so EARN the target: the man who gets it is the one whose board you can most easily prove is the weakest, and the jab has to be built out of his own picks. It moves not one of the accuracy rules below. One savage blurb is the floor rather than the ceiling — if somebody else did something indefensible tonight, his blurb can be merciless too.`
+}
 - **One that is unhedged, delighted praise**, with nothing taken back at the end. See below. This is the one most likely to go missing.
 - **One that is short and stupid and just funny.** Three sentences, no thesis, a joke. Not everything has to be an argument.
 - **The rest** can be the dry, specific appraisal you are good at, which is the house style and is why the loud ones land.
@@ -655,7 +661,7 @@ A blurb elsewhere in the same run got this exactly right about a comparable keep
 
 ## Swear, properly, and crudely
 
-**Profanity is authorised and wanted, and the register around it is what keeps arriving thin.** One generation of this page came back with ten blurbs and not a single swear word in any of them, and the pages since have been clean in a way the room is not: this is a league where one man named his franchise the Tushy Booth Ballers, another went with Perpetually Impaired and a third with A.D.B. Rombusters II. **The room's own register is filthier than anything this page has yet printed.** Fuck, shit, dumbass, prick, asshole, bullshit, and the crude comparison you would actually make out loud at the table — all available, unasterisked, uncensored.
+**Profanity is authorised and wanted, and the register around it is what keeps arriving thin.** One generation of this page came back with ten blurbs and not a single swear word in any of them, and the pages since have been clean in a way the room is not. This is ten friends drinking in a room together, not a broadcast. **The room's own register is filthier than anything this page has yet printed.** Fuck, shit, dumbass, prick, asshole, bullshit, and the crude comparison you would actually make out loud at the table — all available, unasterisked, uncensored.
 
 **THE ONE RULE, AND IT IS NOT NEGOTIABLE: profanity is an INTENSIFIER ON A TRUE OBSERVATION, NEVER A SUBSTITUTE FOR ONE.** "That was a fucking stupid price for a tight end" only works because the price is in the sentence beside it. Generic abuse with no figure behind it is worse than no abuse at all, because it could have been written about any league by anything, and the entire reason these blurbs land is that they could only be about this one.
 
@@ -742,7 +748,7 @@ ${loreBlock()}
 
 **WHERE THE LORE AND THE BOARD DISAGREE, THE BOARD WINS.** The history file was written against its own baselines and the dossier is computed from tonight's board; if a figure appears in both, quote the dossier's. In particular, keeper value is \`keepers[].slotsSavedByKeeping\` — \`costOverallPick\` against \`pickIfReleased\` — and nothing else. Never quote a number from the lore that the dossier also gives you, because the receipts printed beside your blurb come from the dossier and the room will see both.
 
-**How to use the above.** It is a reference, not a checklist. Reach for a callback ONLY where it genuinely fits what somebody did in this draft — two or three landing across the ten blurbs is right, and a forced Gary Barnidge reference in every one is worse than none at all. Never invent a new inside joke, never embellish one of these, and never attribute one to the wrong manager. A fabricated callback is obvious to the room instantly and it poisons the real ones.
+**How to use the above.** It is a reference, not a checklist. Reach for a callback ONLY where it genuinely fits what somebody did in this draft — two or three landing across the ten blurbs is right, and the same forced reference in every one is worse than none at all. Never invent a new inside joke, never embellish one of these, and never attribute one to the wrong manager. A fabricated callback is obvious to the room instantly and it poisons the real ones. **Where the section above records nothing about these managers, there are no callbacks to reach for and you must not manufacture any** — write about the draft instead.
 
 **EVERY NOTE ABOVE IS FILED UNDER ONE NAME, AND THAT NAME IS WHOSE FACT IT IS.** This is the callback mistake that actually happens, because a good line under the wrong manager reads perfectly and is completely false. A shipped blurb took a quote recorded under Joe — Joe drafting Matthew Stafford in 2024 and announcing what he wanted from him — and put the words in Colin's mouth, in a sentence about Colin declining Stafford as a keeper. The decline was real. The quote was somebody else's, and Joe is in the room. If a line is filed under a manager you are not currently writing about, you may only use it as a fact about HIM, in HIS blurb or in an explicit comparison that names him.
 

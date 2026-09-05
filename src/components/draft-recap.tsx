@@ -337,13 +337,26 @@ export function DraftRecap({
       <PageHeader
         title="Draft Recap"
         eyebrow="Draft Hub"
+        /*
+         * The keeper clause is dropped entirely where there are none. "With 0
+         * keepers already out of the pool" is technically true and reads as a
+         * page describing a different league — and on a redraft the yardstick
+         * argument it exists to make simply does not apply, because with the
+         * whole pool live consensus ADP IS very close to the right yardstick.
+         */
         description={
           phase === "before"
             ? `Nothing has been drafted yet. When it has, this page argues about it — ` +
               `one verdict per franchise, measured against where a player was expected ` +
-              `to go on THIS board, with ${dossier.keepersOutOfPool} keepers already out of the pool.`
-            : `Every verdict is measured against where a player was expected to go on THIS ` +
-              `board — ${dossier.keepersOutOfPool} keepers are out of the pool, so consensus ADP is not the yardstick.`
+              `to go on THIS board` +
+              (dossier.keepersOutOfPool > 0
+                ? `, with ${dossier.keepersOutOfPool} keepers already out of the pool.`
+                : `.`)
+            : dossier.keepersOutOfPool > 0
+              ? `Every verdict is measured against where a player was expected to go on THIS ` +
+                `board — ${dossier.keepersOutOfPool} keepers are out of the pool, so consensus ADP is not the yardstick.`
+              : `Every verdict is measured against where a player was expected to go on THIS ` +
+                `board — the whole pool was live, so nobody was drafting round a locked roster.`
         }
       >
         {current && (
@@ -451,6 +464,7 @@ export function DraftRecap({
             canGenerate={canGenerate}
             modelName={modelName}
             hasProjections={!!dossier.projectedStandings?.rows.length}
+            keepersOutOfPool={dossier.keepersOutOfPool}
           />
         )}
 
@@ -722,15 +736,22 @@ function BeforeTheDraft({
   canGenerate,
   modelName,
   hasProjections,
+  keepersOutOfPool,
 }: {
   canGenerate: boolean;
   modelName: string | null;
   hasProjections: boolean;
+  /** Zero on a redraft, which changes what this page can honestly promise. */
+  keepersOutOfPool: number;
 }) {
   const coming: { head: string; body: string }[] = [
     {
       head: "A verdict on every franchise",
-      body: "Ten paragraphs, each measured against where a player was expected to go on this keeper-thinned board rather than against public ADP.",
+      body: `Ten paragraphs, each measured against where a player was expected to go on ${
+        keepersOutOfPool > 0
+          ? "this keeper-thinned board"
+          : "this board, with the whole pool live"
+      } rather than against public ADP.`,
     },
     {
       head: "The steal and the reach",
@@ -752,11 +773,13 @@ function BeforeTheDraft({
           The recap is written after the draft.
         </h2>
         <p className="text-muted-foreground mt-2.5 max-w-[68ch] text-[14px] leading-relaxed">
-          This page reads the finished board and argues about it. The board is
-          still all keepers, so there is nothing yet to argue about — but nothing
-          here is broken and nothing is missing. The projected finish below is
-          live already, on the keeper rosters alone
-          {hasProjections ? "" : " once the projections snapshot is pulled"}.
+          This page reads the finished board and argues about it.{" "}
+          {keepersOutOfPool > 0
+            ? "The board is still all keepers, so there is nothing yet to argue about"
+            : "Not a pick has been entered yet, so there is nothing to argue about"}{" "}
+          &mdash; but nothing here is broken and nothing is missing. The
+          projected finish below goes live as the picks land
+          {hasProjections ? "" : ", once the projections snapshot is pulled"}.
         </p>
       </div>
 
