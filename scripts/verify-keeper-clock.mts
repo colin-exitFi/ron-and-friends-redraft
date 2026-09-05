@@ -3,6 +3,12 @@
  *
  *   npm run verify:keepers
  *
+ * RON AND FRIENDS HAS NO KEEPERS. @fromProposal Section 10 leaves the keeper
+ * framework written and deliberately not activated, so `FEATURES.keepers` is
+ * false and the roster-specific expectations below do not apply. What still
+ * runs is the counting arithmetic — which is what proves the module is correct
+ * for whenever it is switched on — plus an assertion that the keeper wipe took.
+ *
  * The keeper rules are only worth anything if the module reproduces the board the
  * league is actually drafting off, so this runs the real cost function over every
  * keeper in the live Smart Draft room and asserts it lands on the round the room
@@ -29,7 +35,7 @@ import {
   seasonsKeptEnteringSheetSeason,
   sheetTenureYearEnteringSeason,
 } from "@/lib/keeper-clock";
-import { KEEPERS } from "@/lib/league-config";
+import { FEATURES, KEEPERS } from "@/lib/league-config";
 
 // --- Facts from data/DECISIONS.md -------------------------------------------
 
@@ -43,7 +49,15 @@ import { KEEPERS } from "@/lib/league-config";
  */
 const FREE_AGENT_ACQUISITIONS = new Set(["colston loveland"]);
 
-/** Kept in 2026 and out of keeper years afterwards — the sheets' `3 of 3`. */
+/**
+ * Kept in 2026 and out of keeper years afterwards — the sheets' `3 of 3`.
+ *
+ * THESE FIVE PLAYERS ARE THE SOURCE LEAGUE'S, NOT RON AND FRIENDS'. They are
+ * kept because the keeper framework is written and merely switched off, so this
+ * list is the fixture that proves the clock still works if it is switched back
+ * on. `FEATURES.keepers` gates whether they are asserted — in a redraft there
+ * is no player on a keeper clock and demanding these five failed on the league.
+ */
 const EXPECTED_FINAL_SEASON = [
   "Garrett Wilson",
   "Jaxon Smith-Njigba",
@@ -255,9 +269,42 @@ function checkFinalSeasons(finalSeason: string[], keepableIn2027: string[]) {
 
 // --- Run --------------------------------------------------------------------
 
+/*
+ * The counting-convention checks run whatever the league does. They are pure
+ * arithmetic over `keeper-clock` and `KEEPERS.maxConsecutiveSeasons`, so they
+ * are what keeps the module honest while the feature is switched off — and the
+ * part of this harness that was always passing.
+ */
 checkConventionMapping();
 const { finalSeason, keepableIn2027, total } = checkKeepers();
-checkFinalSeasons(finalSeason, keepableIn2027);
+
+/*
+ * THE ROSTER EXPECTATIONS ARE GATED, THE ARITHMETIC IS NOT.
+ *
+ * `EXPECTED_FINAL_SEASON` names five players from the league this app was
+ * forked from. Ron and Friends drafts no keepers at all, so asserting them
+ * produced six failures that were all the harness being stale — and a suite
+ * that fails on the league is a suite that gets ignored on the night it
+ * matters.
+ *
+ * The redraft branch is not a skip. It asserts the thing actually worth
+ * knowing tonight: that the keeper wipe took and the room snapshot carries no
+ * keeper slot for the board to pre-fill.
+ */
+if (FEATURES.keepers) {
+  checkFinalSeasons(finalSeason, keepableIn2027);
+} else {
+  console.log("\n--- FINAL KEEPER SEASON ---");
+  console.log("not applicable: 2026 is a pure redraft, so no player is on a keeper clock.");
+  if (total === 0) {
+    console.log("ok   the room snapshot carries no keeper slots — the wipe took");
+  } else {
+    fail(
+      `Keepers are switched off, but the room snapshot still carries ${total} keeper slot(s). ` +
+        "The board would pre-fill them.",
+    );
+  }
+}
 
 console.log("\n--- RESULT ---");
 console.log(`${total} keepers checked · ${finalSeason.length} final season · ${keepableIn2027.length} keepable in 2027`);

@@ -53,7 +53,7 @@ import {
 } from "@/lib/mock-draft-run";
 import { isMockDraftFile } from "@/lib/mock-draft-types";
 import { getBoard, getPlayerPool } from "@/lib/smartdraft";
-import { CURRENT_SEASON, DRAFT, LEAGUE, ROSTER, TOTAL_PICKS } from "@/lib/league-config";
+import { CURRENT_SEASON, DRAFT, FEATURES, LEAGUE, ROSTER, TOTAL_PICKS } from "@/lib/league-config";
 import { DRAFTABLE_POSITIONS } from "@/lib/board-types";
 
 const LIVE_STATE = path.join(process.cwd(), "data", `draft-state-${CURRENT_SEASON}.json`);
@@ -261,10 +261,28 @@ const expectedPicks = TOTAL_PICKS - keeperCount;
 check(`the board matches the league: ${TOTAL_PICKS} slots`, board.slots.length === TOTAL_PICKS);
 check(`${LEAGUE.teams} franchises`, board.teamCount === LEAGUE.teams);
 check(`${DRAFT.rounds} rounds`, board.rounds === DRAFT.rounds);
-check("29 traded picks on the board", board.tradedCount === 29, `got ${board.tradedCount}`);
+/*
+ * THE 29 TRADED PICKS AND THE PRE-PLACED KEEPERS BELONGED TO THE OTHER LEAGUE.
+ * Ron and Friends is an inaugural redraft: `FEATURES.tradedPicks` is false, so
+ * every slot is owned by the franchise it was born to, and the keeper files are
+ * empty so nothing is pre-placed. Asserting the old numbers failed on the
+ * league rather than on a bug. The redraft branch asserts the ABSENCE, which is
+ * the check that the wipe actually took.
+ */
 check(
-  `${keeperCount} keepers pre-placed, every one holding a player`,
-  keeperCount > 0 && board.slots.filter((s) => s.isKeeper).every((s) => s.player != null),
+  FEATURES.tradedPicks
+    ? `traded picks are on the board to follow (${board.tradedCount})`
+    : "no traded picks on the board — this league does not trade them",
+  FEATURES.tradedPicks ? board.tradedCount > 0 : board.tradedCount === 0,
+  `got ${board.tradedCount}`,
+);
+check(
+  keeperCount > 0
+    ? `${keeperCount} keepers pre-placed, every one holding a player`
+    : "no keepers pre-placed — every cell is open for a redraft",
+  keeperCount > 0
+    ? board.slots.filter((s) => s.isKeeper).every((s) => s.player != null)
+    : board.slots.every((s) => !s.isKeeper),
 );
 check(
   "the player pool the mock is handed contains no kicker",
@@ -393,7 +411,13 @@ check(
 );
 
 section("4b. Traded picks went to the franchise that acquired them");
-check("29 traded slots to check", tradedSlots.length === 29, `got ${tradedSlots.length}`);
+check(
+  FEATURES.tradedPicks
+    ? `there are traded slots to check (${tradedSlots.length})`
+    : "there are no traded slots to check — this league does not trade picks",
+  FEATURES.tradedPicks ? tradedSlots.length > 0 : tradedSlots.length === 0,
+  `got ${tradedSlots.length}`,
+);
 const tradedWrong: string[] = [];
 for (const slot of tradedSlots) {
   const filled = mockView.slots.find((s) => s.id === slot.id)!;
@@ -411,7 +435,9 @@ for (const slot of tradedSlots) {
   }
 }
 check(
-  "all 29 landed with the acquiring franchise, not the original",
+  tradedSlots.length
+    ? `all ${tradedSlots.length} landed with the acquiring franchise, not the original`
+    : "no traded slot could land with the wrong franchise, because there are none",
   tradedWrong.length === 0,
   tradedWrong.slice(0, 4).join("; "),
 );
