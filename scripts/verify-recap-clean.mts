@@ -106,15 +106,81 @@ for (const name of FOREIGN_LORE) {
   check(`lore block is free of "${name}"`, !lore.toLowerCase().includes(name.toLowerCase()));
 }
 
-section("3. …and it does not merely vanish, it forbids invention");
+section("3. …and what it does carry is this league's, and is fenced");
+/*
+ * THIS SECTION USED TO ASSERT THE OPPOSITE, AND THE FLIP IS THE POINT.
+ *
+ * While `MANAGER_PERSONAS` was empty, `loreBlock()` rendered a prohibition —
+ * "NOTHING IS RECORDED ABOUT THESE TEN MANAGERS" — and the checks here proved
+ * that prohibition reached the model. The commissioner has since dictated the
+ * real thing: nicknames, the group's shared vocabulary, and the handful of
+ * stories these men actually tell. So the empty branch no longer renders and
+ * asserting its wording would fail on the LEAGUE rather than on a bug.
+ *
+ * What has NOT changed is the failure being guarded against, so the checks are
+ * re-pointed rather than dropped. Sections 1, 2 and 5 — the foreign-lore
+ * banlist, which is the reason this script exists — are untouched. What is
+ * asserted below is that the replacement is complete (every man on tonight's
+ * roster has a line, so no blurb is written off a blank), that it is fenced
+ * where the commissioner fenced it (four managers with no material, and no
+ * number, year or round attached to any of it), and that the two facts most
+ * easily misattributed still name the right men.
+ */
 check("the lore block is present rather than empty", lore.trim().length > 0);
+const missing = FRANCHISES.filter((f) => !lore.includes(`**${f.shortName}** —`));
 check(
-  "it states outright that nothing is recorded about these managers",
-  /NOTHING IS RECORDED ABOUT THESE TEN MANAGERS/i.test(lore),
+  "every manager on tonight's roster has a persona of his own",
+  missing.length === 0,
+  missing.map((f) => f.shortName).join(", "),
 );
-check("it forbids inventing a profession or a personality", /do not give anybody a profession/i.test(lore));
-check("it forbids referencing a previous season", /there is no previous season/i.test(lore));
-check("it points the model at the board instead", /write about the draft, not about the drafters/i.test(lore));
+check(
+  "it forbids putting a number, a year or a round on any of it",
+  /NOT ONE LINE OF IT CARRIES A NUMBER, A YEAR OR A ROUND/i.test(lore),
+);
+check(
+  "the four managers with no material are marked as having none",
+  /NOTHING ELSE ABOUT HIM IS RECORDED/.test(lore) &&
+    /NO RUNNING JOKE EXISTS ABOUT HIM AND YOU MUST NOT INVENT ONE/.test(lore) &&
+    ["Scott", "Keith"].every((n) =>
+      new RegExp(`\\*\\*${n}\\*\\* —[^\\n]*[Nn]othing else about him is recorded`).test(lore),
+    ),
+);
+/*
+ * The two misattributions this lore makes available, asserted by name. Both are
+ * a good line under the wrong man, which reads perfectly and is false — the
+ * exact failure Part 5 spends a paragraph on.
+ */
+check(
+  "the Rainman four are named, and Ryan is explicitly not one of them",
+  /THE RAINMAN GUYS ARE COLIN, NICK, CHRIS AND TOM/.test(lore) &&
+    /HE IS NOT A[\s\S]{0,20}RAINMAN GUY/.test(lore),
+);
+check(
+  "the unrecorded second heckler is named as unrecorded rather than guessed at",
+  /THE SECOND HECKLER IS NOT RECORDED/.test(lore),
+);
+check(
+  "Steve's franchise name is not allowed to become a nickname for Steve",
+  /there is no "Steve Mahomes"/.test(lore),
+);
+/*
+ * THE IMPEDIMENT IS NICK'S, AND IT WAS RECORDED AGAINST RYAN TWICE BEFORE THE
+ * COMMISSIONER CAUGHT IT. Wyan and Nickwis both came out of Nick's childhood
+ * mouth; Ryan only ever kept the name he was given. It is the most inviting
+ * misattribution in the file — the name that got changed is Ryan's, so the
+ * impediment reads as though it ought to be his — and it is a false claim about
+ * a man who will be sat in the room while the blurb is read out.
+ */
+check(
+  "the speech impediment is Nick's, and Ryan is cleared of it in as many words",
+  /NICK could not say his R's or L's as a child/.test(lore) &&
+    /RYAN HAS NO SPEECH IMPEDIMENT/.test(lore) &&
+    !/Ryan could not say his/i.test(lore),
+);
+check(
+  "…and the bit carries its own restraint rule",
+  /USE IT ONCE AT MOST/.test(lore),
+);
 
 section("4. Nobody is nominated for the savage blurb");
 check(

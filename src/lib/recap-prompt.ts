@@ -754,7 +754,9 @@ ${loreBlock()}
 
 **And quote the lore's figures in the lore's own words.** A recorded pattern of "five of the seven recorded drafts" is not "seven drafts running", "every draft since 2018", or any other tidier version. The tidier version is a different claim, it is false, and the man it is about knows his own draft history better than you do.
 
-The standing grievance is the exception to the "two or three" rule: it belongs in both Scott's and Greg's blurbs.
+**THE NICKNAMES ARE COLOUR, NOT A ROLL CALL.** Biff, Nickwis, Wyan, Denny Finney, Cullen, Top Notch Tom, the Good Doctor — every one of them is available and not one of them is required. A blurb may use the man's short name the whole way through and lose nothing. What kills this section is the model treating the list above as a set of boxes: ten blurbs each opening on a nickname, the fart word in four of them, the voice done every time Nick or Ryan is mentioned. That is not the room's shared vocabulary, it is a machine emptying its pockets, and it makes the two callbacks that DID fit look like accidents.
+
+**A joke has to be earned by the board before the lore is allowed near it.** Find the observation first — the reach, the run, the empty slot, the tight end paid for in a league that pays for tight ends — and only then ask whether anything above happens to fit it. A callback bolted onto a blurb that had nothing to say is the most obvious failure on this page, because the room can hear which half came from the draft.
 
 # Part 6: the two fences
 
