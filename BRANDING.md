@@ -49,6 +49,35 @@ The supplied artwork already has a clean alpha channel — it needed only a trim
 to its opaque bounding box, so the black-matte flood fill described for the
 previous crest no longer applies.
 
+### If you redraw the crest, CHANGE THE FILENAME
+
+**New artwork must not reuse an existing crest filename.** This is a deploy
+caveat, not a style preference, and it has already bitten once locally.
+
+Every render site goes through Next's image optimizer, which caches a separate
+rendition per `(source URL, width, quality)`. Replacing the bytes at
+`crest-v2-256.png` without changing its name leaves each cached width to expire
+on its own, so the crest can update at one size and stay stale at another. That
+is exactly what happened during the swap on 2026-09-05: the desktop sidebar
+showed the new crest while the mobile top bar kept serving the old Ultimate
+Keeper mark, because the `w=64` rendition predated the swap and the filename had
+not moved. Phones were wrong and desktops were right, from one file.
+
+The safe change is a new name — `crest-v3.png`, or a content hash — updated at
+every reference. A cache with no entry for a URL cannot serve a stale one.
+
+**For the first production deploy this risk is nil, and the reason is worth
+recording so nobody re-litigates it.** The Vercel project was created empty on
+2026-09-05 and had never deployed, so its optimizer cache had no entry for any
+crest URL and nothing old to serve. Poisoning of this kind needs a prior deploy
+that served different bytes at the same URL, and there was none. Verified before
+the first push at a 390px viewport against a production build: the mobile bar
+requested the `w=64` rendition — the one that was wrong locally — and drew the
+new doghouse-and-violin shield.
+
+That protection is spent the moment the first deploy lands. **Any artwork change
+after it needs a new filename.**
+
 ### The small-size problem
 
 The crest is a detailed shield — a doghouse, a violin and bow, stars, a football
