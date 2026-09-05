@@ -229,7 +229,8 @@ export function DraftBoard({
    */
   const { active: fullscreen, toggle: toggleTvMode } = useFullscreen();
   const tvMode = useTvMode();
-  /** Eleven rounds and a scroll, or all sixteen in the band. ⌘⇧F. */
+  /** As many rounds as fit at full size and a scroll, or all of them in the
+      band at whatever size that leaves. ⌘⇧F. */
   const { fit, toggle: toggleFit, reset: resetFit } = useBoardFit();
   /**
    * ⌘⇧↑/⌘⇧↓ and ⌘⌥↑/⌘⌥↓, installed once for this surface — and ⌘⌥0, which is
@@ -294,7 +295,7 @@ export function DraftBoard({
   /*
    * Keep the live cell on screen.
    *
-   * The board scrolls when the screen cannot hold sixteen rounds at a legible
+   * The board scrolls when the screen cannot hold every round at a legible
    * size, which means by the late rounds the cell on the clock is below the fold
    * — and the operator would be scrolling with one hand while typing names with
    * the other. `block: "nearest"` so a cell already in view does not twitch.
@@ -1125,10 +1126,26 @@ function Header({
           <button
             type="button"
             onClick={onToggleFit}
+            /*
+             * THE ROUND COUNT IS THE BOARD'S, AND SCROLL'S IS NOT NAMED.
+             *
+             * This read "all sixteen rounds" and "eleven rounds" — the source
+             * league's total and the count that fitted 1080p when it was
+             * written. The total is now fifteen, so the first was simply
+             * wrong on the screen the room is watching; and the second has no
+             * fixed answer any more. What Scroll fits depends on the viewport
+             * and on where the safe area's bottom edge has been put: at the
+             * default band 1080p holds eleven, and two presses of ⌘⇧↓ hold all
+             * fifteen at the same size. A tooltip that names a number the
+             * board can disprove by being looked at is worse than one that
+             * describes the trade.
+             */
             title={
               fit
-                ? "Showing all sixteen rounds at once. Switch to Scroll for bigger type and eleven rounds that follow the pick (⌘⇧F)"
-                : "Showing eleven rounds, following the pick. Switch to Fit for all sixteen at once, smaller (⌘⇧F)"
+                ? `Showing all ${view.rounds} rounds at once, sized to fit. ` +
+                  "Switch to Scroll for the board's full type size on the rounds around the pick (⌘⇧F)"
+                : `Showing the rounds that fit at full size, following the pick. ` +
+                  `Switch to Fit for all ${view.rounds} at once, smaller (⌘⇧F)`
             }
             className={cn(
               "border-border/60 hover:bg-muted flex items-center justify-center gap-1 rounded border px-[0.6vw] py-[0.5vh] text-[clamp(0.6rem,0.8vw,1rem)] font-semibold max-md:hidden",
