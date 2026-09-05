@@ -160,7 +160,16 @@ async function cells(page) {
     const read = (cell) => {
       const box = cell.getBoundingClientRect();
       const stack = cell.firstElementChild;
-      const strip = cell.lastElementChild;
+      /*
+       * The ownership strip is the cell's fourth slot on a board that draws
+       * one — and a redraft draws none, because a league that cannot trade a
+       * pick has nothing to put in it and the reserved line is worth more as
+       * type. See `boardShowsOwnership`. When it is absent the stack IS the
+       * last child, so this must be asked rather than assumed: reading the
+       * stack as the strip would have measured the player's name against
+       * itself and called the result a clearance.
+       */
+      const strip = cell.children.length > 1 ? cell.lastElementChild : null;
       const [name, posRow, clubRow] = [...stack.children];
       const offset = (el) => round(el.getBoundingClientRect().top - box.top);
       const text = (el) => (el?.innerText ?? "").trim();
@@ -285,12 +294,14 @@ async function cells(page) {
         lineWidth: firstLine ? round(firstLine.clientWidth) : null,
       };
 
-      /* Every type size the cell renders, for the "one board, one size" claim. */
+      /* Every type size the cell renders, for the "one board, one size" claim.
+         `strip` is null on a board that draws no ownership strip, which is a
+         size not rendered rather than a size of zero. */
       const fonts = {
         name: round(parseFloat(getComputedStyle(name.firstElementChild).fontSize)),
         position: round(parseFloat(getComputedStyle(posTag).fontSize)),
         meta: round(parseFloat(getComputedStyle(clubRow).fontSize)),
-        strip: round(parseFloat(getComputedStyle(strip).fontSize)),
+        strip: strip ? round(parseFloat(getComputedStyle(strip).fontSize)) : null,
       };
 
       return {
@@ -299,12 +310,14 @@ async function cells(page) {
         width: round(box.width),
         fonts,
         nameBlock,
-        /* The shape of the cell: where each slot starts, from the cell's top. */
+        /* The shape of the cell: where each slot starts, from the cell's top.
+           A null strip is part of the shape and is compared as one — every
+           cell on a board must agree about whether the slot is there. */
         slots: {
           name: offset(name),
           position: offset(posRow),
           club: offset(clubRow),
-          strip: offset(strip),
+          strip: strip ? offset(strip) : null,
         },
         name: text(name),
         position: text(posRow),
@@ -317,8 +330,16 @@ async function cells(page) {
          */
         keeperMark: padlock.shown,
         padlock,
+        /*
+         * The room between the name and whatever comes up underneath it. With
+         * a strip that is the strip's top edge, which is the bug this whole
+         * script was written for. Without one it is the bottom of the cell,
+         * which is the same question asked of the only thing left that can
+         * come up under a name: the cell's own floor.
+         */
         clearance: round(
-          strip.getBoundingClientRect().top - name.getBoundingClientRect().bottom,
+          (strip ? strip.getBoundingClientRect().top : box.bottom) -
+            name.getBoundingClientRect().bottom,
         ),
         cutters,
         overflowing,
@@ -387,7 +408,9 @@ function checkNothingIsCut(g) {
   const covered = g.cells.filter((c) => c.clearance < 0);
   const tightest = Math.min(...g.cells.map((c) => c.clearance));
   check(
-    "the ownership strip covers no name",
+    g.cells[0]?.slots.strip == null
+      ? "nothing comes up under a name — every cell has room below its last line"
+      : "the ownership strip covers no name",
     g.cells.length > 0 && covered.length === 0,
     covered.length
       ? `${covered.length} covered, worst by ${-covered[0].clearance}px`
@@ -610,6 +633,15 @@ async function checkTheRoomCanReadIt(page, g) {
    * to `STRIP_FLOOR_ARCMIN`, up near the position tag's band rather than down
    * with the bye.
    */
+  if (fonts.strip == null) {
+    /* No strip is drawn, so there is no size to hold to a floor. That the
+       strip is absent is asserted by `checkEveryCellIsTheSameShape`, against
+       the same flag, so this is a skip rather than a gap. */
+    console.log(
+      "    (no ownership strip on this board, so nothing to hold to the strip floor — this league cannot trade picks)",
+    );
+    return { ratio, arcmin: asArcmin(fonts.name), stripArcmin: null };
+  }
   check(
     `the ownership strip clears ${STRIP_FLOOR_ARCMIN} arcminutes, not just the ${META_FLOOR_ARCMIN} floor`,
     asArcmin(fonts.strip) >= STRIP_FLOOR_ARCMIN,
@@ -740,6 +772,8 @@ async function checkTheStripIsLegible(page) {
     const pageBg = getComputedStyle(document.body).backgroundColor;
     const out = [];
     for (const cell of document.querySelectorAll("[data-slot-id][title]")) {
+      /* No fourth slot at all on a board that draws no strip — see \`read\`. */
+      if (cell.children.length < 2) continue;
       const strip = cell.lastElementChild;
       const cs = getComputedStyle(strip);
       if (cs.visibility === "hidden" || !strip.innerText.trim()) continue;
@@ -859,6 +893,32 @@ function checkEveryCellIsTheSameShape(g) {
     "and they are all the same height",
     heights.size === 1,
     [...heights].join(", ") + "px",
+  );
+
+  /*
+   * AND THEY ALL AGREE ABOUT THE FOURTH SLOT.
+   *
+   * The ownership strip is reserved in every cell or in none of them, and which
+   * of those it is follows the league rather than the cell: @fromProposal
+   * Section 6 forbids pick trading, `FEATURES.tradedPicks` records it, and
+   * `boardShowsOwnership` turns that into a line of every cell's height spent
+   * on type instead. So the assertion INVERTS with the flag rather than
+   * relaxing — in a redraft, a reserved strip is 11.7px a round at 1080p, or
+   * better than two rounds of board, given to a fact that cannot occur.
+   */
+  const reserved = g.cells.filter((c) => c.slots.strip != null);
+  check(
+    FEATURES.tradedPicks
+      ? `every cell reserves the ownership strip (${reserved.length})`
+      : "no cell reserves an ownership strip — this league cannot trade picks, so the line is the name's",
+    FEATURES.tradedPicks
+      ? reserved.length === g.cells.length
+      : reserved.length === 0,
+    FEATURES.tradedPicks
+      ? `${g.cells.length - reserved.length} cells without one`
+      : reserved.length
+        ? `${reserved.length} cells still hold one`
+        : `${g.cells.length} cells, ${g.cells[0].height}px tall`,
   );
 }
 

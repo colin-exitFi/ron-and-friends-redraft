@@ -5,6 +5,8 @@ import { AlertTriangle, ArrowRight, Lock, Trash2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { boardNameMode, splitBoardName } from "@/lib/board-name";
+import { FIT_TYPE_CQH } from "@/lib/board-legibility";
+import { FEATURES } from "@/lib/league-config";
 import { useBoardDensity } from "@/lib/use-board-density";
 import { useSafeArea } from "@/lib/use-safe-area";
 import { useTvMode } from "@/lib/use-tv-mode";
@@ -703,6 +705,14 @@ export function BoardGrid({
   );
   const { density } = useBoardDensity();
   /*
+   * Whether the ownership strip is drawn AT ALL — and so whether every cell
+   * gives up a line of its height to reserve room for one. See
+   * `boardShowsOwnership`; the answer is one boolean for the whole grid,
+   * because a strip on some cells and not others is the uniformity bug this
+   * board has already been through once.
+   */
+  const ownership = useMemo(() => boardShowsOwnership(slots), [slots]);
+  /*
    * TV mode read here rather than threaded down from `draft-board.tsx`, which
    * holds fullscreen for its own topbar and does not pass it on. `useTvMode`
    * answers for OS-level kiosk fullscreen and for `?tv=1` as well, so the mock
@@ -753,6 +763,31 @@ export function BoardGrid({
   const rowWidth = {
     minWidth: `calc(${teamCount} * (var(--ukl-cell) + 0.25vw) + var(--ukl-gutter))`,
   };
+  /*
+   * FIT MODE'S THREE TYPE SIZES, FROM THE BUDGET THAT DERIVES THEM.
+   *
+   * Written here rather than as Tailwind arbitrary values because Tailwind
+   * cannot read a TypeScript constant: the shares were declared in
+   * `board-legibility.ts` and RESTATED in a class string, which is two copies
+   * of a budget that only balances if they agree. They did not have to drift
+   * for that to be a problem — the derivation lives with the constants and the
+   * board was sized by the copy.
+   *
+   * THE `vw` CEILING IS IN THE `min()` HERE TOO, which it was not before. It is
+   * the width a column can actually hold the longest surname at, measured by
+   * `verify-board-fit.mjs` against the real top-200, and it did not use to
+   * matter in Fit only because the round's share was far below it. At 25cqh it
+   * is close enough to matter on a wide, short screen, and the rule it buys is
+   * what lets the harness go on covering both modes while only driving one:
+   * Fit is now `min(share, ceiling, Scroll's own term)`, so it can never be
+   * larger than Scroll, and a name proved to fit its column there fits here.
+   */
+  const shares = ownership ? FIT_TYPE_CQH.withOwnership : FIT_TYPE_CQH.plain;
+  const fitType = {
+    "--ukl-name": `min(${shares.name}cqh, var(--ukl-name-cap), calc(var(--ukl-name-base)*var(--ukl-name-scale,1)*var(--ukl-density,1)))`,
+    "--ukl-pos": `min(${shares.pos}cqh, var(--ukl-pos-cap), calc(var(--ukl-pos-base)*var(--ukl-density,1)))`,
+    "--ukl-meta": `min(${shares.meta}cqh, var(--ukl-meta-cap), calc(var(--ukl-meta-base)*var(--ukl-density,1)))`,
+  } as React.CSSProperties;
 
   return (
     /*
@@ -974,10 +1009,10 @@ export function BoardGrid({
           className={cn(
             "flex shrink-0 grow basis-auto gap-[0.25vw]",
             fit
-              ? "min-h-0 [--ukl-cell-gap:0.8cqh] [--ukl-cell-pad:1.6cqh] [--ukl-meta:min(12cqh,calc(var(--ukl-meta-base)*var(--ukl-density,1)))] [--ukl-name:min(17.5cqh,calc(var(--ukl-name-base)*var(--ukl-name-scale,1)*var(--ukl-density,1)))] [--ukl-pos:min(15cqh,calc(var(--ukl-pos-base)*var(--ukl-density,1)))] [--ukl-strip:calc(var(--ukl-meta)*1.17)] [container-type:size]"
+              ? "min-h-0 [--ukl-cell-gap:0.8cqh] [--ukl-cell-pad:1.6cqh] [--ukl-strip:calc(var(--ukl-meta)*1.17)] [container-type:size]"
               : "min-h-[calc(3.45rem*var(--ukl-density,1))]",
           )}
-          style={rowWidth}
+          style={fit ? { ...rowWidth, ...fitType } : rowWidth}
         >
           <div
             className={cn(
@@ -995,6 +1030,7 @@ export function BoardGrid({
                 key={slot.id}
                 slot={slot}
                 nameLines={nameMode.lines}
+                ownership={ownership}
                 aimed={slot.id === aimedId}
                 isTarget={slot.id === targetSlotId}
                 fit={fit}
@@ -1041,17 +1077,17 @@ function PositionCounts({ counts }: { counts: Record<string, number> }) {
 }
 
 /**
- * ONE LAYOUT, 160 CELLS.
+ * ONE LAYOUT, EVERY CELL.
  *
  * Every cell on the board — drafted, kept, traded, empty, on the clock — is
- * drawn through the same four slots in the same order, and each slot holds its
+ * drawn through the same slots in the same order, and each slot holds its
  * height whether or not it has anything in it:
  *
  *   1. THE NAME, top-aligned, two lines reserved.
  *   2. THE POSITION TAG on the left, with the keeper padlock attached to its
  *      right in the tag's own colour; the pick's own number on the right.
  *   3. CLUB on the left, BYE on the right.
- *   4. THE OWNERSHIP STRIP, full width.
+ *   4. THE OWNERSHIP STRIP, full width — on a board that draws one at all.
  *
  * The commissioner asked for this in those terms — "I want the names normalized
  * in terms of alignment (top alignment) in all cells… this needs to look
@@ -1061,6 +1097,12 @@ function PositionCounts({ counts }: { counts: Record<string, number> }) {
  * position across, and a pick that was never traded still gives the strip its
  * line. So the same fact is at the same height in every column of every round,
  * and the board does not jump as picks land.
+ *
+ * SLOT 4 IS THE ONE THAT CAN BE ABSENT, AND IT IS ABSENT FROM ALL OF THEM OR
+ * FROM NONE. The uniformity above is a claim about cells on the SAME board, and
+ * `boardShowsOwnership` is decided once for the whole grid — so a redraft draws
+ * three slots in all 150 and a keeper season draws four in all 150. What is
+ * never allowed is a board where the answer differs by cell.
  *
  * IT IS ALSO WHAT ENDS THE OVERLAP. The strip used to be the last child of a
  * column that was allowed to shrink, so on a short window it came up over the
@@ -1101,6 +1143,7 @@ function Cell({
   aimed,
   isTarget,
   nameLines,
+  ownership,
   fit = false,
   onAim,
   onPickMenu,
@@ -1110,6 +1153,8 @@ function Cell({
   isTarget: boolean;
   /** Board-wide, never per cell. See `boardNameMode`. */
   nameLines: 1 | 2;
+  /** Whether this board draws the ownership strip at all. Board-wide too. */
+  ownership: boolean;
   fit?: boolean;
   onAim?: () => void;
   onPickMenu?: (slot: LiveSlot, x: number, y: number) => void;
@@ -1352,8 +1397,12 @@ function Cell({
         </div>
       </div>
 
-      {/* SLOT 4 — who actually owns the pick. Drawn in every cell; see below. */}
-      <TradeBanner owner={slot.currentOwner.name} traded={slot.traded} />
+      {/*
+        SLOT 4 — who actually owns the pick. Drawn in every cell, or in none of
+        them: `ownership` is a board-wide answer, so the cells stay uniform
+        whichever way it goes. See `TradeBanner` and `boardShowsOwnership`.
+      */}
+      {ownership && <TradeBanner owner={slot.currentOwner.name} traded={slot.traded} />}
     </div>
   );
 }
@@ -1418,6 +1467,35 @@ export function PlayerMeta({
 }
 
 /**
+ * DOES THIS BOARD DRAW AN OWNERSHIP STRIP AT ALL.
+ *
+ * The strip is reserved in every cell so that a traded pick and an untraded one
+ * are the same shape — and the reservation is worth having exactly as long as
+ * some cell might use it. @fromProposal Section 6 forbids trading picks in this
+ * league, so in 2026 no cell ever can, and the reserved line is a line of every
+ * one of the 150 cells spent on a fact that cannot occur. At 1080p that is
+ * 11.7px a round: better than two rounds of board.
+ *
+ * SO IT IS GATED, NOT DELETED. `FEATURES.tradedPicks` is the switch, the same
+ * one `verify-board-fit.mjs` reads, and `TradeBanner` below is untouched: a
+ * season that votes pick trading back in flips the flag and the layout returns
+ * without anyone rebuilding it.
+ *
+ * THE DATA IS THE SECOND HALF OF THE ANSWER, and it is what stops the flag
+ * hiding a fact. If any slot on this board really has changed hands — a stray
+ * traded pick in a snapshot, a flag that got out of step with the file — the
+ * strip comes back for all 150 cells rather than being suppressed on the one
+ * cell that needed it. The board can be wrong about the league's rules; it must
+ * never be wrong about who owns a pick.
+ *
+ * Board-wide, never per cell. A strip on some cells and not others is the exact
+ * non-uniformity the reservation exists to prevent.
+ */
+function boardShowsOwnership(slots: LiveSlot[]): boolean {
+  return FEATURES.tradedPicks || slots.some((slot) => slot.traded);
+}
+
+/**
  * Who actually owns this pick — the bottom slot of every cell on the board.
  *
  * The column header names the ORIGINAL owner, so without this a traded pick
@@ -1425,7 +1503,8 @@ export function PlayerMeta({
  * badge because it reads as a property of the whole cell. Same treatment on
  * picked and unpicked slots: ownership does not change when the pick is made.
  *
- * DRAWN IN ALL 160 CELLS, HIDDEN IN THE 131 IT HAS NOTHING TO SAY ABOUT.
+ * DRAWN IN EVERY CELL OF A BOARD THAT DRAWS IT AT ALL, HIDDEN IN THE ONES IT
+ * HAS NOTHING TO SAY ABOUT — see `boardShowsOwnership` for the "at all".
  * `invisible` is `visibility: hidden`, which keeps the box and its height, so a
  * traded cell and an untraded one are the same shape and every field above the
  * strip sits at the same offset in both. That is what the commissioner asked

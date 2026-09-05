@@ -116,9 +116,11 @@ export const LEGIBILITY_TABLE = [12, 16, 20].map((feet) => {
  * the sightline, coarse enough that four presses are visibly four presses.
  *
  * THE FLOOR ON THE BAND IS WHERE USEFULNESS ENDS, not where the arithmetic
- * does. 40vh of band at 1080p is 432px, which holds about 5.8 rounds — the
- * active round and four ahead of it. Tighter than that and the board stops
- * answering "who's up next", which is the question it exists for.
+ * does. 40vh of band at 1080p is 432px, which holds seven rounds at the pitch
+ * the board runs at now — the active round and six ahead of it. Tighter than
+ * that and the board stops answering "who's up next", which is the question it
+ * exists for. It held 5.8 before the ownership strip's reserved line came out
+ * of every cell, which is the same floor buying more of the draft.
  */
 export const SAFE_TOP_DEFAULT = 0;
 export const SAFE_TOP_MIN = 0;
@@ -135,8 +137,8 @@ export const BOARD_FIT_KEY = "ukl.board.fit.v1";
 /**
  * FIT MODE'S TYPE, AS A SHARE OF THE ROUND IT SITS IN.
  *
- * Fit divides the safe band into sixteen equal rounds and then asks each cell
- * to size itself to whatever height that turned out to be — the technique
+ * Fit divides the safe band into equal rounds and then asks each cell to size
+ * itself to whatever height that turned out to be — the technique
  * `final-board.tsx` uses, where the grid decides how tall a round is and the
  * cell follows, rather than a size being chosen and the board hoping it fits.
  *
@@ -145,15 +147,39 @@ export const BOARD_FIT_KEY = "ukl.board.fit.v1";
  * put an ellipsis through nine names on the final board before that surface
  * gave floors up.
  *
- * A live cell stacks FOUR slots where the final board's stacks two, so the name
- * gets a smaller share here than the 27cqh it gets there. 17.5 is derived from
- * what the stack costs: two reserved name lines at 1.15 each, plus the position
- * row, the club row and the ownership strip, come to about 4.8 times the name's
- * own size, and the padding and the gaps take the rest of the round.
+ * THESE NUMBERS ARE A BUDGET AND IT ADDS UP TO 100. A round holds, in cqh:
+ *
+ *   2 × 1.6      the cell's padding, top and bottom
+ *   2 × 0.8      the gaps between the slots
+ *   2.3 × name   two reserved name lines at 1.15 each
+ *  1.15 × pos    the position row
+ *  1.15 × meta   the club-and-bye row
+ *  1.053 × meta  the ownership strip — ONLY where one is drawn
+ *
+ * SO THERE ARE TWO BUDGETS, because there are two cells. A league that trades
+ * picks reserves the strip in all of them and the last term is real; a redraft
+ * cannot trade a pick, draws no strip, and gets that term back to spend on
+ * type. See `boardShowsOwnership` in `draft-surface.tsx` for which is which.
+ *
+ * `withOwnership` is the arrangement as it shipped and is left exactly at it —
+ * it is what a 2027 keeper vote restores, and a budget that had been retuned
+ * against a board with no strip in it would overflow the band on the day the
+ * flag went back. `plain` spends the released 12.6cqh where the commissioner
+ * asked for it: the name first, then the position and the club. At 1080p with
+ * fifteen rounds inside the default band that is a 10.6px name rather than a
+ * 7.5px one.
+ *
+ * BOTH LEAVE ABOUT 6cqh IN HAND, and that is not decoration. A surname wrapping
+ * to a third line costs 2.3cqh of it, and in Fit the board is `overflow-hidden`
+ * — a budget spent to the last unit is a round pushing the next one out of the
+ * band rather than a round that looks slightly tight.
  */
-export const FIT_NAME_CQH = 17.5;
-export const FIT_POS_CQH = 15;
-export const FIT_META_CQH = 12;
+export const FIT_TYPE_CQH = {
+  /** No ownership strip: the line it would have taken is the name's. */
+  plain: { name: 25, pos: 16, meta: 12.5 },
+  /** The strip is drawn in every cell, so it is charged for in every cell. */
+  withOwnership: { name: 17.5, pos: 15, meta: 12 },
+} as const;
 
 export type SafeArea = { top: number; bottom: number };
 
