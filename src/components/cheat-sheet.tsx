@@ -39,7 +39,35 @@ import {
  * that cannot break when the table is wider than the sum of its columns, which
  * is every desktop screen.
  */
-const FROZEN_ID = "sticky left-0 w-[10.75rem] max-md:w-[9.5rem] px-1.5";
+const FROZEN_ID = "sticky left-0 w-[10.75rem] max-md:w-[8rem] px-1.5 max-md:px-1";
+
+/**
+ * The width the frozen block's CONTENTS are allowed to ask for.
+ *
+ * ============================================================================
+ * THE `w-` ON THE CELL WAS A REQUEST, NOT A LIMIT
+ * ============================================================================
+ * The table is `w-max`, so it lays out at max-content and a declared column
+ * width becomes a MINIMUM: any cell whose contents want more gets more. The
+ * identity cell's contents wanted a great deal more, because `truncate` caps
+ * what is painted and not what is asked for. So `w-[9.5rem]` rendered at
+ * 215px on a 375px phone — 57% of the screen, spent on one name, with two
+ * numeric columns left over. The commissioner: "you can't see a ton of data
+ * when you're looking at the sheet on mobile."
+ *
+ * A definite width HERE is a real cap, because a fixed-width box contributes
+ * exactly that much to max-content whatever is inside it. That is what finally
+ * lets the `truncate` below do its job.
+ *
+ * It goes on the heading as well as the cells. The heading is the widest thing
+ * in this column at some widths — two sort buttons side by side — and one
+ * uncapped cell sets the width for the whole column, which would leave the
+ * body truncating to fit a heading nobody needed spelled out.
+ *
+ * The numbers are the cell width less its padding: 10.75 − 0.75 on a desktop,
+ * 8 − 0.5 on a phone.
+ */
+const FROZEN_INNER = "w-[10rem] max-md:w-[7.5rem]";
 
 /**
  * The projected-stat columns, in order, with the headings that fit.
@@ -453,7 +481,9 @@ export function CheatSheet({
                     cell: the league's own order, which is the column a manager
                     reads down, and alphabetical for looking somebody up. */}
                 <th className={cn(FROZEN_ID, "bg-card z-30 py-2.5 font-medium")}>
-                  <span className="flex items-center gap-2.5">
+                  <span
+                    className={cn(FROZEN_INNER, "flex items-center gap-2.5 max-md:gap-1.5")}
+                  >
                     <SortButton label="Rk" value="rank" sort={sort} onSort={setSort} />
                     <SortButton
                       label="Player"
@@ -792,7 +822,7 @@ function PlayerRow({
         translucent fill would show the digits through the player's name.
       */}
       <td data-name-cell className={cn(FROZEN_ID, "bg-card z-10 py-2 align-top")}>
-        <span className="flex items-start gap-2">
+        <span className={cn(FROZEN_INNER, "flex items-start gap-2 max-md:gap-1.5")}>
           <span
             className={cn(
               "w-5 shrink-0 text-right font-mono text-[10px] tabular-nums",

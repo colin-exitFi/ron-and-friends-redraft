@@ -61,6 +61,32 @@ const PHONE = { width: 390, height: 844 };
 /** Generous: a websocket round trip plus a fetch on a cold serverless route. */
 const PROPAGATION_MS = 25_000;
 
+/**
+ * The identity column's width, and how many numeric columns clear it.
+ *
+ * Scrolls the sheet home first, so this measures what a manager sees when he
+ * arrives rather than wherever a previous check left the scroller.
+ */
+const visibleColumns = (p) =>
+  p.evaluate(() => {
+    const table = document.querySelector("table");
+    const scroller = table.closest("[data-sheet-scroll]");
+    scroller.scrollLeft = 0;
+    const right = scroller.getBoundingClientRect().right;
+    const headings = [...table.querySelectorAll("thead th")];
+    const frozen = headings[0].getBoundingClientRect();
+    return {
+      frozenWidth: frozen.width,
+      visible: headings
+        .slice(1)
+        .filter((th) => {
+          const r = th.getBoundingClientRect();
+          return r.width > 0 && r.left >= frozen.right - 0.5 && r.right <= right + 0.5;
+        })
+        .map((th) => th.innerText.replace(/\s+/g, " ").trim()),
+    };
+  });
+
 mkdirSync(OUT, { recursive: true });
 
 let failures = 0;
@@ -295,6 +321,68 @@ const run = async () => {
         "2025 and Proj are the first two numeric columns",
         headings[1] === "2025" && headings[2].toLowerCase() === "proj",
         `${headings[1]}, ${headings[2]}`,
+      );
+
+      /*
+       * ======================================================================
+       * HOW MUCH OF THE SHEET IS ACTUALLY ON SCREEN
+       * ======================================================================
+       * The frozen block used to take 215px of a 375px phone — 57% of the
+       * screen spent on one name — because the `w-` on the cell is a minimum
+       * rather than a cap when the table is `w-max`, and `truncate` limits what
+       * is painted rather than what is asked for. Two numeric columns were
+       * visible. The commissioner: "you can't see a ton of data when you're
+       * looking at the sheet on mobile."
+       *
+       * BOTH HALVES ARE ASSERTED, because either one alone can be satisfied by
+       * making the page worse. A width cap on its own is met by a column too
+       * narrow to identify anybody; a column count on its own is met by
+       * shrinking the type, which is the one thing this page must not do. So
+       * the block has a ceiling AND the name keeps a floor.
+       */
+      const room = await visibleColumns(page);
+      console.log(
+        `  · identity column ${Math.round(room.frozenWidth)}px of ${PHONE.width}px; ` +
+          `numeric columns on screen: ${room.visible.join(", ")}`,
+      );
+      check(
+        "the frozen identity column leaves most of the phone for the numbers",
+        room.frozenWidth <= 140,
+        `${Math.round(room.frozenWidth)}px of ${PHONE.width}px`,
+      );
+      check(
+        "…and at least three numeric columns are readable without a swipe",
+        room.visible.length >= 3,
+        `${room.visible.length}: ${room.visible.join(", ")}`,
+      );
+
+      /*
+       * THE TYPE DID NOT SHRINK TO PAY FOR IT. Legibility on a phone is the
+       * reason this page exists as its own route, and a smaller font is the
+       * cheapest possible way to pass the two checks above.
+       */
+      const nameFontPx = await page
+        .locator("[data-name-text]")
+        .first()
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      check(
+        "…and the player's name is no smaller than it was",
+        nameFontPx >= 13,
+        `${nameFontPx}px`,
+      );
+
+      /*
+       * TRUNCATION IS AN ELLIPSIS, NOT A CLIP. A name cut mid-glyph at the cell
+       * edge reads as a rendering fault; the ellipsis reads as "there is more".
+       */
+      const nameOverflow = await page
+        .locator("[data-name-text]")
+        .first()
+        .evaluate((el) => getComputedStyle(el).textOverflow);
+      check(
+        "…and a name too long for the column ends in an ellipsis",
+        nameOverflow === "ellipsis",
+        nameOverflow,
       );
 
       /*
@@ -831,6 +919,36 @@ const run = async () => {
             (nowAt?.width ?? 0) >= 90,
           `x ${Math.round(wasAt?.x ?? -1)} → ${Math.round(nowAt?.x ?? -1)}, ${Math.round(nowAt?.width ?? 0)}px wide`,
         );
+        /*
+         * AND THE NARROW PHONE GETS THE ROOM TOO. 375 is where the wide
+         * identity column hurt most — it left exactly two numeric columns on
+         * screen — so the width that was fixed is asserted at the width that
+         * exposed it, not only at the roomier 390.
+         */
+        if (viewport.width === 375) {
+          const narrow = await visibleColumns(alt);
+          console.log(
+            `  · ${label}: identity column ${Math.round(narrow.frozenWidth)}px; ` +
+              `numeric columns on screen: ${narrow.visible.join(", ")}`,
+          );
+          check(
+            `${label}: the identity column is not most of the screen`,
+            narrow.frozenWidth <= 140,
+            `${Math.round(narrow.frozenWidth)}px of 375px`,
+          );
+          check(
+            `${label}: three or more numeric columns fit without swiping`,
+            narrow.visible.length >= 3,
+            `${narrow.visible.length}: ${narrow.visible.join(", ")}`,
+          );
+          // Re-scrolled left by the measurement above; the pinning checks below
+          // this block ran already, so put it back where they left it.
+          await sheet.evaluate((el) => {
+            el.scrollLeft = el.scrollWidth;
+          });
+          await alt.waitForTimeout(200);
+        }
+
         const boxRight = await sheet.evaluate(
           (el) => el.getBoundingClientRect().right,
         );
