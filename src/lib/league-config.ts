@@ -330,9 +330,14 @@ export type ScoringRow = { category: string; value: string; note: string };
 /**
  * HALF-PPR, WITH A TIGHT END PREMIUM.
  *
- * @fromProposal Section 3. @fromSleeper `rec` 0.5 and `bonus_rec_te` 0.5. Every
- * one of the nineteen scoring values in the document matches the live Sleeper
- * league exactly — this was checked line by line rather than assumed.
+ * @fromProposal Section 3. @fromSleeper `rec` 0.5 and `bonus_rec_te` 0.5.
+ *
+ * THE WHOLE SCORING SECTION BELOW WAS REBUILT FROM A LIVE PULL ON 2026-09-05,
+ * after the commissioner re-saved his settings on Sleeper. Every one of the
+ * fifty-five keys in `scoring_settings` was walked: it is either a row in one of
+ * the tables below or a named line in `SCORING_EXCLUSIONS`. Where the document
+ * and the platform describe the same points differently — the yardage bonuses —
+ * the platform's model wins, because the platform is what pays out.
  *
  * ============================================================================
  * TWO THINGS NO PUBLIC ADP FEED PRICES IN. BOTH MATTER ON DRAFT DAY.
@@ -359,17 +364,17 @@ export const SCORING_FORMAT = "Half PPR (TE premium)" as const;
  */
 export const ADP_SCORING_SCOPE = "HALF" as const;
 
-/** @fromProposal 3.1 Base Offense. @fromSleeper exact match on all eight. */
+/** @fromProposal 3.1 Base Offense. @fromSleeper exact match on all nine. */
 export const BASE_SCORING: ScoringRow[] = [
   { category: "Passing Yards", value: "0.05", note: "1 point per 20 yards" },
   { category: "Rushing Yards", value: "0.1", note: "1 point per 10 yards" },
   { category: "Receiving Yards", value: "0.1", note: "1 point per 10 yards" },
-  { category: "Reception", value: "0.5", note: "Half PPR — RB / WR / QB" },
+  { category: "Reception", value: "0.5", note: "Half PPR — every position catches at 0.5" },
   { category: "Tight End Reception", value: "1.0", note: "0.5 base plus a 0.5 TE premium — no ADP feed prices this" },
   { category: "Passing TD", value: "6", note: "Six, not the 4-point default — raises QB value" },
   { category: "Rushing TD", value: "6", note: "" },
   { category: "Receiving TD", value: "6", note: "" },
-  { category: "2-Point Conversion", value: "2", note: "Passing, rushing, receiving, or defensive" },
+  { category: "2-Point Conversion", value: "2", note: "Passing, rushing or receiving — 2 for each" },
 ];
 
 /**
@@ -377,20 +382,78 @@ export const BASE_SCORING: ScoringRow[] = [
  * increments on the row above, not standalone values — a pick-six costs the
  * quarterback 6 in total and an ordinary lost fumble costs 2.
  *
- * @fromSleeper `pass_int` −2, `pass_int_td` −4, `fum` −1, `fum_lost` −1.
+ * @fromSleeper `pass_int` −2, `pass_int_td` −4, `fum` −1, `fum_lost` −1,
+ * `fum_rec_td` 0.
+ *
+ * TEAM DEFENCE USED TO LIVE IN THIS ARRAY and now has its own, below. Mixing
+ * them meant the six D/ST rows were read as a footnote to the quarterback's
+ * turnovers, which is how the points-allowed ladder ended up compressed into a
+ * single "10 → −4" cell nobody could draft against.
  */
 export const TURNOVER_SCORING: ScoringRow[] = [
   { category: "Interception Thrown", value: "−2", note: "Applies to the passer" },
   { category: "Pick-Six (INT returned for TD)", value: "additional −4", note: "Total QB penalty on a pick-six: −6" },
   { category: "Fumble", value: "−1", note: "Any credited fumble" },
   { category: "Fumble Lost", value: "additional −1", note: "Ordinary lost fumble total: −2" },
-  { category: "D/ST Touchdown", value: "6", note: "Interception, fumble, kickoff, punt, or blocked kick" },
-  { category: "D/ST Sack", value: "1", note: "Sleeper default" },
-  { category: "D/ST Interception", value: "2", note: "Sleeper default" },
-  { category: "D/ST Fumble Recovery", value: "2", note: "Sleeper default" },
-  { category: "D/ST Safety", value: "2", note: "Sleeper default" },
-  { category: "D/ST Blocked Kick", value: "2", note: "Sleeper default" },
-  { category: "D/ST Points Allowed", value: "10 → −4", note: "Tiered: 10 at a shutout, 0 at 21–27, down to −4 at 35+" },
+  { category: "Offensive Fumble Recovered for TD", value: "0", note: "Explicitly zero on Sleeper — falling on a loose ball in the end zone pays nothing" },
+];
+
+/**
+ * TEAM DEFENCE, WITH THE REAL NUMBERS RATHER THAN "SLEEPER DEFAULTS".
+ *
+ * Every row below was read off the live league's `scoring_settings` on
+ * 2026-09-05, after the commissioner re-saved his scoring. The page used to
+ * gloss five of them as "Sleeper default", which told a manager nothing and
+ * would have gone stale silently the moment one of them was edited.
+ *
+ * @fromSleeper `sack` 1, `int` 2, `fum_rec` 2, `ff` 1, `safe` 2, `blk_kick` 2,
+ * `def_td` 6, `def_st_td` 6, `def_st_ff` 1, `def_st_fum_rec` 1.
+ *
+ * The three `st_*` keys (`st_td` 6, `st_ff` 1, `st_fum_rec` 1) are the same
+ * special-teams events credited to an INDIVIDUAL player rather than to the
+ * defence — the wide receiver who returns the punt, not the unit. They pay the
+ * same, so they are folded into the rows below rather than doubled up.
+ */
+export const DST_SCORING: ScoringRow[] = [
+  { category: "Sack", value: "1", note: "" },
+  { category: "Interception", value: "2", note: "" },
+  { category: "Fumble Recovery", value: "2", note: "" },
+  { category: "Forced Fumble", value: "1", note: "Paid on top of the recovery when the same unit gets both" },
+  { category: "Safety", value: "2", note: "" },
+  { category: "Blocked Kick", value: "2", note: "" },
+  { category: "Defensive Touchdown", value: "6", note: "Interception or fumble returned for a score" },
+  { category: "Special Teams Touchdown", value: "6", note: "Kickoff, punt or blocked-kick return — same 6 to a player who returns one" },
+  { category: "Special Teams Forced Fumble", value: "1", note: "On a kick or punt return" },
+  { category: "Special Teams Fumble Recovery", value: "1", note: "On a kick or punt return" },
+];
+
+/**
+ * THE POINTS-ALLOWED LADDER, ALL SEVEN RUNGS.
+ *
+ * This is what the page was getting wrong. It carried a single row reading
+ * "10 → −4" with a note that named the shutout, the zero band and the floor —
+ * so the extremes were visible and the four bands in between were not. A
+ * scoring page that shows a manager the top and bottom of a ladder and asks him
+ * to infer the middle is worse than one that shows nothing, because he will
+ * guess and he will be confident.
+ *
+ * @fromSleeper `pts_allow_0` 10, `pts_allow_1_6` 7, `pts_allow_7_13` 4,
+ * `pts_allow_14_20` 1, `pts_allow_21_27` 0, `pts_allow_28_34` −1,
+ * `pts_allow_35p` −4. Pulled live on 2026-09-05 and identical, band for band,
+ * to the ladder the commissioner read out of the platform himself.
+ *
+ * THERE IS NO YARDS-ALLOWED SCORING. The live payload has no `yds_allow_*` key
+ * of any kind, and the page used to claim in its own subtitle that "points and
+ * yards allowed are scored on Sleeper's tiered bands". Only points are.
+ */
+export const DST_POINTS_ALLOWED: ScoringRow[] = [
+  { category: "0 (shutout)", value: "10", note: "" },
+  { category: "1–6", value: "7", note: "" },
+  { category: "7–13", value: "4", note: "" },
+  { category: "14–20", value: "1", note: "" },
+  { category: "21–27", value: "0", note: "The neutral band — a defence that allows this scores nothing either way" },
+  { category: "28–34", value: "−1", note: "" },
+  { category: "35+", value: "−4", note: "No further floor — 35 and 60 cost the same" },
 ];
 
 /**
@@ -398,18 +461,34 @@ export const TURNOVER_SCORING: ScoringRow[] = [
  * milestone and explosive arrays were empty and documented as confirmed absent,
  * so this is the single largest scoring difference between the two leagues.
  *
- * @fromSleeper `bonus_pass_yd_300/400`, `bonus_rush_yd_100/200`,
- * `bonus_rec_yd_100/200`. All six match.
+ * @fromSleeper `bonus_pass_yd_300` 1, `bonus_pass_yd_400` 1,
+ * `bonus_rush_yd_100` 1, `bonus_rush_yd_200` 1, `bonus_rec_yd_100` 1,
+ * `bonus_rec_yd_200` 1. All six are ONE point.
  *
- * The tiers are TOTAL, not cumulative: a 410-yard passing game is +2, not +3.
+ * ============================================================================
+ * THESE STACK. THEY ARE NOT TIERS, AND THE PAGE USED TO SAY THEY WERE.
+ * ============================================================================
+ * The old rows read +1 and +2 with the note "total, not cumulative", which is
+ * the phrasing the ruleset PDF uses. It arrives at the right number — a 410-yard
+ * game is worth 2 — but it describes a ladder where the higher rung REPLACES the
+ * lower one, and that is not what Sleeper does or how the commissioner thinks
+ * about it. Sleeper stores six independent one-point increments and pays both
+ * when both are earned: 410 yards clears 300 for +1 and clears 400 for another
+ * +1. Same total, different model.
+ *
+ * The distinction is not pedantic. Read as tiers, "+2 at 400" invites the guess
+ * that 200 rushing yards is worth 2 and 100 is worth 1, so the second hundred is
+ * worth as much as the first. Read as increments, it is plain that the bonus for
+ * the second hundred is the same single point as the first. He asked for the
+ * increments, so the increments are what render.
  */
 export const MILESTONE_BONUSES: ScoringRow[] = [
-  { category: "Passing 300+ yards", value: "+1", note: "Total, not cumulative" },
-  { category: "Passing 400+ yards", value: "+2", note: "Total, not cumulative" },
-  { category: "Rushing 100+ yards", value: "+1", note: "Total, not cumulative" },
-  { category: "Rushing 200+ yards", value: "+2", note: "Total, not cumulative" },
-  { category: "Receiving 100+ yards", value: "+1", note: "Total, not cumulative" },
-  { category: "Receiving 200+ yards", value: "+2", note: "Total, not cumulative" },
+  { category: "Passing 300–399 yards", value: "+1", note: "" },
+  { category: "Passing 400+ yards", value: "+1", note: "Stacks with the 300 bonus — a 400-yard game earns both, so +2 in all" },
+  { category: "Rushing 100–199 yards", value: "+1", note: "" },
+  { category: "Rushing 200+ yards", value: "+1", note: "Stacks with the 100 bonus — a 200-yard game earns both, so +2 in all" },
+  { category: "Receiving 100–199 yards", value: "+1", note: "" },
+  { category: "Receiving 200+ yards", value: "+1", note: "Stacks with the 100 bonus — a 200-yard game earns both, so +2 in all" },
 ];
 
 /**
@@ -425,14 +504,26 @@ export const EXPLOSIVE_BONUSES: ScoringRow[] = [
   { category: "40+ Yard Reception", value: "+1", note: "Credited to the receiver" },
 ];
 
-/** @fromProposal 3.3 — the explicit exclusions, quoted rather than inferred. */
+/**
+ * @fromProposal 3.3 — the explicit exclusions, quoted rather than inferred.
+ *
+ * ALSO THE CATCH-ALL FOR SLEEPER KEYS THE TABLES ABOVE DO NOT RENDER. Every
+ * key in the live `scoring_settings` payload is now either a row on the page or
+ * a line in this list. A scoring page that quietly drops a category is worse
+ * than one that says "not used", because silence reads as "does not exist"
+ * rather than "set to zero" — and the two are only the same until somebody
+ * edits the league.
+ */
 export const SCORING_EXCLUSIONS: string[] = [
-  "No kicker — the position has zero lineup slots and Sleeper's roster carries no K, so a kicker cannot be started. Kicking point values still exist on Sleeper but are inert.",
+  "No kicker — the position has zero lineup slots and Sleeper's roster carries no K, so a kicker cannot be started. Sleeper still stores the values (3 under 40 yards, 4 from 40–49, 5 from 50–59, 6 from 60+, 1 per PAT, −1 for either miss) but nothing can earn them.",
+  "No yards-allowed scoring for defences — Sleeper carries no yards-allowed band in this league at all. Points allowed is the only band that scores.",
   "No full PPR — receptions are 0.5, with tight ends at 1.0 via the TE premium.",
+  "No wide receiver reception premium — Sleeper's WR bonus is set to 0.0, so the premium is the tight end's alone.",
   "No tight end first-down bonus.",
   "No separate 40-yard touchdown bonus — a 40+ yard score earns the explosive-play point and the touchdown, and nothing further.",
   "No QB-specific rushing bonus.",
-  "No oversized mega-bonuses — the yardage tiers stop at +2.",
+  "No defensive 2-point return, and no individual defensive players — the only defensive scoring is the D/ST unit's.",
+  "No oversized mega-bonuses — the yardage bonuses are 1 point each and a player can hold at most two of them in a game.",
 ];
 
 /** Machine-readable scoring spec. Mirrors Sleeper's own keys where they exist. */
@@ -462,13 +553,48 @@ export const SCORING_SPEC = {
   dstTd: 6,
   milestoneBonuses: true,
   explosiveBonuses: true,
+  /**
+   * INCREMENTS, MIRRORING SLEEPER'S KEYS ONE FOR ONE. Each is worth 1 on its
+   * own and the pair stacks, so a 400-yard passing game collects `bonusPass300`
+   * AND `bonusPass400` for 2. These read 1/2/1/2/1/2 until 2026-09-05, which
+   * was the ruleset PDF's "total" phrasing transcribed into fields Sleeper
+   * treats as separate payments — right total, wrong model, and it would have
+   * double-counted the moment anything summed the two.
+   */
   bonusPass300: 1,
-  bonusPass400: 2,
+  bonusPass400: 1,
   bonusRush100: 1,
-  bonusRush200: 2,
+  bonusRush200: 1,
   bonusRec100: 1,
-  bonusRec200: 2,
+  bonusRec200: 1,
   bonusPlay40: 1,
+  /** @fromSleeper Team defence and special teams, read live 2026-09-05. */
+  dstSack: 1,
+  dstInterception: 2,
+  dstFumbleRecovery: 2,
+  dstForcedFumble: 1,
+  dstSafety: 2,
+  dstBlockedKick: 2,
+  dstSpecialTeamsTd: 6,
+  dstSpecialTeamsForcedFumble: 1,
+  dstSpecialTeamsFumbleRecovery: 1,
+  /**
+   * Points allowed, as [inclusive lower bound, value]. Descending so a lookup
+   * takes the first band whose bound the total clears; the top band has no
+   * upper limit, which is why the bounds and not the printed labels are the
+   * machine-readable form.
+   */
+  dstPointsAllowed: [
+    [35, -4],
+    [28, -1],
+    [21, 0],
+    [14, 1],
+    [7, 4],
+    [1, 7],
+    [0, 10],
+  ],
+  /** No yards-allowed band exists in this league's Sleeper settings. */
+  dstYardsAllowed: false,
 } as const;
 
 // --- Trades -----------------------------------------------------------------

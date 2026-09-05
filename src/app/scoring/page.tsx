@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/table";
 import {
   BASE_SCORING,
+  DST_POINTS_ALLOWED,
+  DST_SCORING,
   EXPLOSIVE_BONUSES,
   LEAGUE,
   MILESTONE_BONUSES,
@@ -32,12 +34,23 @@ import {
 
 export const metadata = { title: `Scoring · ${LEAGUE.name}` };
 
-function ScoringTable({ rows }: { rows: ScoringRow[] }) {
+/**
+ * `categoryLabel` exists for the points-allowed ladder, whose first column is a
+ * band of points conceded rather than a scoring category. Heading it "Category"
+ * would read as though "7–13" were the name of a rule.
+ */
+function ScoringTable({
+  rows,
+  categoryLabel = "Category",
+}: {
+  rows: ScoringRow[];
+  categoryLabel?: string;
+}) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Category</TableHead>
+          <TableHead>{categoryLabel}</TableHead>
           <TableHead className="w-28 text-right">Value</TableHead>
           <TableHead className="hidden sm:table-cell">Notes</TableHead>
         </TableRow>
@@ -58,12 +71,23 @@ function ScoringTable({ rows }: { rows: ScoringRow[] }) {
   );
 }
 
-/** This league has no bonus categories at all, so these render as nothing rather
- *  than as an empty grid. They are confirmed absent, not awaiting confirmation —
- *  the "Excluded" card below says so explicitly. */
-const BONUS_SECTIONS: { title: string; rows: ScoringRow[] }[] = [
-  { title: "Yardage Milestone Bonuses", rows: MILESTONE_BONUSES },
-  { title: "Explosive Play Bonuses", rows: EXPLOSIVE_BONUSES },
+/**
+ * Bonus cards drop out rather than rendering an empty grid if a league ever
+ * turns them off. Ron & Friends runs both, and the "Excluded" card below is
+ * what states an absence — a missing card must never be how the page says no.
+ */
+const BONUS_SECTIONS: { title: string; description: string; rows: ScoringRow[] }[] = [
+  {
+    title: "Yardage Milestone Bonuses",
+    description:
+      "Two separate bonuses per category, not a ladder. Clear both lines in one game and you are paid both.",
+    rows: MILESTONE_BONUSES,
+  },
+  {
+    title: "Explosive Play Bonuses",
+    description: "One point per 40+ yard play, on top of the yardage and any touchdown.",
+    rows: EXPLOSIVE_BONUSES,
+  },
 ].filter((s) => s.rows.length > 0);
 
 export default function ScoringPage() {
@@ -71,7 +95,7 @@ export default function ScoringPage() {
     <>
       <PageHeader
         title="Scoring Specification"
-        description={`${SCORING_FORMAT} — one point per reception. Read from the league's own ${LEAGUE.platform} settings, which have been identical every season since 2022.`}
+        description={`${SCORING_FORMAT} — half a point per reception, a full point for a tight end. Every value on this page was read from the league's own ${LEAGUE.platform} settings.`}
       />
       <PageBody>
         <div className="grid gap-6 lg:grid-cols-2">
@@ -89,19 +113,45 @@ export default function ScoringPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Turnovers &amp; Defense</CardTitle>
+              <CardTitle className="text-base">Turnovers &amp; Ball Security</CardTitle>
               <CardDescription>
-                Points and yards allowed are scored on {LEAGUE.platform}&apos;s tiered bands.
+                The two &ldquo;additional&rdquo; rows stack on the row above them: a pick-six costs
+                the quarterback −6 in all, and an ordinary lost fumble costs −2.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ScoringTable rows={TURNOVER_SCORING} />
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Team Defense &amp; Special Teams</CardTitle>
+              <CardDescription>
+                The D/ST unit&apos;s own scoring. A return touchdown by an individual player pays
+                the same 6.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScoringTable rows={DST_SCORING} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">D/ST Points Allowed</CardTitle>
+              <CardDescription>
+                All seven bands. Points allowed is the only band {LEAGUE.platform} scores for this
+                league — there is no yards-allowed bonus.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScoringTable rows={DST_POINTS_ALLOWED} categoryLabel="Points Allowed" />
+            </CardContent>
+          </Card>
           {BONUS_SECTIONS.map((s) => (
             <Card key={s.title}>
               <CardHeader>
                 <CardTitle className="text-base">{s.title}</CardTitle>
+                <CardDescription>{s.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScoringTable rows={s.rows} />
