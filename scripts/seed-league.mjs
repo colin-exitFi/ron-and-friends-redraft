@@ -36,6 +36,12 @@ import path from "node:path";
 import process from "node:process";
 
 import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
+/*
+ * The league's own shape and switches, read rather than restated. Requires
+ * `--experimental-strip-types` on the npm script; `league-config.ts` has no
+ * imports of its own so there is no alias resolution to arrange.
+ */
+import { DRAFT, FEATURES, KEEPERS, LEAGUE, ROSTER } from "../src/lib/league-config.ts";
 
 const ROOT = process.cwd();
 const SEASON = 2026;
@@ -129,12 +135,15 @@ const tradeLog = readData("trade-log-2026-spreadsheet.json");
 const manualDeclarations = readData("keeper-declarations.json");
 const playerPool = readData("smartdraft-players.json");
 
-const espnTeams = readData("espn/espn-teams.json");
-const espnRoster = readData("espn/espn-roster-settings.json");
-const espnScoring = readData("espn/espn-scoring-settings.json");
-const espnDraft = readData("espn/espn-draft-settings.json");
-const espnTradeWaiver = readData("espn/espn-trade-waiver-settings.json");
-const espnPlayoffs = readData("espn/espn-schedule-playoff-settings.json");
+/*
+ * SLEEPER, NOT ESPN. This league has never been on ESPN — `data/espn/*` is the
+ * previous league's pull and describes a different set of rules, a different
+ * commissioner and a different set of franchises. It used to be read straight
+ * into the `leagues` row, which is how the database came to say it was the
+ * "Ultimate Keeper League" with keepers switched on.
+ */
+const sleeperLeague = readData("sleeper/league.json");
+const sleeperDraft = readData("sleeper/draft.json");
 
 // --- helpers ----------------------------------------------------------------
 
@@ -282,48 +291,21 @@ const DISPUTED_DECLARATIONS = [
   // e.g. "Javonte Williams", "Cam Skattebo",
 ];
 
-/** Recorded in the decisions log so the league can see what was ruled and why. */
-const RULINGS = [
-  {
-    source_ref: "ruling-nacua",
-    type: "Keeper eligibility ruling — Puka Nacua",
-    description:
-      "Nacua is Scott Johnston's for 2026 and keepable at round 11. The executed " +
-      "Johnston/Blome agreement states he retains 2026 R11 keeper eligibility " +
-      "whether or not the contingent trade is consummated. The contingency is " +
-      "downside protection against a six-week-plus injury and has not triggered.",
-    disclosure_note:
-      "Decided between two managers rather than by league vote. The commissioner's " +
-      "position is that anything touching keeper eligibility should require " +
-      "ratification; that is on the offseason agenda.",
-  },
-  {
-    source_ref: "ruling-draft-order",
-    type: "Draft order ruling — Smart Draft over ESPN",
-    description:
-      "ESPN had Colin 8th and Stefan 10th; the Smart Draft room has them swapped. " +
-      "Every other slot agreed. The Smart Draft order is correct and ESPN's is stale.",
-    disclosure_note: null,
-  },
-  {
-    source_ref: "ruling-loveland",
-    type: "Keeper cost ruling — Colston Loveland",
-    description:
-      "Loveland costs round 9, not the round 8 the keeper sheet computes. He was a " +
-      "free-agent acquisition and the contract prices a free agent at the 9th round. " +
-      "Stefan also owns no round-8 pick in 2026, having traded it to Witte.",
-    disclosure_note: null,
-  },
-  {
-    source_ref: "ruling-identity-zach",
-    type: "Identity ruling — Ted Buckman is Zach Rakowski",
-    description:
-      "ESPN lists the Perpetually Impaired franchise under Ted Buckman; the keeper " +
-      "sheets and Smart Draft say Zach Rakowski. Same person, an inside joke on the " +
-      "ESPN account. The franchise is Zach's and the app uses Zach Rakowski.",
-    disclosure_note: null,
-  },
-];
+/**
+ * Commissioner rulings recorded in the decisions log.
+ *
+ * DELIBERATELY EMPTY, AND NOT AN OVERSIGHT. This carried rulings from the
+ * league this app was forked from — Puka Nacua's keeper eligibility, an ESPN
+ * versus Smart Draft draft-order dispute, and others naming managers who are
+ * not in this room. Seeding them would have put another league's governance
+ * history into this league's database and onto its /governance page, which is
+ * the exact thing 25cb1bb took out of the recap's reach.
+ *
+ * Ron and Friends has made no rulings yet. An empty decisions log is the truth,
+ * and /governance renders that as an empty state rather than as an error. The
+ * removed rulings are in git history if the other league ever needs them.
+ */
+const RULINGS = [];
 
 // ===========================================================================
 // SEED
@@ -332,54 +314,79 @@ const RULINGS = [
 async function seedLeague() {
   console.log("\nleagues");
 
-  // Everything ESPN told us that has no column of its own. Read-only reference,
-  // so the database can answer "what were the rules in 2026" on its own.
+  // Everything the platform and the ruleset say that has no column of its own.
+  // Read-only reference, so the database can answer "what were the rules in
+  // 2026" without another source.
   const settings = {
-    espn: {
-      leagueName: espnTeams.leagueName,
-      leagueId: espnTeams.leagueId,
-      size: espnTeams.size,
-      isPublic: espnTeams.isPublic,
-      pulledAt: espnTeams._pulledAt ?? null,
-      roster: espnRoster ?? null,
-      scoring: espnScoring ?? null,
-      draft: espnDraft ?? null,
-      tradesAndWaivers: espnTradeWaiver ?? null,
-      playoffs: espnPlayoffs ?? null,
+    sleeper: {
+      leagueId: sleeperLeague.league_id ?? null,
+      leagueName: sleeperLeague.name ?? null,
+      totalRosters: sleeperLeague.total_rosters ?? null,
+      status: sleeperLeague.status ?? null,
+      scoringType: sleeperDraft.metadata?.scoring_type ?? null,
+      rosterPositions: sleeperLeague.roster_positions ?? null,
+      draft: {
+        rounds: sleeperDraft.settings?.rounds ?? null,
+        type: sleeperDraft.type ?? null,
+        pickTimer: sleeperDraft.settings?.pick_timer ?? null,
+        startTime: sleeperDraft.start_time ?? null,
+      },
+      waiverBudget: sleeperLeague.settings?.waiver_budget ?? null,
+      tradeDeadline: sleeperLeague.settings?.trade_deadline ?? null,
+      playoffTeams: sleeperLeague.settings?.playoff_teams ?? null,
     },
-    smartDraft: {
-      roomName: room.state?.name ?? null,
-      draftFormat: room.state?.settings?.draftFormat ?? null,
-      scoringFormat: room.state?.settings?.scoringFormat ?? null,
-      // The room's BN:5 is misconfigured; ESPN's 7 is right, and 9 + 7 = 16 is
-      // the only figure that reconciles with a 16-round draft.
-      rosterConfigNote:
-        "The room's BN:5 is wrong. ESPN has 7 bench, corroborated by the Roster sheet.",
+    roster: {
+      starters: ROSTER.starters,
+      bench: ROSTER.bench,
+      irSlots: ROSTER.irSlots,
+      activeCap: ROSTER.activeCap,
+      /*
+       * 9 + 6 = 15, which is exactly the round count. The note that used to sit
+       * here argued the room's bench was misconfigured and that ESPN's 7 was
+       * right because "9 + 7 = 16" — the previous league's arithmetic. The
+       * commissioner set 6 bench and 15 rounds on 2026-09-05 and Sleeper agrees.
+       */
+      reconciliation: `${ROSTER.starters} starters + ${ROSTER.bench} bench = ${ROSTER.activeCap}, one seat per round`,
     },
     provenance:
-      "Rules from the executed Johnston/Blome trade agreement (Nov 12 2025) and " +
-      "commissioner rulings in data/DECISIONS.md. Settings read from ESPN league 441239.",
+      `Sleeper league ${sleeperLeague.league_id} and src/lib/league-config.ts. ` +
+      "The round count and bench size are the commissioner's 2026-09-05 ruling, " +
+      "which supersedes the ruleset PDF; Sleeper was updated to match. This " +
+      "league has never been on ESPN.",
   };
 
   await step("upsert the 2026 season", () =>
     db.from("leagues").upsert(
       {
         season: SEASON,
-        name: "Ultimate Keeper League",
-        espn_league_id: espnTeams.leagueId ?? null,
-        team_count: managersFile.managers.length,
-        draft_rounds: room.state.draftRoundCount || 16,
-        snake_draft: (room.state?.settings?.draftFormat ?? "snake") === "snake",
-        offline_draft: true,
-        keepers_active: true,
-        keepers_per_team: 2,
-        // KEEPER seasons, excluding the acquisition season. The contract's "up
-        // to three consecutive seasons" counts it, which is the same rule.
-        max_keeper_seasons: 2,
+        /*
+         * FROM THE CONFIG, NOT WRITTEN DOWN HERE. Every one of these was
+         * hardcoded to the previous league: the name said "Ultimate Keeper
+         * League", `espn_league_id` carried 441239, and `keepers_active` was
+         * true. The board reads this row, so a redraft was describing itself as
+         * a keeper league in its own database.
+         */
+        name: LEAGUE.name,
+        /* Never an ESPN league. */
+        espn_league_id: null,
+        team_count: LEAGUE.teams,
+        draft_rounds: DRAFT.rounds,
+        snake_draft: DRAFT.snake,
+        offline_draft: FEATURES.offlineDraft,
+        /*
+         * @fromProposal Section 10 — the keeper framework exists and is
+         * deliberately NOT switched on for 2026. The numbers below describe the
+         * framework so it is recorded, and `keepers_active` false is what
+         * decides.
+         */
+        keepers_active: FEATURES.keepers,
+        keepers_per_team: KEEPERS.maxPerTeam,
+        max_keeper_seasons: KEEPERS.maxConsecutiveSeasons,
         cost_round_step: 1,
         undrafted_cost_round: 9,
         trade_resets_keeper_clock: true,
-        trade_deadline_week: 11,
+        /* @fromSleeper `settings.trade_deadline`. */
+        trade_deadline_week: sleeperLeague.settings?.trade_deadline ?? null,
         settings,
         updated_at: new Date().toISOString(),
       },
@@ -394,10 +401,10 @@ async function seedLeague() {
     db.from("leagues").upsert(
       {
         season: NEXT_SEASON,
-        name: "Ultimate Keeper League",
-        espn_league_id: espnTeams.leagueId ?? null,
-        team_count: managersFile.managers.length,
-        draft_rounds: room.state.draftRoundCount || 16,
+        name: LEAGUE.name,
+        espn_league_id: null,
+        team_count: LEAGUE.teams,
+        draft_rounds: DRAFT.rounds,
         settings: { note: "Placeholder season so 2027 picks can be traded." },
         updated_at: new Date().toISOString(),
       },
@@ -416,7 +423,7 @@ async function seedLeague() {
 // name of a different one, so a first-name match resolves to the wrong
 // franchise silently rather than failing.
 //
-// THE RULE: key on the short name or on a stable id (`smartDraftTeamId`, the
+// THE RULE: key on the short name or on a stable id (`sleeperUserId`, the
 // database `teams.id`). Never on a first name. Mirrored in
 // `src/lib/league-json.ts`; keep the two in step.
 // ===========================================================================
@@ -475,13 +482,25 @@ async function seedTeams() {
   const rows = managersFile.managers.map((m) => ({
     short_name: m.shortName,
     franchise_name: m.franchiseName,
-    // data/managers.json already carries the ruling that Ted Buckman is Zach
-    // Rakowski, so no override is needed here.
     manager: m.fullName,
     abbrev: m.franchiseAbbrev ?? null,
-    draft_slot: m.draftSlot2026 ?? null,
-    espn_team_id: m.espnTeamId ?? null,
-    smartdraft_team_id: m.smartDraftTeamId ?? null,
+    /*
+     * `draftSlot`, not `draftSlot2026`. The previous league's managers file
+     * carried a season-suffixed key; this one does not, so every franchise was
+     * being seeded with a null draft slot — silently, because the column is
+     * nullable.
+     */
+    draft_slot: m.draftSlot ?? null,
+    /* Sleeper league. There are no ESPN ids to carry. */
+    espn_team_id: null,
+    /*
+     * DELIBERATELY NULL. The column is `uuid`, and this league's room ids are
+     * Sleeper user ids — numeric strings like "1394482315228381184", which are
+     * not UUIDs and cannot be stored here. The room-id join is bridged below
+     * through the short name instead, which is the key this file's own rule
+     * prefers anyway.
+     */
+    smartdraft_team_id: null,
     updated_at: new Date().toISOString(),
   }));
 
@@ -507,6 +526,28 @@ async function seedTeams() {
     if (t.smartdraft_team_id) teamIdBySmartDraftId.set(t.smartdraft_team_id, t.id);
   }
 
+  /*
+   * BRIDGE THE ROOM'S TEAM IDS TO OURS, THROUGH THE SHORT NAME.
+   *
+   * Every board slot references a franchise by the room's own team id, and the
+   * whole board seed resolves those through `teamIdBySmartDraftId`. That map
+   * used to be filled from `teams.smartdraft_team_id`, which is a uuid column
+   * this league cannot populate (its room ids are Sleeper's numeric user ids).
+   * The result was an empty map and the seed aborting with "150 board slots
+   * reference a franchise that is not in the room" — every slot, which is the
+   * shape of a join that resolved nothing rather than of a real mismatch.
+   *
+   * `build-board.mjs` writes each room team's `name` as the SHORT NAME, which
+   * is the key this file's own rule at the top of this section prefers. So the
+   * bridge is room id -> short name -> our teams.id, and a franchise the room
+   * knows that we do not is still a hard failure below.
+   */
+  for (const t of room.state.teams) {
+    if (t.deletedAt) continue;
+    const dbId = teamIdByShortName.get(String(t.name).trim().toLowerCase());
+    if (dbId) teamIdBySmartDraftId.set(t.id, dbId);
+  }
+
   if (data.length !== managersFile.managers.length) {
     console.error(
       `Expected ${managersFile.managers.length} franchises, found ${data.length}.`,
@@ -519,13 +560,15 @@ async function seedDraftOrder() {
   console.log("draft_order");
   if (DRY_RUN) return;
 
-  // The commissioner's ruling: the Smart Draft order wins. ESPN had Colin 8th
-  // and Stefan 10th, which is stale.
+  // Sleeper is authoritative for the draft order, and `data/managers.json`
+  // records it as `draftSlot`. The previous league's file used a
+  // season-suffixed `draftSlot2026`, so this filter matched nothing and the
+  // draft order was seeded EMPTY without complaining.
   const rows = managersFile.managers
-    .filter((m) => m.draftSlot2026 != null)
+    .filter((m) => m.draftSlot != null)
     .map((m) => ({
       season: SEASON,
-      slot: m.draftSlot2026,
+      slot: m.draftSlot,
       team_id: teamIdByShortName.get(m.shortName.toLowerCase()),
       source: "smartdraft",
       locked: false,
@@ -746,7 +789,7 @@ async function seedKeepers() {
     // franchise's tenure, so it is declined and reported rather than believed.
     // This is what stops one Scott's keeper being priced off the other's clock.
     const ownerShortName = (
-      managersFile.managers.find((m) => m.smartDraftTeamId === slot.currentOwnerTeamId)
+      managersFile.managers.find((m) => m.sleeperUserId === slot.currentOwnerTeamId)
         ?.shortName ?? ""
     ).trim().toLowerCase();
     const rRow = resolved.get(key);
@@ -1024,7 +1067,7 @@ async function seedKeepers() {
     .filter((s) => !resolvedNames.has(normalizeName(s.player.name)))
     .map((s) => {
       const m = managersFile.managers.find(
-        (x) => x.smartDraftTeamId === s.currentOwnerTeamId,
+        (x) => x.sleeperUserId === s.currentOwnerTeamId,
       );
       return `${s.player.name} (${m ? m.fullName : "?"}, R${s.displayRound})`;
     });
@@ -1330,28 +1373,37 @@ async function seedGovernance() {
   record("commissioner_actions", rows.length);
 
   // -------------------------------------------------------------------------
-  // Officers. Kyle MERTENS is commissioner and the only officer — confirmed
-  // Aug 26 2026. There is no vice commissioner and no CTO, so no rows for them:
-  // an empty office is the truth, and inventing a holder would be worse than a
-  // blank.
+  // Officers. One commissioner and no other officer: there is no vice
+  // commissioner and no CTO, so no rows for them — an empty office is the
+  // truth, and inventing a holder would be worse than a blank.
   //
-  // `sba361`, the username the Smart Draft room gives its commissioner with no
-  // mapping to a franchise, is Kyle Mertens. Recorded so nobody rediscovers it.
+  // READ FROM `data/managers.json`, NOT NAMED HERE. This used to be hardcoded
+  // to Kyle Mertens, the previous league's commissioner, which failed outright
+  // against a room he is not in. The franchise that carries `commissioner:
+  // true` in the managers file is the one office-holder, so the office follows
+  // the data and cannot drift from it.
   //
-  // KEYED ON THE FRANCHISE ID, NOT THE STRING "Kyle". This is the live
-  // collision: "Kyle" is both Mertens' short name AND Witte's first name, so a
-  // first-name match resolves silently to the wrong franchise. `teamIdFromName`
-  // refuses a first name outright and `assertShortNamesAreUnique` has already
-  // run, so the office cannot detach from the man.
+  // KEYED ON THE FRANCHISE, NOT ON A FIRST NAME. `teamIdFromName` refuses a
+  // first name outright and `assertShortNamesAreUnique` has already run, so the
+  // office cannot detach from the man.
   // -------------------------------------------------------------------------
+  const commissionerEntry = managersFile.managers.find((m) => m.commissioner === true);
+  if (!commissionerEntry) {
+    throw new Error(
+      "officers: no franchise in data/managers.json is marked `commissioner: true`, " +
+        "so there is nobody to record as the office-holder. Mark one and re-run.",
+    );
+  }
   const commissionerTeamId = teamIdFromName(
-    "Kyle",
-    'officers: commissioner (Kyle Mertens, short name "Kyle")',
+    commissionerEntry.shortName,
+    `officers: commissioner (${commissionerEntry.fullName}, short name ` +
+      `"${commissionerEntry.shortName}")`,
   );
   if (!commissionerTeamId) {
     throw new Error(
-      'officers: could not resolve the franchise for short name "Kyle" (Kyle ' +
-        "Mertens, the commissioner). Seed the teams first.",
+      `officers: could not resolve the franchise for short name ` +
+        `"${commissionerEntry.shortName}" (${commissionerEntry.fullName}, the ` +
+        "commissioner). Seed the teams first.",
     );
   }
 
@@ -1365,7 +1417,7 @@ async function seedGovernance() {
       season: SEASON,
       role: "commissioner",
       team_id: commissionerTeamId,
-      manager: "Kyle Mertens",
+      manager: commissionerEntry.fullName,
       status: "active",
     },
   ];
@@ -1375,92 +1427,17 @@ async function seedGovernance() {
   record("officers", officers.length);
 
   // -------------------------------------------------------------------------
-  // The league ballot — five items, seeded as motions at status 'proposed'.
+  // The league ballot.
   //
-  // Ids are DETERMINISTIC (uuid v5 over a stable slug) so a re-seed updates the
-  // same five rows instead of appending five more. `motions` has no natural
-  // unique key, and adding one would need a migration for what is really just
-  // idempotency.
+  // DELIBERATELY EMPTY. This held five motions belonging to the SOURCE league:
+  // Puka Nacua's keeper timeline, a keeper-framework vote, and three others
+  // naming managers who are not in this room. Ron and Friends has filed no
+  // motions, so seeding those would be fabricating this league's governance.
   //
-  // No proposer, no seconder and NO VOTES. Nobody has voted, and a seeded vote
-  // would be fabricated. The proposer is left null because these were collected
-  // from a conversation rather than formally moved by a franchise.
+  // No votes either, for the reason already written here and still true:
+  // nobody has voted, and a seeded vote would be invented.
   // -------------------------------------------------------------------------
-  const BALLOT = [
-    {
-      slug: "nacua-timeline",
-      type: "Keeper eligibility — Puka Nacua timeline",
-      threshold: "commissioner_ruling",
-      effective_date: "2027-07-01",
-      documentation:
-        "When does Puka Nacua's keeper clock start with Scott? Counting from the " +
-        "November 2025 in-season trade, his last season is 2027. Counting from the " +
-        "pre-draft leg that returns him to Scott, it is 2028. Both arguments are " +
-        "real: the keeper sheet records the 2025 reading, while Nacua genuinely was " +
-        "off Scott's roster, which is the basis for the clock restarting in 2026. " +
-        "TURNS ON: whether Scott keeps him in 2028. Nothing else — he is a legal " +
-        "R11 keeper in 2026 under both readings. NOTE: this is an adjudication of " +
-        "one case rather than a rule change, so Kyle may simply rule on it. " +
-        "Recorded as disputed in the app rather than resolved. See data/DECISIONS.md.",
-    },
-    {
-      slug: "trade-and-reset-loophole",
-      type: "Major Structural Change — trade-and-reset loophole",
-      threshold: "two_thirds",
-      effective_date: "2027-07-01",
-      documentation:
-        "A trade restarts a player's keeper clock while his cost basis carries, so " +
-        "two managers could swap a player to reset his tenure indefinitely at an " +
-        "ever-cheaper round. TURNS ON: whether the three-season limit means " +
-        "anything. DEADLINE IS BINDING — this must be settled BEFORE the 2027 " +
-        "keeper clocks are computed, because changing it afterwards means " +
-        "recomputing clocks managers have already planned their rosters around. " +
-        "Not unprecedented: the same mechanism was used to hold Trey McBride a " +
-        "third season, so any fix applies retroactively to everyone or to no one.",
-    },
-    {
-      slug: "contingent-trades",
-      type: "Major Structural Change — are contingent trades permitted",
-      threshold: "two_thirds",
-      effective_date: "2027-07-01",
-      documentation:
-        "The Johnston/Blome agreement is a contingent trade: it fires the day " +
-        "before the draft unless Nacua is projected to miss six or more weeks. No " +
-        "rule currently permits or forbids this, nor the related practice of an " +
-        "in-season trade with a handshake to return the player next season. TURNS " +
-        "ON: whether this class of deal is legal going forward. A rule is needed " +
-        "before the next one is proposed. Does NOT unwind the existing trade — " +
-        "Nacua is Scott's at R11 for 2026 by ruling.",
-    },
-    {
-      slug: "future-season-picks",
-      type: "Major Structural Change — trading future-season picks",
-      threshold: "two_thirds",
-      effective_date: "2027-07-01",
-      documentation:
-        "Trade #4 moves 2027 picks (R3 and R16) and the league never agreed rules " +
-        "for trading into future seasons. Two sub-questions: how many seasons out " +
-        "may a pick be traded, and is the ledger or the trade log authoritative " +
-        "next year? The 2027 legs are in the log but not applied to the ledger, and " +
-        "the log is now known to be incomplete. DEADLINE IS BINDING — the 2027 " +
-        "rollover is computed from whichever source wins.",
-    },
-    {
-      slug: "round-2-keeper-consequence",
-      type: "Major Structural Change — round-2 keeper consequence",
-      threshold: "two_thirds",
-      effective_date: "2027-07-01",
-      documentation:
-        "Nobody decided this; it fell out of the round-1 ineligibility ruling. A " +
-        "round-2 pick kept once prices to round 1, and a round-1 player cannot be " +
-        "kept, so his second keeper season disappears even though the clock still " +
-        "permits it. A round-2 pick therefore gets ONE keeper season, not two. " +
-        "TURNS ON: whether that is accepted or an exception is carved out, which " +
-        "requires deciding what a second keep would cost given there is no round " +
-        "below 1. No precedent exists — the cheapest basis round among the 19 " +
-        "keepers on the board is a 5th, so no manager has ever been in this position.",
-    },
-  ];
+  const BALLOT = [];
 
   const motionRows = BALLOT.map((m) => ({
     id: deterministicUuid(`ballot:${SEASON}:${m.slug}`),
