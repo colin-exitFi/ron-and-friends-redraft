@@ -28,7 +28,22 @@ export function resolve(specifier, context, next) {
     return { url: "data:text/javascript,export{}", shortCircuit: true, format: "module" };
   }
   if (specifier.startsWith("@/")) {
-    return next(`${SRC}${specifier.slice(2)}.ts`, context);
+    return next(`${SRC}${aliased(specifier)}`, context);
   }
   return next(specifier, context);
+}
+
+/**
+ * Turns `@/lib/foo` into `lib/foo.ts`, and leaves `@/lib/foo.mjs` alone.
+ *
+ * The `.ts` is a convenience for the alias' usual case — app modules, which are
+ * all TypeScript and are imported without an extension. It must not be appended
+ * to a specifier that already carries one: `@/lib/db-schema.mjs` is a real
+ * `.mjs` file (it is shared with the plain-`node` scripts, which cannot import
+ * TypeScript), and blindly appending asked for `schema.mjs.ts` and brought down
+ * every script that loads the app's Supabase client.
+ */
+export function aliased(specifier) {
+  const path = specifier.slice(2);
+  return /\.(m?[jt]sx?|cjs|cts|json)$/.test(path) ? path : `${path}.ts`;
 }

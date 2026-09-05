@@ -32,9 +32,22 @@ export function resolve(specifier, context, next) {
     return { url: `ukl-stub:${specifier}`, shortCircuit: true, format: "module" };
   }
   if (specifier.startsWith("@/")) {
-    return next(`${SRC}${specifier.slice(2)}.ts`, context);
+    return next(`${SRC}${aliased(specifier)}`, context);
   }
   return next(specifier, context);
+}
+
+/**
+ * Turns `@/lib/foo` into `lib/foo.ts`, and leaves `@/lib/foo.mjs` alone.
+ *
+ * The `.ts` suits the alias' usual case — app modules, all TypeScript, imported
+ * without an extension — but must not be appended to a specifier that already
+ * has one. `@/lib/db-schema.mjs` is a real `.mjs` file, shared with the
+ * plain-`node` scripts that cannot import TypeScript.
+ */
+function aliased(specifier) {
+  const path = specifier.slice(2);
+  return /\.(m?[jt]sx?|cjs|cts|json)$/.test(path) ? path : `${path}.ts`;
 }
 
 export function load(url, context, next) {
