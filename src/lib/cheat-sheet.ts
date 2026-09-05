@@ -2,6 +2,7 @@ import "server-only";
 
 import { getPlayerPool } from "@/lib/smartdraft";
 import { readProjections } from "@/lib/projections-store";
+import { readCheatSheetExport } from "@/lib/cheatsheet-export";
 import { joinKey } from "@/lib/fantasypros/players";
 import { SCORING_FORMAT, SCORING_SPEC } from "@/lib/league-config";
 import type { CheatSheetMeta, CheatSheetRow } from "@/lib/cheat-sheet-view";
@@ -73,23 +74,31 @@ export type CheatSheet = {
 export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
   const projections = readProjections();
   const index = projections.state === "ok" ? projections.index : null;
+  const exported = readCheatSheetExport();
+  const board = exported.state === "ok" ? exported.byPlayerId : null;
 
   const rows: CheatSheetRow[] = [];
   for (const p of getPlayerPool()) {
     if (p.position === "K") continue;
 
     const projection = index?.byPlayerId.get(p.id) ?? null;
+    const ranked = board?.get(p.id) ?? null;
     const adp = liveAdp?.get(joinKey(p.name, p.position)) ?? p.adp;
-    if (adp == null && projection == null) continue;
+    if (adp == null && projection == null && ranked?.leagueRank == null) continue;
 
     rows.push({
       id: p.id,
       name: p.name,
       position: p.position,
       team: p.nflTeam,
-      bye: p.byeWeek,
+      // The export carries a bye for players the pool snapshot does not.
+      bye: p.byeWeek ?? ranked?.bye ?? null,
+      leagueRank: ranked?.leagueRank ?? null,
+      leaguePositionRank: ranked?.leaguePositionRank ?? null,
+      tier: ranked?.tier ?? null,
       adp,
       positionRank: p.positionRank,
+      ecrVsAdp: ranked?.ecrVsAdp ?? null,
       points: projection ? Math.round(projection.points * 10) / 10 : null,
       basis: projection?.basis ?? null,
       pointsPositionRank: null,
@@ -119,10 +128,17 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
     });
   }
 
-  // Default order is ADP, so the sheet reads like a draft board before anybody
-  // touches a sort control. Unranked-but-projected players fall to the bottom.
+  /*
+   * Default order is THE LEAGUE-SCOPED BOARD, falling through to ADP for anyone
+   * it does not rank. This is the whole reason the export is worth having: the
+   * order a manager reads before he touches a control is the one that already
+   * prices the tight end premium, rather than the market's, which does not.
+   */
   rows.sort(
-    (a, b) => (a.adp ?? Infinity) - (b.adp ?? Infinity) || a.name.localeCompare(b.name),
+    (a, b) =>
+      (a.leagueRank ?? Infinity) - (b.leagueRank ?? Infinity) ||
+      (a.adp ?? Infinity) - (b.adp ?? Infinity) ||
+      a.name.localeCompare(b.name),
   );
 
   return {
@@ -141,6 +157,22 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
             : null,
       tePremiumReception: SCORING_SPEC.ppr + SCORING_SPEC.recTePremium,
       passTd: SCORING_SPEC.passTd,
+      board:
+        exported.state === "ok"
+          ? {
+              leagueLabel: exported.export.provenance.leagueLabel,
+              exportedAt: exported.export.provenance.exportedAt,
+              scopedToLeague: exported.export.provenance.rankingScopedToLeague,
+              tierScope: exported.export.provenance.tierScope,
+              rankedCount: rows.filter((r) => r.leagueRank != null).length,
+            }
+          : null,
+      boardProblem:
+        exported.state === "missing"
+          ? "No league-scoped FantasyPros export — run `npm run pull:cheatsheet`. Ordering falls back to market ADP, which underprices tight ends and quarterbacks here."
+          : exported.state === "unreadable"
+            ? `The FantasyPros export could not be read: ${exported.reason}`
+            : null,
     },
   };
 }

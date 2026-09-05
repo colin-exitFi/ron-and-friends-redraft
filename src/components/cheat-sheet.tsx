@@ -77,7 +77,14 @@ export function CheatSheet({
   const [q, setQ] = useState("");
   const [position, setPosition] = useState("");
   const [availability, setAvailability] = useState<Availability>("available");
-  const [sort, setSort] = useState<SortKey>("adp");
+  /*
+   * Defaults to the LEAGUE-SCOPED board rather than to ADP. The order a manager
+   * sees before he touches anything is the one that prices the tight end
+   * premium; ADP is a column he can sort by when he wants to know what the room
+   * will pay. If there is no export, `applyCheatSheet` falls through to ADP and
+   * this default costs nothing.
+   */
+  const [sort, setSort] = useState<SortKey>("rank");
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
 
   /**
@@ -256,45 +263,50 @@ export function CheatSheet({
           <table className="w-full border-collapse text-sm">
             <thead className="bg-card/95 sticky top-0 z-10 backdrop-blur">
               <tr className="border-border text-muted-foreground border-b text-left text-[11px] tracking-wide uppercase">
+                {/* Rank first, because it is the league's own order and the
+                    column a manager reads down. */}
                 <SortHeader
-                  label="ADP"
-                  value="adp"
+                  label="Rk"
+                  value="rank"
                   sort={sort}
                   onSort={setSort}
-                  className="w-16 text-right max-md:w-12"
+                  className="w-12 text-right max-md:w-9 max-md:px-1.5"
                 />
-                <SortHeader
-                  label="Player"
-                  value="name"
-                  sort={sort}
-                  onSort={setSort}
-                  className=""
-                />
+                <SortHeader label="Player" value="name" sort={sort} onSort={setSort} />
                 <SortHeader
                   label="Pos"
                   value="position"
                   sort={sort}
                   onSort={setSort}
-                  className="w-16 max-md:hidden"
+                  className="w-14 max-md:hidden"
                 />
                 <SortHeader
                   label="Proj"
                   value="points"
                   sort={sort}
                   onSort={setSort}
-                  className="w-20 text-right"
+                  className="w-20 text-right max-md:w-14 max-md:px-1.5"
                 />
-                <th className="w-16 px-3 py-2.5 font-medium max-md:hidden">Team</th>
+                <SortHeader
+                  label="ADP"
+                  value="adp"
+                  sort={sort}
+                  onSort={setSort}
+                  className="w-16 text-right max-md:hidden"
+                />
+                <th className="w-12 px-3 py-2.5 text-right font-medium max-md:hidden">
+                  Tier
+                </th>
                 <th className="w-14 px-3 py-2.5 text-right font-medium max-md:hidden">
                   Bye
                 </th>
-                <th className="w-36 px-3 py-2.5 font-medium max-md:hidden">Status</th>
+                <th className="w-32 px-3 py-2.5 font-medium max-md:hidden">Status</th>
               </tr>
             </thead>
             <tbody>
               {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-muted-foreground py-12 text-center">
+                  <td colSpan={8} className="text-muted-foreground py-12 text-center">
                     {availability === "available" && draftedCount > 0
                       ? "Nobody left matching that. Try “All”."
                       : "No players match your search."}
@@ -310,18 +322,46 @@ export function CheatSheet({
         </div>
       </div>
 
-      <p className="text-muted-foreground max-w-prose text-xs">
-        <span className="text-foreground font-medium">Proj</span> is projected season
-        points in <span className="text-foreground">{meta.scoringFormat}</span> — this
-        league&apos;s own scoring, computed here from raw projected stat lines. A tight
-        end&apos;s catch is worth {meta.tePremiumReception} and a passing touchdown{" "}
-        {meta.passTd}, so these are deliberately not the numbers ESPN or Sleeper would
-        show you.{" "}
-        <span className="text-foreground font-medium">ADP</span> is the market&apos;s
-        average draft position, on ordinary scoring. Where the two disagree, the
-        disagreement is the point: it is where this league prices a player differently
-        from the room.
-      </p>
+      <div className="text-muted-foreground grid max-w-prose gap-1.5 text-xs">
+        <p>
+          <span className="text-foreground font-medium">Rk</span> is FantasyPros&apos;
+          expert consensus{" "}
+          {meta.board?.scopedToLeague ? (
+            <>
+              exported against this league&apos;s own settings
+              {meta.board.leagueLabel ? ` (${meta.board.leagueLabel})` : ""} — so the
+              order already prices the tight end premium and the {meta.passTd}-point
+              passing touchdown. It is the order to draft against.
+            </>
+          ) : (
+            <>the market&apos;s, not this league&apos;s.</>
+          )}
+        </p>
+        <p>
+          <span className="text-foreground font-medium">Proj</span> is projected season
+          points in <span className="text-foreground">{meta.scoringFormat}</span>,
+          computed here from raw projected stat lines — a tight end&apos;s catch is worth{" "}
+          {meta.tePremiumReception} and a passing touchdown {meta.passTd}. Sorting by it
+          puts quarterbacks on top, which is true and not advice: in this league they do
+          score the most. The badge next to each figure is his rank within his own
+          position.
+        </p>
+        <p>
+          <span className="text-foreground font-medium">ADP</span> is the market&apos;s
+          average draft position on ordinary scoring, kept precisely because it
+          disagrees — the gap between it and Rk is where this league values a player
+          differently from the room.{" "}
+          {meta.board?.tierScope === "generic" && (
+            <>
+              <span className="text-foreground font-medium">Tier</span> is FantasyPros&apos;
+              grouping from its <span className="text-foreground">generic</span> board,
+              not the league-scoped one, so a tier boundary will not line up exactly
+              with the Rk order. Useful for spotting where a run starts; not a league
+              number.
+            </>
+          )}
+        </p>
+      </div>
     </>
   );
 }
@@ -387,8 +427,10 @@ function PlayerRow({
         taken && "opacity-55",
       )}
     >
-      <td className="text-muted-foreground/70 px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-2 max-md:text-[10px]">
-        {row.adp ?? "—"}
+      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-1.5 max-md:text-[10px]">
+        <span className={cn(taken ? "text-muted-foreground/50" : "text-foreground/80")}>
+          {row.leagueRank ?? "—"}
+        </span>
       </td>
       <td className="px-3 py-2 font-medium max-md:px-2">
         <span
@@ -401,7 +443,7 @@ function PlayerRow({
         </span>
         {/* On a phone the narrow columns fold under the name rather than
             sliding off the side — the pattern this table already used. */}
-        <span className="text-muted-foreground/70 mt-0.5 hidden items-center gap-1.5 font-mono text-[10px] max-md:flex">
+        <span className="text-muted-foreground/70 mt-0.5 hidden flex-wrap items-center gap-x-1.5 font-mono text-[10px] max-md:flex">
           <span
             className={cn(
               "inline-flex h-4 min-w-[1.75rem] items-center justify-center rounded px-1 font-sans text-[9px] font-bold ring-1",
@@ -409,14 +451,11 @@ function PlayerRow({
             )}
           >
             {row.position}
+            {row.leaguePositionRank ?? ""}
           </span>
-          {row.pointsPositionRank
-            ? `${row.position}${row.pointsPositionRank}`
-            : row.positionRank
-              ? `${row.position}${row.positionRank}`
-              : "—"}{" "}
-          · {row.team ?? "FA"}
+          {row.team ?? "FA"}
           {row.bye != null && ` · bye ${row.bye}`}
+          {row.adp != null && ` · adp ${row.adp}`}
           {taken && (
             <span className="text-destructive font-sans font-semibold">
               · {taken.label === "kept" ? "kept" : `gone ${taken.label}`} {taken.by}
@@ -427,14 +466,15 @@ function PlayerRow({
       <td className="px-3 py-2 max-md:hidden">
         <span
           className={cn(
-            "inline-flex h-5 min-w-[2rem] items-center justify-center rounded px-1 text-[10px] font-bold ring-1",
+            "inline-flex h-5 min-w-[2.25rem] items-center justify-center rounded px-1 text-[10px] font-bold ring-1",
             positionStyle(row.position),
           )}
         >
           {row.position}
+          {row.leaguePositionRank ?? ""}
         </span>
       </td>
-      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-2 max-md:text-[10px]">
+      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:px-1.5 max-md:text-[10px]">
         {row.points != null ? (
           <span className="inline-flex flex-col items-end leading-tight">
             <span className={cn("text-foreground", taken && "text-muted-foreground")}>
@@ -445,10 +485,10 @@ function PlayerRow({
                 {row.position}
                 {row.pointsPositionRank}
                 {/*
-                  Only flagged when this league rates him at least a full round
-                  of positional places above the market. Anything smaller is
-                  inside the noise of two different projection sets and would
-                  put a badge on half the table.
+                  Only flagged when this league's projection rates him at least
+                  a full round of positional places above the market's ADP.
+                  Anything smaller is inside the noise of two projection sets
+                  and would put a badge on half the table.
                 */}
                 {gap != null && gap >= 5 && (
                   <span className="text-success ml-1 font-sans font-semibold">
@@ -462,8 +502,17 @@ function PlayerRow({
           <span className="text-muted-foreground/40">—</span>
         )}
       </td>
-      <td className="text-muted-foreground px-3 py-2 font-mono text-xs max-md:hidden">
-        {row.team ?? "FA"}
+      <td className="text-muted-foreground/70 px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
+        {row.adp ?? "—"}
+      </td>
+      <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
+        {row.tier != null ? (
+          <span className="bg-secondary text-muted-foreground inline-flex h-5 min-w-[1.5rem] items-center justify-center rounded px-1 text-[10px]">
+            {row.tier}
+          </span>
+        ) : (
+          <span className="text-muted-foreground/40">—</span>
+        )}
       </td>
       <td className="text-muted-foreground px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
         {row.bye ?? "—"}

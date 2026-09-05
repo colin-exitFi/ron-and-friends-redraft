@@ -30,10 +30,22 @@ export type CheatSheetRow = {
   position: string;
   team: string | null;
   bye: number | null;
+  /**
+   * Overall rank on the FantasyPros board the commissioner exported against
+   * THIS LEAGUE's configuration, so it already prices the tight end premium
+   * and the six-point passing touchdown. The default ordering.
+   */
+  leagueRank: number | null;
+  /** Rank within position on that same league-scoped export. */
+  leaguePositionRank: number | null;
+  /** FantasyPros tier — from the GENERIC board, not the league one. */
+  tier: number | null;
   /** Consensus ADP — the market's price, not this league's. Null if unranked. */
   adp: number | null;
   /** Rank within position by ADP. */
   positionRank: number | null;
+  /** FantasyPros' expert-consensus-versus-ADP, in places. Positive = liked. */
+  ecrVsAdp: number | null;
   /** Projected season points in THIS league's scoring. Null if unprojected. */
   points: number | null;
   basis: CheatSheetBasis | null;
@@ -56,6 +68,22 @@ export type CheatSheetMeta = {
   /** A reception is worth this to a tight end here, and 0.5 to everyone else. */
   tePremiumReception: number;
   passTd: number;
+  /**
+   * The hand-exported FantasyPros board that supplies the default ordering.
+   * Null when there isn't one and the sheet has fallen back to ADP order.
+   */
+  board: {
+    /** The FantasyPros league the export was configured against. */
+    leagueLabel: string;
+    exportedAt: string;
+    /** Whether the ORDER respects this league's scoring. The whole point. */
+    scopedToLeague: boolean;
+    /** `generic` — tiers are not league-scoped, and the UI must say so. */
+    tierScope: string;
+    rankedCount: number;
+  } | null;
+  /** Why there is no league-scoped board, when there isn't one. */
+  boardProblem: string | null;
 };
 
 /** Who has a player, and at which pick. Keyed by Smart Draft player id. */
@@ -86,7 +114,7 @@ export function draftedFromView(view: DraftRoomView): DraftedBy {
 }
 
 /** Sort keys the header offers. */
-export type SortKey = "adp" | "points" | "position" | "name";
+export type SortKey = "rank" | "adp" | "points" | "position" | "name";
 export type Availability = "available" | "all" | "drafted";
 
 export type CheatSheetQuery = {
@@ -148,7 +176,13 @@ export function applyCheatSheet(
     (a.adp ?? Infinity) - (b.adp ?? Infinity) || a.name.localeCompare(b.name);
 
   const sorted = [...filtered];
-  if (sort === "adp") {
+  if (sort === "rank") {
+    // The league-scoped export's order, with anyone it does not rank falling
+    // through to ADP rather than to the top.
+    sorted.sort(
+      (a, b) => (a.leagueRank ?? Infinity) - (b.leagueRank ?? Infinity) || byAdp(a, b),
+    );
+  } else if (sort === "adp") {
     sorted.sort(byAdp);
   } else if (sort === "points") {
     // Unprojected players go to the bottom rather than reading as zero.

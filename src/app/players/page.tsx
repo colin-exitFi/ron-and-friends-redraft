@@ -1,12 +1,11 @@
-import { Radio, TriangleAlert } from "lucide-react";
+import { ChevronDown, Radio, TriangleAlert } from "lucide-react";
 
 import { PageBody, PageHeader } from "@/components/page-header";
 import { CheatSheet } from "@/components/cheat-sheet";
 import { FantasyProsRefresh } from "@/components/fantasypros-refresh";
-import { cn } from "@/lib/utils";
 import { buildCheatSheet } from "@/lib/cheat-sheet";
 import { draftedFromView, type DraftedBy } from "@/lib/cheat-sheet-view";
-import { getPoolFetchedAt, getPoolScoringFormat } from "@/lib/smartdraft";
+import { getPoolFetchedAt, getPoolProvenance } from "@/lib/smartdraft";
 import { getLivePlayerFeed } from "@/lib/fantasypros/feed";
 import { joinKey } from "@/lib/fantasypros/players";
 import { readRoom, savesAreShared } from "@/lib/draft-service";
@@ -67,8 +66,29 @@ export default async function PlayersPage() {
       cause instanceof Error ? cause.message : "The board could not be read.";
   }
 
-  const poolScope = getPoolScoringFormat();
-  const scopeMatchesLeague = poolScope === SCORING_FORMAT;
+  /*
+   * WHAT SCOPE THE ADP IS REALLY AT.
+   *
+   * There are two answers and only one of them is the one a manager cares
+   * about. `scoringFormat` is the SMART DRAFT base snapshot's scope, which is
+   * old and full-PPR and covers the tail of the pool. `fantasyPros.scoring` is
+   * the overlay the commissioner pulls, which is fresh and now HALF, and it is
+   * what nearly every draftable player's ADP actually comes from.
+   *
+   * The page used to print the base snapshot's scope, which was honest before
+   * the overlay existed and became actively misleading the moment he re-pulled
+   * at HALF: it warned about a full-PPR ADP that was no longer being shown for
+   * anybody worth drafting. The overlay is what gets named.
+   *
+   * HALF IS STILL NOT THIS LEAGUE'S SCORING, and that is stated rather than
+   * treated as solved. FantasyPros' half-PPR gives every position half a point
+   * a catch; it knows nothing about the tight end premium. So the ADP column is
+   * closer than it was and is still not the league's price — which is exactly
+   * why the ordering comes from the league-configured export instead.
+   */
+  const pool = getPoolProvenance();
+  const adpScope = pool.fantasyPros?.scoring ?? pool.scoringFormat;
+  const adpIsHalf = adpScope?.toUpperCase() === "HALF";
   const fetchedAt = new Date(getPoolFetchedAt());
 
   const when = (iso: string | null) =>
@@ -81,8 +101,14 @@ export default async function PlayersPage() {
         })
       : "an unknown time";
 
-  const degraded =
-    live.source === "stale" || live.source === "snapshot" || live.source === "unavailable";
+  /*
+   * Whether the summary line can be stated plainly or has to carry a warning.
+   * The ADP being mis-scoped is NOT counted here: it is expected, it is
+   * explained inside, and the league-scoped Rk column is what the page orders
+   * by regardless. Warning on it every time would train the room to ignore the
+   * icon that also means "there is no league board at all".
+   */
+  const sheetIsHealthy = Boolean(meta.board?.scopedToLeague) && !meta.projectionsProblem;
   const liveLabel =
     live.source === "fresh" || live.source === "cache"
       ? `ADP is live from FantasyPros for ${liveAdp.size.toLocaleString()} ranked players at ${live.scoring} scoring, fetched ${when(live.fetchedAt)}.`
@@ -110,82 +136,135 @@ export default async function PlayersPage() {
           takes the wrong one on trust is exactly the person this page was
           built to reassure.
         */}
+        {/*
+          WHERE EACH COLUMN CAME FROM — ONE LINE, THEN A DISCLOSURE.
+          The full provenance runs to three paragraphs and it all matters, but
+          on a 390px screen it pushed the first player below the fold. The two
+          managers this page was built for open it to look at players; a wall of
+          caveats before the first name is how a research tool loses to a sheet
+          of paper. So the headline is one scannable line and the detail is one
+          tap away — collapsed, not deleted, because none of it is optional
+          once somebody wants to know why the numbers disagree.
+        */}
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="grid max-w-prose gap-2 text-xs">
-            <p
-              className={cn(
-                "flex items-start gap-2",
-                scopeMatchesLeague ? "text-muted-foreground" : "text-warning",
-              )}
-            >
-              {scopeMatchesLeague && !degraded ? (
+          <details className="group border-border bg-card/40 min-w-0 flex-1 rounded-lg border">
+            <summary className="text-muted-foreground flex cursor-pointer list-none items-start gap-2 p-3 text-xs touch:min-h-11">
+              {sheetIsHealthy ? (
                 <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
               ) : (
-                <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <TriangleAlert className="text-warning mt-0.5 h-3.5 w-3.5 shrink-0" />
               )}
-              <span>
+              <span className="min-w-0 flex-1">
+                {meta.board?.scopedToLeague ? (
+                  <>
+                    Ordered by FantasyPros&apos; consensus{" "}
+                    <span className="text-foreground font-medium">
+                      exported for this league&apos;s scoring
+                    </span>
+                    , {when(meta.board.exportedAt)}. Points computed in{" "}
+                    {SCORING_FORMAT}. ADP is the market&apos;s, at{" "}
+                    {adpScope ?? "unknown"} scope.
+                  </>
+                ) : (
+                  <span className="text-warning">
+                    {meta.boardProblem ?? "No league-scoped board — ordering by ADP."}
+                  </span>
+                )}
+                <span className="text-muted-foreground/60 ml-1 underline underline-offset-2 group-open:hidden">
+                  Where these numbers come from
+                </span>
+              </span>
+              <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 transition-transform group-open:rotate-180" />
+            </summary>
+
+            <div className="border-border grid gap-2 border-t p-3 text-xs">
+              {meta.board?.scopedToLeague ? (
+                <p className="text-muted-foreground">
+                  <span className="text-foreground font-medium">Rk (the order)</span> —
+                  FantasyPros expert consensus, exported by the commissioner against his
+                  own league configuration
+                  {meta.board.leagueLabel ? ` (“${meta.board.leagueLabel}”)` : ""} on{" "}
+                  {when(meta.board.exportedAt)}, covering{" "}
+                  {meta.board.rankedCount.toLocaleString()} players. Because it is
+                  scoped to this league it already prices the tight end premium and the{" "}
+                  {meta.passTd}-point passing touchdown — Brock Bowers comes out five
+                  places higher on it than on the public board. Tiers on it come from
+                  FantasyPros&apos; <span className="text-foreground">generic</span>{" "}
+                  board, so they group the ordinary ranking rather than this one.
+                </p>
+              ) : (
+                <p className="text-warning">{meta.boardProblem}</p>
+              )}
+
+              <p className="text-muted-foreground">
+                {meta.projectionsProblem ? (
+                  <span className="text-warning">{meta.projectionsProblem}</span>
+                ) : (
+                  <>
+                    <span className="text-foreground font-medium">Proj</span> —{" "}
+                    <span className="text-foreground font-medium">projected</span>, not
+                    actual. {meta.projectedCount.toLocaleString()} players&apos; raw{" "}
+                    {meta.projectionSeason} stat lines from FantasyPros, pulled{" "}
+                    {when(meta.projectionsPulledAt)} and scored here under{" "}
+                    {SCORING_FORMAT} — nobody else&apos;s points column is used, so this
+                    is correctly scoped whatever FantasyPros is serving.
+                    {meta.vendorScoredCount > 0 && (
+                      <>
+                        {" "}
+                        {meta.vendorScoredCount} rows carry FantasyPros&apos; own total
+                        because no stat line came back — team defences, mostly, which no
+                        feed breaks into the parts this league scores.
+                      </>
+                    )}
+                  </>
+                )}
+              </p>
+
+              <p className="text-muted-foreground">
                 <span className="font-medium">ADP</span> — {liveLabel}
-                {!scopeMatchesLeague && (
+                {pool.fantasyPros && (
                   <>
                     {" "}
-                    <span className="font-semibold">
-                      It is {poolScope ?? "of unrecorded"} scoring, and this league is{" "}
-                      {SCORING_FORMAT}.
+                    Pulled at{" "}
+                    <span className="text-foreground font-medium">
+                      {pool.fantasyPros.scoring}
                     </span>{" "}
-                    So the ADP column understates tight ends and quarterbacks here.
-                    That is not a defect to work around — it is the market price,
-                    and the Proj column is what this league thinks. Run{" "}
-                    <code className="bg-secondary rounded px-1 py-0.5 font-mono">
-                      npm run auth:fantasypros
-                    </code>{" "}
-                    then{" "}
-                    <code className="bg-secondary rounded px-1 py-0.5 font-mono">
-                      npm run pull:fantasypros
-                    </code>{" "}
-                    to re-scope it.
+                    scoring, {when(pool.fantasyPros.fetchedAt)}, covering{" "}
+                    {pool.fantasyPros.playersWithLiveAdp.toLocaleString()} players.
+                    {adpIsHalf ? (
+                      <>
+                        {" "}
+                        That is half PPR, which is this league&apos;s base rate —{" "}
+                        <span className="text-foreground">
+                          but it still has no tight end premium
+                        </span>
+                        , because no public feed prices one. So ADP remains the
+                        market&apos;s number and understates tight ends here. The Rk
+                        column is the one that accounts for it.
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        This league is {SCORING_FORMAT}, so ADP understates tight ends
+                        and quarterbacks. Run{" "}
+                        <code className="bg-secondary rounded px-1 py-0.5 font-mono">
+                          npm run pull:fantasypros
+                        </code>{" "}
+                        to re-scope it.
+                      </>
+                    )}
                   </>
                 )}{" "}
-                Pool as of{" "}
+                Below FantasyPros&apos; ranked depth the tail falls back to the Smart
+                Draft snapshot at {pool.scoringFormat ?? "unrecorded"} scope, pulled{" "}
                 {fetchedAt.toLocaleString(undefined, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
                 .
-              </span>
-            </p>
-
-            <p className="text-muted-foreground flex items-start gap-2">
-              {meta.projectionsProblem ? (
-                <TriangleAlert className="text-warning mt-0.5 h-3.5 w-3.5 shrink-0" />
-              ) : (
-                <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
-              )}
-              {meta.projectionsProblem ? (
-                <span className="text-warning">{meta.projectionsProblem}</span>
-              ) : (
-                <span>
-                  <span className="font-medium">Proj</span> —{" "}
-                  <span className="text-foreground font-medium">projected</span>, not
-                  actual, and computed in{" "}
-                  <span className="text-foreground">{SCORING_FORMAT}</span>.{" "}
-                  {meta.projectedCount.toLocaleString()} players&apos; raw{" "}
-                  {meta.projectionSeason} stat lines from FantasyPros, pulled{" "}
-                  {when(meta.projectionsPulledAt)} and scored here with this
-                  league&apos;s own rules — nobody else&apos;s points column is used.
-                  Unlike the ADP, this one is correctly scoped whatever FantasyPros
-                  is doing.
-                  {meta.vendorScoredCount > 0 && (
-                    <>
-                      {" "}
-                      {meta.vendorScoredCount} rows carry FantasyPros&apos; own total
-                      because no stat line came back — team defences, mostly, which no
-                      feed breaks into the parts this league scores.
-                    </>
-                  )}
-                </span>
-              )}
-            </p>
-          </div>
+              </p>
+            </div>
+          </details>
           <FantasyProsRefresh />
         </div>
 

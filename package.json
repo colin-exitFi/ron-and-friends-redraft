@@ -36,6 +36,7 @@
     "verify:fantasypros:banner": "node scripts/verify-fantasypros-banner.mjs",
     "pull:projections": "node --env-file-if-exists=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/fantasypros-pull.mjs",
     "verify:projections": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-projected-standings.mts",
+    "pull:cheatsheet": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/fantasypros-cheatsheet.mjs",
     "verify:cheat-sheet": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-cheat-sheet.mts",
     "verify:cheat-sheet:browser": "node scripts/verify-cheat-sheet-browser.mjs",
     "db:apply:redraft": "node scripts/apply-redraft-schema.mjs",

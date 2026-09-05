@@ -122,18 +122,96 @@ check(
   rows.filter((r) => r.position === "K").length + " found",
 );
 check(
-  "every row is either ranked or projected, so nothing is filler",
-  rows.every((r) => r.adp != null || r.points != null),
+  "every row is ranked, projected or on the league board — nothing is filler",
+  rows.every((r) => r.adp != null || r.points != null || r.leagueRank != null),
 );
 check(
   "player ids are unique, so a row cannot be drafted twice",
   new Set(rows.map((r) => r.id)).size === rows.length,
 );
+
+// --- 2b. The league-scoped board --------------------------------------------
+
+section("2b. The ordering comes from the league-scoped export");
+
 check(
-  "the default order is ADP",
+  "there is a league-scoped board behind the ordering",
+  meta.board?.scopedToLeague === true,
+  meta.boardProblem ?? "no board",
+);
+if (meta.board) {
+  console.log(`  · exported from “${meta.board.leagueLabel}” at ${meta.board.exportedAt}`);
+  console.log(`  · ${meta.board.rankedCount} players carry a league rank`);
+  check(
+    "it ranks enough players to draft 150 of them",
+    meta.board.rankedCount >= 300,
+    `${meta.board.rankedCount}`,
+  );
+  check(
+    "the tiers are labelled as coming from the generic board",
+    meta.board.tierScope === "generic",
+    meta.board.tierScope,
+  );
+}
+
+check(
+  "the default order is the league board, not ADP",
   rows
-    .filter((r) => r.adp != null)
-    .every((r, i, a) => i === 0 || (a[i - 1].adp ?? 0) <= (r.adp ?? 0)),
+    .filter((r) => r.leagueRank != null)
+    .every((r, i, a) => i === 0 || (a[i - 1].leagueRank ?? 0) <= (r.leagueRank ?? 0)),
+);
+check(
+  "league ranks are unique — two players cannot share a slot in the order",
+  (() => {
+    const ranks = rows.map((r) => r.leagueRank).filter((r): r is number => r != null);
+    return new Set(ranks).size === ranks.length;
+  })(),
+);
+
+{
+  /*
+   * THE REASON THE EXPORT IS WORTH HAVING, ASSERTED RATHER THAN ASSUMED.
+   *
+   * The league board should rate tight ends materially higher than the market
+   * does, because a tight end catches at a full point here and at half in the
+   * ADP that ranks him. If this ever stops being true the export has quietly
+   * been replaced with a generic one — which would look completely normal on
+   * screen and would reintroduce the exact bias the page exists to remove.
+   */
+  const tes = rows.filter(
+    (r) => r.position === "TE" && r.leagueRank != null && r.adp != null,
+  );
+  const lifted = tes.filter((r) => (r.leagueRank ?? 0) < (r.adp ?? 0));
+  check(
+    "tight ends rank higher on the league board than their market ADP",
+    lifted.length > tes.length / 2,
+    `${lifted.length} of ${tes.length}`,
+  );
+  const top = rows.filter((r) => r.leagueRank != null && r.leagueRank <= 20);
+  const teInTop20 = top.filter((r) => r.position === "TE").length;
+  check(
+    "a tight end premium puts at least one TE in the top 20 overall",
+    teInTop20 >= 1,
+    `${teInTop20}`,
+  );
+  console.log(
+    `  · top 20 by league rank: ${top
+      .slice(0, 20)
+      .map((r) => `${r.position}`)
+      .join(" ")}`,
+  );
+}
+
+check(
+  "bye weeks are present for essentially everyone draftable",
+  rows.filter((r) => r.leagueRank != null && r.leagueRank <= 250 && r.bye == null)
+    .length === 0,
+  `${rows.filter((r) => r.leagueRank != null && r.leagueRank <= 250 && r.bye == null).length} missing`,
+);
+check(
+  "tiers arrived from the flat board",
+  rows.filter((r) => r.tier != null).length > 300,
+  `${rows.filter((r) => r.tier != null).length}`,
 );
 
 {
@@ -332,7 +410,7 @@ section("4. The controls");
    * order. Asserted by sorting a shuffled copy and requiring the same result.
    */
   const shuffled = [...rows].sort(() => Math.random() - 0.5);
-  for (const sort of ["adp", "points", "position", "name"] as const) {
+  for (const sort of ["rank", "adp", "points", "position", "name"] as const) {
     const a = applyCheatSheet(rows, {}, { ...base, availability: "all", sort });
     const b = applyCheatSheet(shuffled, {}, { ...base, availability: "all", sort });
     check(
