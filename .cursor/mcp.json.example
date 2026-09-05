@@ -4,9 +4,21 @@
     "The real file is gitignored because the token grants access to every project on the account.",
     "Create a token at https://supabase.com/dashboard/account/tokens",
     "",
-    "--project-ref pins the server to the Ultimate Keeper League database so it cannot",
-    "reach the other leagues on the same account. --read-only keeps schema changes in",
-    "migrations under supabase/migrations, where they belong.",
+    "--project-ref pins the server to the Ron & Friends database (opxyeajywipsitwecgcz)",
+    "so it cannot reach the other leagues on the same account — in particular not",
+    "ultimate-keeper-league (xqhkhcmphvytoibjewqi), which this tree was copied from and",
+    "which holds a real completed draft. If you see that ref here or in .cursor/mcp.json,",
+    "it is the stale one and every schema you inspect will be the wrong league's.",
+    "",
+    "The pin does NOT isolate this app's tables, because it cannot: the R&F project also",
+    "hosts the deployed app at ron-and-friends-fantasy.vercel.app in its `public` schema,",
+    "and the two schemas collide on fourteen table names. This app is in `redraft` (see",
+    "src/lib/db-schema.mjs), so read results carefully — `teams` means two different",
+    "tables here. --read-only is what makes that safe rather than merely confusing.",
+    "",
+    "--read-only also keeps schema changes in supabase/redraft-schema.sql, where they",
+    "belong. Note that this repo does NOT push migrations: the project's migration",
+    "ledger belongs to ../RonAndFriendsApp. See that file's header.",
     "",
     "fantasypros needs no token here. It is OAuth-protected (scope user:read) against",
     "secure.fantasypros.com, so Cursor prompts for a browser sign-in the first time a",
@@ -25,7 +37,7 @@
         "-y",
         "@supabase/mcp-server-supabase@latest",
         "--read-only",
-        "--project-ref=xqhkhcmphvytoibjewqi"
+        "--project-ref=opxyeajywipsitwecgcz"
       ],
       "env": {
         "SUPABASE_ACCESS_TOKEN": "sbp_your_token_here"

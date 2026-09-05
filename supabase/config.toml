@@ -1,11 +1,42 @@
-# Supabase CLI config for the Ultimate Keeper League app.
+# Supabase CLI config for the Ron & Friends redraft app.
 #
-# project_id is the remote project ref for `ultimate-keeper-league`. It is a
-# public identifier, not a secret.
-project_id = "xqhkhcmphvytoibjewqi"
+# project_id is the remote project ref for `ron-and-friends-ff`. It is a public
+# identifier, not a secret.
+#
+# ############################################################################
+# DO NOT RUN `supabase link` OR `supabase db push` FROM THIS REPO
+# ############################################################################
+# This project ALREADY HAS a migration ledger in
+# `supabase_migrations.schema_migrations`, and it belongs to
+# ../RonAndFriendsApp — twelve versions, none of which exist as files here.
+# Pushing this repo's migrations would insert versions into that shared ledger
+# that RonAndFriendsApp has no local files for, and it would then refuse to
+# push again: it would see remote versions missing from its migrations
+# directory. Recovering that means hand-editing a production ledger.
+#
+# So this repo does not participate in the ledger at all. The schema under
+# `migrations/` is the authority for what the app queries, and it is applied as
+# ONE IDEMPOTENT SCRIPT — `supabase/redraft-schema.sql`, via
+# `npm run db:apply:redraft`. The file stays in the repo so the schema is
+# reproducible; it is just not pushed.
+#
+# `project_id` is here for the read-only commands that are still useful, such
+# as `supabase gen types typescript`. Note that type generation needs
+# `--schema redraft`: this app's tables are not in `public`. `public` on this
+# project is the live backend for ron-and-friends-fantasy.vercel.app.
+project_id = "opxyeajywipsitwecgcz"
 
 [db]
 # Matches the hosted project's Postgres major version. The CLI warns if this
 # drifts from the remote, which is worth heeding — a shadow database on the
 # wrong major version can accept SQL the real one rejects.
 major_version = 17
+
+[api]
+# The schemas PostgREST serves. This file configures a LOCAL stack; the hosted
+# project's list is a project setting (Settings -> API -> Exposed schemas) and
+# is set to the same three. `redraft` must be present or every query this app
+# makes returns 404 — a custom schema is invisible to the API until it is
+# listed.
+schemas = ["public", "graphql_public", "redraft"]
+extra_search_path = ["public", "extensions"]

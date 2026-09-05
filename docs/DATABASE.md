@@ -1,12 +1,30 @@
 # The league database
 
-Postgres on Supabase, project ref `xqhkhcmphvytoibjewqi` ("UltimateKeeperLeague",
-West US / Oregon). Sixteen tables in `public`, ten ordered migrations, one
-idempotent seed.
+Postgres on Supabase, project ref `opxyeajywipsitwecgcz` ("ron-and-friends-ff",
+East US / N. Virginia), schema **`redraft`**. Twenty-one tables, applied as one
+idempotent script, one idempotent seed.
 
-> **Never target `opxyeajywipsitwecgcz`.** That is the live Ron & Friends league
-> and the access token in `.env.local` can see it. Always pass the keeper league
-> ref explicitly.
+> **The warning here used to point the other way, and it was inverted by the
+> reskin.** It read "never target `opxyeajywipsitwecgcz`" — correct in the
+> Ultimate Keeper tree this repo was copied from, and exactly backwards now.
+> `opxyeajywipsitwecgcz` IS this app's database. The one to stay out of is
+> `xqhkhcmphvytoibjewqi` ("UltimateKeeperLeague"), which holds a real completed
+> draft; `npm run db:apply:redraft` refuses to connect to it by hardcoded ref.
+
+> **Two schemas share this project, and fourteen table names collide.**
+> `public` is the live backend for `ron-and-friends-fantasy.vercel.app` —
+> `ballot_votes`, `treasury_ledger`, `standings`, `lottery`. This app is in
+> `redraft` and writes nothing to `public`. Because `leagues`, `teams`,
+> `trades`, `draft_state`, `votes`, `keepers` and eight more exist in BOTH, a
+> client that loses its `db: { schema: 'redraft' }` does not fail — it reads and
+> writes the other league's rows. The name is defined once, in
+> `src/lib/db-schema.mjs`.
+
+> **This repo does not push migrations.** The project's migration ledger in
+> `supabase_migrations.schema_migrations` belongs to `../RonAndFriendsApp`.
+> Pushing from here would leave that repo unable to push again. Use
+> `npm run db:apply:redraft`; `npm run db:push` is a refusal that explains
+> itself. Full reasoning in the header of `supabase/redraft-schema.sql`.
 
 ---
 
