@@ -1,6 +1,6 @@
 /**
  * Proves that every cell on the draft board shows everything it holds, in full,
- * and that all 160 of them are the same shape.
+ * and that every one of them is the same shape.
  *
  *   BASE=http://localhost:3210 node scripts/verify-board-fit.mjs
  *
@@ -32,7 +32,7 @@
  *   · NOTHING IS COVERED. The bottom of the name against the top of the
  *     ownership strip, per cell, has to be positive.
  *   · EVERY CELL IS THE SAME SHAPE. Each slot's offset from the top of its cell
- *     is compared across all 160 cells and has to be identical — that is what
+ *     is compared across every cell on the board and has to be identical — that is what
  *     makes a traded cell, a keeper and an ordinary pick line up.
  *   · EVERY FACT IS ON SCREEN. Full name, position, club, bye, pick number, and
  *     the acquiring franchise on the picks that were traded.
@@ -78,6 +78,21 @@ import {
   SAFE_AREA_BOTTOM,
   arcminutes,
 } from "../src/lib/board-legibility.ts";
+/*
+ * THE BOARD'S SHAPE AND THE LEAGUE'S FEATURES, READ RATHER THAN PINNED.
+ *
+ * This harness was written for a 10 x 16 keeper league with traded picks in it,
+ * and it asserted all three as literals: 160 cells, 16 rounds, and "there is at
+ * least one keeper / traded strip to measure". Ron and Friends drafts 10 x 14
+ * with no keepers and no pick trading, so every one of those failed on the
+ * LEAGUE rather than on a bug — and the failure text ("expected 160, got 140")
+ * invites the catastrophic fix of regenerating the board to 16 rounds two hours
+ * before kickoff. Deriving them means the harness cannot drift again.
+ *
+ * `league-config.ts` has no imports of its own, so there is no alias resolution
+ * to arrange here — the same reason `board-name.ts` is safe to import above.
+ */
+import { DRAFT, FEATURES, LEAGUE, TOTAL_PICKS } from "../src/lib/league-config.ts";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const OUT = path.join(process.cwd(), "screenshots");
@@ -497,7 +512,7 @@ async function checkTheTopTwoHundredFit(page, top) {
  *
  * "Still normalizing cell layout and size please." So the rule is asserted where
  * it lives — one answer computed from every name on the board — and the DOM is
- * asserted to carry exactly one type size across all 160 cells. A per-cell
+ * asserted to carry exactly one type size across every cell. A per-cell
  * step-down would pass a "nothing is clipped" check and fail the thing the
  * commissioner is actually asking for, which is that no cell looks different
  * from its neighbours.
@@ -745,6 +760,19 @@ async function checkTheStripIsLegible(page) {
   })()`);
 
   if (m.length === 0) {
+    /*
+     * NO OWNERSHIP STRIPS IS THE CORRECT ANSWER IN A REDRAFT. @fromProposal
+     * Section 6 forbids trading picks and `FEATURES.tradedPicks` records it, so
+     * every slot is owned by the franchise it was born to and no strip is drawn.
+     * `checkEveryFactIsOnScreen` separately proves no cell prints a strip it has
+     * not earned, which is the assertion that still bites here.
+     */
+    if (!FEATURES.tradedPicks) {
+      console.log(
+        "    (no ownership strips to measure — this league does not trade picks)",
+      );
+      return null;
+    }
     check("there are traded strips to measure", false);
     return null;
   }
@@ -877,10 +905,24 @@ function checkEveryFactIsOnScreen(g) {
     const owner = c.title.match(/'s pick, now ([^·(]+)/)?.[1].trim();
     return c.strip.toUpperCase() !== owner?.toUpperCase();
   });
+  /*
+   * In a redraft the assertion INVERTS rather than relaxing: there must be no
+   * traded cell at all. That is a real check — it is how a stray traded pick
+   * left in a snapshot would be caught — where `traded.length > 0` was only
+   * ever a check that the harness's own league still existed.
+   */
   check(
-    `every traded pick names the franchise that owns it now (${traded.length})`,
-    traded.length > 0 && wrongOwner.length === 0,
-    wrongOwner.slice(0, 2).map((c) => `strip "${c.strip}"`).join(" | "),
+    FEATURES.tradedPicks
+      ? `every traded pick names the franchise that owns it now (${traded.length})`
+      : "no cell claims a traded owner — this league does not trade picks",
+    FEATURES.tradedPicks
+      ? traded.length > 0 && wrongOwner.length === 0
+      : traded.length === 0,
+    FEATURES.tradedPicks
+      ? wrongOwner.slice(0, 2).map((c) => `strip "${c.strip}"`).join(" | ")
+      : traded.length
+        ? `${traded.length} cell(s) print a traded owner`
+        : "",
   );
   const untradedWithStrip = g.cells.filter((c) => !/'s pick, now/.test(c.title) && c.strip);
   check(
@@ -892,9 +934,19 @@ function checkEveryFactIsOnScreen(g) {
   const keepers = g.cells.filter((c) => /, keeper\)/.test(c.title));
   const unmarked = keepers.filter((c) => !c.keeperMark);
   check(
-    `every keeper carries its padlock (${keepers.length})`,
-    keepers.length > 0 && unmarked.length === 0,
-    unmarked.length ? `${unmarked.length} unmarked` : "",
+    FEATURES.keepers
+      ? `every keeper carries its padlock (${keepers.length})`
+      : "no cell is marked a keeper — 2026 is a pure redraft",
+    FEATURES.keepers
+      ? keepers.length > 0 && unmarked.length === 0
+      : keepers.length === 0,
+    FEATURES.keepers
+      ? unmarked.length
+        ? `${unmarked.length} unmarked`
+        : ""
+      : keepers.length
+        ? `${keepers.length} cell(s) claim to be keepers`
+        : "",
   );
   const falseMark = g.cells.filter((c) => !/, keeper\)/.test(c.title) && c.keeperMark);
   check(
@@ -911,11 +963,31 @@ function checkEveryFactIsOnScreen(g) {
  * it, as the same color as the position tag… they need to be kinda evident."
  * Each of those three is a measurement here, and so is the thing that put the
  * lock on the other side of the row in the first place: the position letters
- * must still start at the same pixel in all 160 cells.
+ * must still start at the same pixel in every cell on the board.
  */
 function checkTheKeeperPadlock(g) {
   const keepers = g.cells.filter((c) => /, keeper\)/.test(c.title));
   if (keepers.length === 0) {
+    /*
+     * A redraft has no kept cell, so there is no padlock to measure the gap,
+     * size or stroke of. It does NOT follow that there is nothing to check: the
+     * padlock's BOX is reserved in every cell whether or not a lock is drawn in
+     * it, and that reservation is the horizontal half of the uniformity claim —
+     * it is what keeps a row aligned. So the box is still asserted, over all
+     * cells, and only the lock's own appearance is announced as skipped.
+     */
+    if (!FEATURES.keepers) {
+      const unboxedInRedraft = g.cells.filter((c) => !c.padlock.exists || !c.padlock.boxed);
+      check(
+        `every one of the ${g.cells.length} cells still reserves the padlock's box, so the rows line up without one`,
+        unboxedInRedraft.length === 0,
+        unboxedInRedraft.length ? `${unboxedInRedraft.length} cells without one` : "",
+      );
+      console.log(
+        "    (no keeper cells, so the padlock's own gap, size and stroke are not measurable — pure redraft)",
+      );
+      return;
+    }
     check("there are keeper cells to measure", false);
     return;
   }
@@ -981,7 +1053,7 @@ function checkTheKeeperPadlock(g) {
    * ones, because the keepers a season happens to produce do not cover the
    * palette — this league's nineteen are QB, RB, WR and TE, and a DST keeper
    * has never existed. The lock's box is reserved and colour-resolved in all
-   * 160 cells even where it is hidden, so the DST cells answer for DST.
+   * every cell even where it is hidden, so the DST cells answer for DST.
    *
    * There is nothing to keep in step here by construction: the lock is a child
    * of the tag's own span and takes `currentColor`, and `positionText` in
@@ -1069,16 +1141,17 @@ function checkTheKeeperPadlock(g) {
 }
 
 /**
- * CAN ROUND 16 BE LIFTED OFF THE FLOOR.
+ * CAN THE LAST ROUND BE LIFTED OFF THE FLOOR.
  *
  * The projector's bottom edge is at floor level and below every sightline in the
  * room, so a round parked there is unreadable however long you look at it. The
- * defect this measures was not that round 16 was hard to reach — it was that
- * reaching it did not help: at maximum scroll the last round's bottom sat at
- * 99.7% of the screen height, because the scroll range ended exactly where the
- * content did.
+ * defect this measures was not that the last round was hard to reach — it was
+ * that reaching it did not help: at maximum scroll the last round's bottom sat
+ * at 99.7% of the screen height, because the scroll range ended exactly where
+ * the content did.
  *
- * So this scrolls the board as far as it will go and asks where round 16 lands.
+ * So this scrolls the board as far as it will go and asks where the last round
+ * lands.
  * The bar is `SAFE_AREA_BOTTOM` — asserted against the constant rather than
  * against a number typed in here, so when the safe-area control moves it this
  * moves with it.
@@ -1112,19 +1185,25 @@ async function checkRoundSixteenClearsTheFloor(page, { expectTrailingSpace }) {
     };
   });
 
+  /*
+   * The label reads from the CONFIG, not from `m.rounds`. It used to interpolate
+   * the measured count into its own label while comparing against a pinned 16,
+   * so a stale failure printed "all 14 rounds to scroll through — 14 rounds" and
+   * looked like the board disagreeing with itself.
+   */
   check(
-    `the board still has all ${m.rounds} rounds to scroll through`,
-    m.rounds === 16,
+    `the board still has all ${DRAFT.rounds} rounds to scroll through`,
+    m.rounds === DRAFT.rounds,
     `${m.rounds} rounds, ${m.maxScroll}px of scroll`,
   );
   if (expectTrailingSpace) {
     check(
-      `TV mode carries trailing space below round 16 (${m.pad}px, from a ${SAFE_AREA_BOTTOM} safe area)`,
+      `TV mode carries trailing space below round ${DRAFT.rounds} (${m.pad}px, from a ${SAFE_AREA_BOTTOM} safe area)`,
       m.pad > 0,
       `padding-bottom ${m.pad}px`,
     );
     check(
-      `and maximum scroll lifts round 16's bottom to ${SAFE_AREA_BOTTOM * 100}% of the screen or above`,
+      `and maximum scroll lifts round ${DRAFT.rounds}'s bottom to ${SAFE_AREA_BOTTOM * 100}% of the screen or above`,
       m.lastBottomY <= SAFE_AREA_BOTTOM * m.viewportH + 1 && m.lastVisible,
       `bottom lands at ${m.lastBottomY}px of ${m.viewportH} — ${m.lastBottomPct}%, ` +
         `leaving ${round1(100 - m.lastBottomPct)}% of the screen clear of the floor`,
@@ -1133,7 +1212,7 @@ async function checkRoundSixteenClearsTheFloor(page, { expectTrailingSpace }) {
     check(
       "outside TV mode the board carries no trailing space",
       m.pad < 8,
-      `padding-bottom ${m.pad}px, round 16 lands at ${m.lastBottomPct}%`,
+      `padding-bottom ${m.pad}px, round ${DRAFT.rounds} lands at ${m.lastBottomPct}%`,
     );
   }
   check(
@@ -1177,14 +1256,18 @@ try {
   await page.goto(`${BASE}/draft`, { waitUntil: "networkidle" });
   await page.waitForTimeout(700);
   let g = await cells(page);
-  check(`the grid drew its cells (${g.count})`, g.count === 160, `${g.count}`);
+  check(
+    `the grid drew all ${TOTAL_PICKS} cells (${g.count})`,
+    g.count === TOTAL_PICKS,
+    `${g.count}, expected ${LEAGUE.teams} teams x ${DRAFT.rounds} rounds`,
+  );
   check("the board hydrated, so TV mode is answerable at all", g.hydrated, `BASE=${BASE}`);
   checkNothingIsCut(g);
   checkEveryCellIsTheSameShape(g);
   checkTheKeeperPadlock(g);
   /*
    * The board is allowed to run off the bottom of a browser window, and on a
-   * laptop it has to: sixteen rounds of legible cells do not fit 780px and the
+   * laptop it has to: a full board of legible cells does not fit 780px and the
    * ruling is that legibility wins. Asserted rather than reported because the
    * bug was a board that fitted by squeezing.
    */
@@ -1199,7 +1282,11 @@ try {
   section("A full board — traded, kept and ordinary picks side by side");
   await populateMock(page);
   g = await cells(page);
-  check(`the mock drew all 160 cells (${g.count})`, g.count === 160);
+  check(
+    `the mock drew all ${TOTAL_PICKS} cells (${g.count})`,
+    g.count === TOTAL_PICKS,
+    `${g.count}, expected ${LEAGUE.teams} teams x ${DRAFT.rounds} rounds`,
+  );
   checkNothingIsCut(g);
   checkEveryCellIsTheSameShape(g);
   checkEveryFactIsOnScreen(g);
@@ -1231,14 +1318,14 @@ try {
   const legibility = await checkTheRoomCanReadIt(page, g);
   const rounds = roundsVisible(g);
   console.log(
-    `    ROUNDS VISIBLE AT 1080p: ${rounds} of 16 — ${g.roundRoom}px of room for rounds ` +
+    `    ROUNDS VISIBLE AT 1080p: ${rounds} of ${DRAFT.rounds} — ${g.roundRoom}px of room for rounds ` +
       `under a ${g.headerHeight}px sticky header, at ${g.rowHeight}px + ${g.rowGap}px a round. ` +
       `Name ${g.cells[0].fonts.name}px at ${legibility.arcmin}′, ` +
       `${g.nameLines} name line(s), density ${g.density}.`,
   );
   const real = await roundsOnTheRealBoard(browser);
   console.log(
-    `    …and ${real.rounds} of 16 on the real board, which has ${real.roundRoom}px to the ` +
+    `    …and ${real.rounds} of ${DRAFT.rounds} on the real board, which has ${real.roundRoom}px to the ` +
       `mock's ${g.roundRoom}px — the mock's banner is worth a round, so this is the number the room sees.`,
   );
   /*
@@ -1248,10 +1335,15 @@ try {
    * round is 11.4, so about a third of a round of slack. Growing the ownership
    * strip's type spent 0.03px of it, which is the whole reason that change was
    * allowed to be made in the box the strip already had.
+   *
+   * ELEVEN IS A DENSITY FLOOR, NOT A BOARD SHAPE, so it survives the move to a
+   * shorter board — but it cannot exceed the board. On this league's 14 rounds
+   * the whole board clears the fold, and the floor is what it always was.
    */
+  const DENSITY_FLOOR = Math.min(11, DRAFT.rounds);
   check(
-    "the room still sees 11 of the 16 rounds at 1080p",
-    real.rounds >= 11,
+    `the room still sees ${DENSITY_FLOOR} of the ${DRAFT.rounds} rounds at 1080p`,
+    real.rounds >= DENSITY_FLOOR,
     `${real.rounds} rounds at ${real.rowHeight}px a round, ${real.roundRoom}px of room ` +
       `— ${Math.round((real.roundRoom / (real.rowHeight + g.rowGap)) * 100) / 100} rounds' worth`,
   );
