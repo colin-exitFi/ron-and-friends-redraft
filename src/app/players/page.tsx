@@ -143,31 +143,47 @@ export default async function PlayersPage() {
 
   return (
     <>
+      {/*
+        THE SCORING IS NAMED ONCE ON THIS PAGE, AND NOT HERE.
+
+        This description used to spell out the format and the six-point passing
+        touchdown, one line above a provenance line that says the same thing and
+        four above a legend that says it again per column. Three tellings of one
+        fact, and this was the copy of it that pushed everything else down a
+        phone. What is left is what only a header can say: what the page is, and
+        the two things about the pool that surprise people — rows leave as picks
+        happen, and there are no kickers to look for.
+      */}
       <PageHeader
         eyebrow="Player pool"
         title="Cheat Sheet"
-        description={`Every draftable player, scored in this league's own rules — ${SCORING_FORMAT}, ${meta.passTd}-point passing touchdowns — next to the market's ADP. Drafted players drop out as the picks happen. No kickers: the position is not used in this league.`}
+        description="Every draftable player, priced in this league's own scoring, next to the market's ADP. Rows drop off as they are picked. No kickers."
       />
       <PageBody>
         {/*
-          WHERE EACH COLUMN CAME FROM, SAID SEPARATELY FOR EACH COLUMN.
-          These two numbers have completely different pedigrees and only one of
-          them is right for this league, so a single paragraph covering both is
-          the one thing this block must not be. The ADP is somebody else's
-          consensus at somebody else's scoring and it is a week old; the Proj is
-          computed here, today, from this league's own rules. A manager who
-          takes the wrong one on trust is exactly the person this page was
-          built to reassure.
-        */}
-        {/*
           WHERE EACH COLUMN CAME FROM — ONE LINE, THEN A DISCLOSURE.
-          The full provenance runs to three paragraphs and it all matters, but
+          The full provenance runs to four paragraphs and it all matters, but
           on a 390px screen it pushed the first player below the fold. The two
           managers this page was built for open it to look at players; a wall of
           caveats before the first name is how a research tool loses to a sheet
           of paper. So the headline is one scannable line and the detail is one
           tap away — collapsed, not deleted, because none of it is optional
           once somebody wants to know why the numbers disagree.
+
+          THREE FACTS, IN THAT ORDER, AND NOTHING ELSE: whose ranking this is,
+          when it was pulled, and what the points are scored in. That is the
+          commissioner's own list, given on a phone while the page was open in
+          front of him — "fantasy pros, ECR rankings, whatever time it was, and
+          then just real short half PPR, tight end premium. That's all."
+
+          It used to be said TWICE. This line carried a sentence about the ADP's
+          scope as well, and `CheatSheet` then printed a second, longer notice
+          between the sort controls and the first player saying the same three
+          things at paragraph length. Two statements of one fact do not read as
+          thorough, they read as clutter, and the one below the controls was the
+          one standing between a manager and the players he came to look at. So
+          there is one, it is here, and the ADP's scoping — which is a caveat
+          rather than a headline — is in the disclosure with the rest.
         */}
         {/*
           NO "REFRESH FROM FANTASYPROS" BUTTON, AND NOTHING RED.
@@ -178,7 +194,8 @@ export default async function PlayersPage() {
           correct into one that looks broken. Ten managers are about to read this
           on their phones during a live draft, and red text beside a column of
           figures is an invitation to distrust the figures. The provenance is
-          stated plainly instead, below and in the disclosure inside this block.
+          stated plainly instead, on the line below and in the disclosure it
+          opens.
 
           `FantasyProsRefresh` and `/api/fantasypros/refresh` are left in the
           repo. The commissioner still refreshes from the command line, and
@@ -194,23 +211,42 @@ export default async function PlayersPage() {
               )}
               <span className="min-w-0 flex-1">
                 {meta.board?.scopedToLeague ? (
-                  <>
-                    Ordered by FantasyPros&apos; consensus{" "}
+                  /*
+                    Wrapping happens AT THE SEPARATORS, not inside a fact. Three
+                    short phrases on one line is only an improvement while "Sep
+                    5, 4:32 PM Central" stays in one piece; broken across a line
+                    at 390px it is harder to read than the paragraph it replaced.
+                  */
+                  <span className="flex flex-wrap items-center gap-x-1.5">
                     <span className="text-foreground font-medium">
-                      exported for this league&apos;s scoring
+                      FantasyPros ECR
                     </span>
-                    , {when(meta.board.exportedAt)}. Points computed in{" "}
-                    {SCORING_FORMAT}. ADP is the market&apos;s, at{" "}
-                    {adpScope ?? "unknown"} scope.
-                  </>
+                    <span className="text-muted-foreground/40" aria-hidden>
+                      ·
+                    </span>
+                    {/*
+                      The raw instant rides along on the element so
+                      `verify:cheat-sheet:browser` can check the rendered text
+                      against it. Without it the harness can only assert that
+                      SOME time is printed, which is exactly what passed while
+                      the page was five hours out.
+                    */}
+                    <span
+                      className="whitespace-nowrap"
+                      data-rankings-updated={meta.board.exportedAt ?? ""}
+                    >
+                      {when(meta.board.exportedAt)}
+                    </span>
+                    <span className="text-muted-foreground/40" aria-hidden>
+                      ·
+                    </span>
+                    <span className="whitespace-nowrap">{SCORING_FORMAT}</span>
+                  </span>
                 ) : (
                   <span className="text-warning">
                     {meta.boardProblem ?? "No league-scoped board — ordering by ADP."}
                   </span>
                 )}
-                <span className="text-muted-foreground/60 ml-1 underline underline-offset-2 group-open:hidden">
-                  Where these numbers come from
-                </span>
               </span>
               <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 transition-transform group-open:rotate-180" />
             </summary>
@@ -348,23 +384,6 @@ export default async function PlayersPage() {
           initialDrafted={drafted}
           liveEnabled={savesAreShared()}
           meta={meta}
-          /*
-           * FORMATTED HERE, ON THE SERVER, rather than from the ISO string in
-           * `meta` inside the client component. `toLocaleString` in a client
-           * render resolves in the viewer's timezone and this deployment's
-           * server runs in UTC, so the two would disagree by five hours and
-           * React would replace the text after hydration — a provenance line
-           * that changes its own timestamp in front of somebody is worse than
-           * no provenance line.
-           */
-          rankingsUpdated={meta.board ? when(meta.board.exportedAt) : null}
-          /*
-           * The same instant, unformatted, for `verify:cheat-sheet:browser` to
-           * check the rendered text against. Without it the harness can only
-           * assert that SOME time is printed, which is exactly what passed while
-           * the page was five hours out.
-           */
-          rankingsUpdatedIso={meta.board?.exportedAt ?? null}
         />
       </PageBody>
     </>

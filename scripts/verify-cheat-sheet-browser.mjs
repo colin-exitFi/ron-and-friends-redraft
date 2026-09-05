@@ -519,24 +519,52 @@ const run = async () => {
         `${alarming} red text node(s) above the sheet`,
       );
 
-      // The disclosure he liked, now carrying where the rankings came from as
-      // well as how the points are scored — one statement rather than two.
-      const disclosure = await page
-        .locator("text=/is scored to Ron and Friends/")
-        .first()
-        .innerText();
+      /*
+       * THE PROVENANCE LINE, AND THE FACT THAT IT IS STILL A LINE.
+       *
+       * Three facts, in the commissioner's own order — whose ranking, when it
+       * was pulled, what the points are scored in — as ONE row above the sort
+       * controls. It reached him as two statements instead: this summary, plus a
+       * six-line paragraph between the controls and the first player repeating
+       * all three at length. "All the sorting capabilities are basically above
+       * this massive block of text."
+       *
+       * So the length is asserted, not just the content. Every fact below is
+       * worth stating and each one is an invitation to add the sentence that
+       * explains it, which is precisely how the paragraph grew the first time.
+       * The budget is what the three facts cost plus room for a longer date —
+       * comfortably under the four lines this wrapped to on a 390px screen.
+       */
+      // Scoped by the timestamp it carries rather than by being the first
+      // `<summary>`, so it keeps pointing at the provenance if the page ever
+      // grows a second disclosure.
+      const summary = page.locator("summary:has([data-rankings-updated])").first();
+      const provenance = (await summary.innerText()).replace(/\s+/g, " ").trim();
+      console.log(`  · “${provenance}” (${provenance.length} chars)`);
       check(
-        "the line saying the points are this league's is still there",
-        /TE premium|tight end catches/.test(disclosure),
-        disclosure.slice(0, 90),
+        "the provenance names FantasyPros' consensus ranking",
+        /FantasyPros ECR/.test(provenance),
+        provenance,
       );
       check(
-        "…and it now says the rankings are FantasyPros' consensus, and when",
-        /FantasyPros.{0,30}consensus/s.test(disclosure) &&
-          /updated \w+ \d+, \d+:\d\d/.test(disclosure),
-        disclosure.replace(/\s+/g, " ").slice(0, 150),
+        "…and when it was pulled",
+        /\w+ \d+, \d+:\d\d/.test(provenance),
+        provenance,
       );
-      console.log(`  · “${disclosure.replace(/\s+/g, " ").slice(0, 120)}…”`);
+      check(
+        "…and that the points are this league's, tight end premium included",
+        /TE premium|tight end/i.test(provenance),
+        provenance,
+      );
+      check(
+        "…in one line and not a paragraph",
+        provenance.length <= 80,
+        `${provenance.length} chars: “${provenance}”`,
+      );
+      check(
+        "the second, longer copy of it above the first player is gone",
+        (await page.locator("text=/is scored to Ron and Friends/").count()) === 0,
+      );
       /*
        * THE SCROLL CUE IS A FADE, NOT A SENTENCE, and that is deliberate. There
        * was instructional copy across the top of the table telling people to
