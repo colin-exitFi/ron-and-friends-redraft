@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
+import { ArrowDown, RotateCw, Search, WifiOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDraftLiveSync } from "@/components/use-draft-live-sync";
@@ -109,8 +109,6 @@ export function CheatSheet({
   initialDrafted,
   liveEnabled,
   meta,
-  rankingsUpdated,
-  rankingsUpdatedIso,
 }: {
   rows: CheatSheetRow[];
   initialDrafted: DraftedBy;
@@ -123,18 +121,6 @@ export function CheatSheet({
    */
   liveEnabled: boolean;
   meta: CheatSheetMeta;
-  /**
-   * When the FantasyPros consensus this sheet is ordered by was exported,
-   * already formatted for display. Null when there is no league-scoped export.
-   *
-   * FROM THE EXPORT'S OWN PROVENANCE, not a date typed into the source. A
-   * hardcoded "2:00 PM" is right for one afternoon and quietly wrong every day
-   * after it, and a stale timestamp on a provenance line is worse than none —
-   * it is the page telling a confident lie about its own freshness.
-   */
-  rankingsUpdated: string | null;
-  /** The same instant as an ISO string, for the harness to check against. */
-  rankingsUpdatedIso: string | null;
 }) {
   const [drafted, setDrafted] = useState<DraftedBy>(initialDrafted);
   const [q, setQ] = useState("");
@@ -396,72 +382,26 @@ export function CheatSheet({
       </div>
 
       {/*
-        WHY THE PROJECTED POINTS DISAGREE WITH EVERY BOARD THEY HAVE SEEN.
+        NO PROVENANCE NOTICE HERE. There was a paragraph in this slot naming
+        FantasyPros, the export time, the scoring format, the tight end premium,
+        the six-point passing touchdown and the projection season — and the page
+        header's disclosure line, immediately above the controls, already named
+        the first three. The commissioner read the result on a phone: "all the
+        sorting capabilities are basically above this massive block of text".
 
-        Placed immediately above the table rather than in the footnotes, because
-        it is not a credit line — it is the explanation for a discrepancy that
-        otherwise reads as a defect. A manager who sees Brock Bowers priced
-        above where every public site has him concludes the app is broken; one
-        sentence turns that into "the tight end premium". Without it the best
-        feature on the page looks like a bug.
+        This slot is the worst place on the page to spend six lines. It sits
+        between the sort controls and the first player, so every word of it is
+        paid for by a manager who came to look at players — and it was the
+        SECOND telling.
 
-        THE CLAIM IS DELIBERATELY NARROW AND CHECKABLE. It says this is scored
-        to THIS LEAGUE'S settings and names the two rules that differ — the
-        tight end premium and the six-point passing touchdown — so a sceptical
-        manager can test it in ten seconds. It does NOT say no other site can do
-        this: Sleeper very likely applies league scoring to its own
-        projections, and one overreaching sentence would discredit the rest.
-
-        IT ALSO DOES NOT CLAIM THE YARDAGE BONUSES. Those are per-game events
-        and `pointsFromStats` cannot recover them from a season projection, so
-        naming them here — tempting, since they are a genuine difference — would
-        be a false claim about this column specifically. They ARE applied to the
-        2025 actuals, and that column's copy says so.
+        The facts are not gone. The one-line version is in `players/page.tsx`,
+        above the controls and attached to the disclosure that expands to the
+        full pedigree of every column; the per-column detail is in the legend
+        below the table, where it costs nobody a scroll to reach the pool. If a
+        one-sentence explanation of a discrepancy ever needs to be adjacent to
+        the numbers again, it belongs in a cell or a column header, not in a
+        band across the page.
       */}
-      {meta.projectedCount > 0 && (
-        <p className="text-muted-foreground border-border/60 bg-card/30 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs">
-          <Sigma className="text-primary mt-px h-3.5 w-3.5 shrink-0" />
-          {/*
-            ONE PROVENANCE STATEMENT, NOT TWO NOTICES. Where the order came from
-            and how the points are scored are different facts, and a manager
-            reads them as one thought — "these are FantasyPros' rankings, priced
-            in our rules". Split across two blocks they compete for the same
-            glance and the second one gets skipped.
-          */}
-          <span>
-            These are{" "}
-            <span className="text-foreground font-medium">
-              FantasyPros&apos; expert consensus
-            </span>{" "}
-            rankings
-            {rankingsUpdated ? (
-              <>
-                , updated{" "}
-                <span data-rankings-updated={rankingsUpdatedIso ?? ""}>
-                  {rankingsUpdated}
-                </span>
-              </>
-            ) : null}
-            .{" "}
-            {/*
-              The explicit `{" "}` is not decoration. JSX drops whitespace that
-              contains a newline, so a space sitting between `</span>` and a line
-              break disappears — which is why this paragraph read "Projis scored"
-              on the deployed page. Prettier will re-wrap this line at any time,
-              so the space has to be a real expression rather than a character
-              that happens to be on the right side of a wrap.
-            */}
-            <span className="text-foreground font-medium">Proj</span>{" "}
-            is scored to Ron
-            and Friends&apos; own settings — {meta.scoringFormat}, where a tight end
-            catches at {meta.tePremiumReception} and a passing touchdown is worth{" "}
-            {meta.passTd} — so it will disagree with generic cheat sheets and standard
-            half-PPR boards; every column is his projected{" "}
-            {meta.projectionSeason ?? ""} stat line.
-          </span>
-        </p>
-      )}
-
 
       {/*
         THE SPREADSHEET.
