@@ -8,12 +8,15 @@
  * ============================================================================
  * The app's FantasyPros OAuth grant is not connected, so the live ranking feed
  * is a week old and scoped to full PPR. The commissioner worked around it by
- * exporting from FantasyPros by hand, and he exported twice:
+ * exporting from FantasyPros by hand. Three of those exports are kept:
  *
- *   `league-cheatsheet-2026.csv` — a grid export headed "Ron and Friends #2".
- *      Exported against HIS league's own FantasyPros configuration, so the
- *      ORDER RESPECTS THIS LEAGUE'S SCORING: half PPR, tight end premium, six
- *      points a passing touchdown.
+ *   `league-cheatsheet-2026-postresync-10team.csv` — a grid export taken
+ *      against HIS league's own FantasyPros configuration, so the ORDER
+ *      RESPECTS THIS LEAGUE'S SCORING: half PPR, tight end premium, six points
+ *      a passing touchdown. This is the file the ingest reads.
+ *
+ *   `league-cheatsheet-2026.csv` — the same board, exported earlier. Kept only
+ *      as the evidence described under TEAM COUNT below. Not read.
  *
  *   `all-rankings-2026.csv` — the flat public board. Generic scoring.
  *
@@ -40,6 +43,28 @@
  * would be the dishonest option.
  *
  * ============================================================================
+ * TEAM COUNT DOES NOT FEED THIS ORDERING. MEASURED, NOT ASSUMED.
+ * ============================================================================
+ * FantasyPros' record of the league was stale at twelve teams while the league
+ * had shrunk to ten, and the worry was that a board computed for twelve was
+ * quietly mispricing every position — fewer teams means fewer players drafted,
+ * which moves replacement level, which should reorder a value-over-replacement
+ * board.
+ *
+ * It did not. The commissioner deleted the Sleeper connection and re-synced,
+ * FantasyPros picked up ten teams, and the export taken afterwards is
+ * BYTE-IDENTICAL to the one taken before it apart from its title line — every
+ * row of Overall, QB, RB, WR, TE and DST unchanged. Both files are kept side by
+ * side so that claim can be re-checked with `diff` rather than believed.
+ *
+ * The reason is that this is not a value-over-replacement board. It is expert
+ * consensus re-scored under the league's SCORING settings, and roster count
+ * never enters it. So Brock Bowers at 13 against 18 generic, and Josh Allen at
+ * 39 against 26, are the tight end premium and the six-point passing touchdown
+ * — not scarcity. **Do not re-derive the ordering from team count, and do not
+ * treat a stale `teamCount` on FantasyPros as a ranking defect.**
+ *
+ * ============================================================================
  * JOINING, AND WHY THE UNMATCHED ARE PRINTED
  * ============================================================================
  * Both files are joined to the Smart Draft pool on `joinKey(name)` plus team —
@@ -60,9 +85,11 @@ import path from "node:path";
 
 import { getPlayerPool } from "@/lib/smartdraft";
 import { joinKey } from "@/lib/fantasypros/players";
-import { CURRENT_SEASON } from "@/lib/league-config";
+import { CURRENT_SEASON, LEAGUE } from "@/lib/league-config";
 
-const GRID = process.env.CHEATSHEET_GRID ?? "data/fantasypros-exports/league-cheatsheet-2026.csv";
+const GRID =
+  process.env.CHEATSHEET_GRID ??
+  "data/fantasypros-exports/league-cheatsheet-2026-postresync-10team.csv";
 const FLAT = process.env.CHEATSHEET_FLAT ?? "data/fantasypros-exports/all-rankings-2026.csv";
 const OUT = `data/fantasypros-cheatsheet-${CURRENT_SEASON}.json`;
 
@@ -182,7 +209,31 @@ function resolve(name, team, position, source, rank = null) {
 // --- 1. The league-scoped grid: the ordering ---------------------------------
 
 const gridRows = parseCsv(readFileSync(path.join(process.cwd(), GRID), "utf8"));
-const leagueLabel = clean(gridRows[0]?.[0]);
+
+/**
+ * The grid's first line is whatever the commissioner last named the cheatsheet
+ * in FantasyPros' UI. IT IS NOT A LEAGUE IDENTIFIER, and treating it as one is
+ * a trap this file fell into once already.
+ *
+ * The export taken before he re-synced the league is headed `Ron and Friends
+ * #2`. The one taken after is headed `Updated 10 Team`. They are the same
+ * board — every row of all six columns is byte-identical, which is how we know
+ * the team count never fed this ordering — but only the first reads as a
+ * league.
+ *
+ * That matters because the label is not decoration. `cheat-sheet.tsx` and the
+ * players page both render it as the EVIDENCE for the claim that this ordering
+ * is scoped to this league: "exported against this league's own settings
+ * (…)". Filling that in with `Updated 10 Team` invites a manager to doubt a
+ * board that is in fact correct, which is the expensive failure — he goes back
+ * to the generic ranking he can name. So a title that does not name the league
+ * is recorded and then set aside.
+ */
+const exportTitle = clean(gridRows[0]?.[0]);
+const leagueLabel = exportTitle.toLowerCase().includes(LEAGUE.name.toLowerCase())
+  ? exportTitle
+  : LEAGUE.name;
+
 const gridHeader = gridRows[1] ?? [];
 /** Column index of each block's name column. */
 const blocks = [];
@@ -342,6 +393,7 @@ const snapshot = {
   provenance: {
     source: "FantasyPros manual export by the commissioner",
     leagueLabel,
+    exportTitle,
     /**
      * The claim this whole file rests on. The grid was exported against the
      * commissioner's own FantasyPros league configuration, so its ORDER already
@@ -378,7 +430,7 @@ const byes = list.filter((p) => p.bye != null).length;
 const ecr = list.filter((p) => p.ecrVsAdp != null && p.ecrVsAdp !== 0).length;
 
 console.log(`\nFantasyPros cheat sheet → ${OUT}`);
-console.log(`  league export: ${leagueLabel}`);
+console.log(`  league export: ${leagueLabel}  (grid titled "${exportTitle}")`);
 console.log(`  ${list.length} players joined to the pool`);
 console.log(`    ${ranked} with a league overall rank`);
 console.log(`    ${tiered} with a tier (generic board)`);

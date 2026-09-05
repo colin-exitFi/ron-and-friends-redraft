@@ -70,6 +70,13 @@ export type CheatSheetExport = {
   provenance: {
     source: string;
     leagueLabel: string;
+    /**
+     * The grid's raw first line, which is whatever the cheatsheet was last
+     * named in FantasyPros' UI. Kept because it is the only record of which
+     * export a file came from, and deliberately NOT what the room is shown —
+     * see `leagueLabel` and `scripts/fantasypros-cheatsheet.mjs`.
+     */
+    exportTitle: string;
     rankingScopedToLeague: boolean;
     rankingScopeNote: string;
     tierScope: string;

@@ -1,17 +1,18 @@
 {
   "provenance": {
     "source": "FantasyPros manual export by the commissioner",
-    "leagueLabel": "Ron and Friends #2",
+    "leagueLabel": "Ron and Friends",
+    "exportTitle": "Updated 10 Team",
     "rankingScopedToLeague": true,
-    "rankingScopeNote": "Ordering is FantasyPros expert consensus exported against this league's own configuration (Ron and Friends #2) — half PPR with a tight end premium and six-point passing touchdowns. It is not the generic public board.",
+    "rankingScopeNote": "Ordering is FantasyPros expert consensus exported against this league's own configuration (Ron and Friends) — half PPR with a tight end premium and six-point passing touchdowns. It is not the generic public board.",
     "tierScope": "generic",
     "tierScopeNote": "Tiers, ECR-vs-ADP and the star ratings come from FantasyPros' GENERIC board and are drawn against generic scoring, so tier boundaries will not line up exactly with the league-scoped order above.",
-    "exportedAt": "2026-09-05T19:00:50.809Z",
+    "exportedAt": "2026-09-05T19:20:02.173Z",
     "season": 2026,
     "files": {
       "grid": {
-        "path": "data/fantasypros-exports/league-cheatsheet-2026.csv",
-        "sha256": "231bdb0bcb2d"
+        "path": "data/fantasypros-exports/league-cheatsheet-2026-postresync-10team.csv",
+        "sha256": "860963aaf0f4"
       },
       "flat": {
         "path": "data/fantasypros-exports/all-rankings-2026.csv",
