@@ -69,6 +69,10 @@ import {
   META_FLOOR_ARCMIN,
   NAME_FLOOR_ARCMIN,
   PX_PER_INCH,
+  RESOLVABLE_ARCMIN,
+  SAFE_AREA_STEP,
+  SAFE_BOTTOM_DEFAULT,
+  SAFE_TOP_DEFAULT,
 } from "../src/lib/board-legibility.ts";
 /*
  * THE BOARD'S SHAPE, READ RATHER THAN PINNED.
@@ -105,9 +109,24 @@ const LARGE = { width: 2560, height: 1440 };
 
 const SAFE_KEY = "ukl.tv-safe-area.v1";
 const FIT_KEY = "ukl.board.fit.v1";
-/** Matches `SAFE_AREA_STEP` and the defaults in `board-legibility.ts`. */
-const STEP = 2;
-const DEFAULT_SAFE = { top: 0, bottom: 72 };
+/*
+ * THE SAFE AREA, READ RATHER THAN PINNED — for the same reason the board's
+ * shape now is. `bottom` was 72 here and 72 in `board-legibility.ts`, and the
+ * day the display stopped being a floor-to-ceiling projector and became a
+ * 65-inch television at eye level, the product's default moved to 94 and this
+ * copy of it did not. Every safe-area assertion below then failed against a
+ * band the board no longer starts in.
+ */
+const STEP = SAFE_AREA_STEP;
+const DEFAULT_SAFE = { top: SAFE_TOP_DEFAULT, bottom: SAFE_BOTTOM_DEFAULT };
+/**
+ * A band tight enough that 1080p still has something to scroll — which the
+ * television's default deliberately does not. 72% is not an arbitrary tight
+ * number: it is the floor-to-ceiling projector's former default, a display
+ * this board still supports, so the scrolling behaviours are exercised in the
+ * setup that actually has them rather than in a contrived one.
+ */
+const SCROLLING_SAFE = { top: 0, bottom: 72 };
 /** Matches `FLASH_MS` in `draft-surface.tsx`. */
 const FLASH_MS = 3400;
 
@@ -371,6 +390,25 @@ function roundsInBand(g) {
 }
 
 /**
+ * IS THE WHOLE DRAFT ON THE SCREEN, INSIDE THE READABLE BAND, RIGHT NOW.
+ *
+ * The commissioner's requirement for the television is "see the whole board the
+ * entire time", and once the safe area's default moved from 72% to 94% that
+ * became the ordinary case at 1080p rather than something only a wide screen
+ * managed. Several checks below were written when it was impossible and read a
+ * board with nothing left to scroll as a board that had broken.
+ *
+ * Drawn as a predicate rather than repeated inline because six of them need it
+ * and "0px of scroll" means two opposite things depending on this answer: a
+ * board that fits, or a board that has lost its last five rounds.
+ */
+function everyRoundIsInTheBand(g) {
+  return (
+    g.rounds === DRAFT.rounds && g.lastRow != null && g.lastRow.bottom <= g.bandBottom + 1
+  );
+}
+
+/**
  * The claims that hold in BOTH modes: nothing cut, every cell the same.
  *
  * The labels below count in `TOTAL_PICKS` rather than in `m.count`. That is
@@ -541,10 +579,7 @@ async function checkEachViewport(browser) {
      * stronger than the assertion it replaces, not weaker — "0px of scroll" on
      * its own would also describe a board that had lost its last five rounds.
      */
-    const wholeBoardInBand =
-      g.rounds === DRAFT.rounds &&
-      g.lastRow != null &&
-      g.lastRow.bottom <= g.bandBottom + 1;
+    const wholeBoardInBand = everyRoundIsInTheBand(g);
     check(
       `${name}: TV mode reserves the floor, and nothing is stranded below the fold`,
       g.padBottom > 0 && (g.maxScroll > 0 || wholeBoardInBand),
@@ -669,7 +704,22 @@ async function checkEachViewport(browser) {
 
 async function checkSuspendAndResume(browser) {
   section("A manual scroll suspends following, and it comes back on its own");
-  const { context, page } = await tvPage(browser, PROJECTOR);
+  /*
+   * DRIVEN AT THE PROJECTOR'S BAND, NOT THE TELEVISION'S, AND ON PURPOSE.
+   *
+   * Everything in this section is about what happens when somebody scrolls a
+   * board by hand — and at the television default there is nothing to scroll,
+   * because all fifteen rounds are inside the band. Run here, the first check
+   * read "the wheel actually moved the board — 0 → 0" and the rest followed it
+   * down, reporting the commissioner's own requirement as eight failures.
+   *
+   * Dropping the section would have been the wrong repair: suspend-and-resume
+   * is still live code on a laptop, on a tightened band, and on the projector
+   * this board has not stopped supporting. So it is exercised at a band where
+   * the board genuinely overflows — 72%, which is exactly the projector's
+   * former default — and `SCROLLING_SAFE` says which and why.
+   */
+  const { context, page } = await tvPage(browser, PROJECTOR, SCROLLING_SAFE);
 
   /*
    * Deep enough that the board has scrolled to get there, but never past the
@@ -904,9 +954,22 @@ async function checkFitMode(browser) {
     );
     checkTheCellsSurvive(m, name);
     check(
-      `${name}: Fit is denser than Scroll rather than the same board`,
-      m.fonts.name < scroll.fonts.name,
-      `name ${scroll.fonts.name}px in Scroll, ${m.fonts.name}px in Fit`,
+      /*
+       * FIT IS NEVER LARGER THAN SCROLL — which is a weaker sentence than
+       * "denser" and the true one. Fit's `min()` carries Scroll's own `rem`
+       * term as one of its arguments, so the two CONVERGE once the band is
+       * wide enough to hold the whole draft at full size: at 1440p and above,
+       * with the safe area at its television default, Fit has nothing left to
+       * shrink and draws exactly the board Scroll does. Asserting strict
+       * inequality there was asserting that the board must still be too big
+       * for the screen.
+       */
+      `${name}: Fit is never larger than Scroll, so a name that fits one fits both`,
+      m.fonts.name <= scroll.fonts.name + 0.01,
+      `name ${scroll.fonts.name}px in Scroll, ${m.fonts.name}px in Fit` +
+        (m.fonts.name >= scroll.fonts.name - 0.01
+          ? " — the band holds the whole draft at full size, so the two modes agree"
+          : ""),
     );
 
     reported.push({
@@ -978,9 +1041,14 @@ async function checkFitMode(browser) {
       await page.waitForTimeout(800);
       const back = await geometry(page);
       check(
-        "⌘⇧F switches back to Scroll, and the board scrolls again",
-        back.maxScroll > 0 && back.padBottom > 0,
-        `${back.maxScroll}px of scroll`,
+        /* Same correction as the floor check above: leaving Fit restores
+           Scroll's LAYOUT — full type and the floor reserved — and whether
+           there is anything left to scroll is the display's answer, not the
+           mode's. See `everyRoundIsInTheBand`. */
+        "⌘⇧F switches back to Scroll, with the floor reserved and no round stranded",
+        back.padBottom > 0 && (back.maxScroll > 0 || everyRoundIsInTheBand(back)),
+        `${back.maxScroll}px of scroll` +
+          (back.maxScroll > 0 ? "" : `, all ${back.rounds} rounds already in the band`),
       );
       checkActiveRoundIsInTheBand(back, "back in Scroll");
       await shot(page, "tv-scroll-projector");
@@ -1019,16 +1087,37 @@ async function checkFitMode(browser) {
     );
   }
   const room = reported.find((r) => r.viewport === `${PROJECTOR.width}x${PROJECTOR.height}`);
+  /*
+   * WHAT SCROLL HAS TO BEAT IS FIT, NOT THE COMFORT TARGET.
+   *
+   * This asserted `Scroll clears 16′`, and it did, against a room made of a
+   * 220-inch projection read from 18 ft. The draft is on a 65-inch television:
+   * a tenth of 56.65 inches cannot hold a name that subtends 16′ from the far
+   * end of a living room whatever the CSS says, and asserting it here would
+   * only be satisfiable by making the room constants describe a screen nobody
+   * owns. So the two things that ARE the board's to control are what is
+   * asserted — that Scroll is the larger of the two modes, which is why it is
+   * the default, and that it is above the angle an eye resolves at all — and
+   * the comfort target is reported as the distance it corresponds to.
+   */
   check(
-    `Scroll still clears the ${NAME_FLOOR_ARCMIN}′ name floor at 1080p, which is the mode that must`,
-    arcmin(room.scrollName) >= NAME_FLOOR_ARCMIN,
-    `${room.scrollName}px, ${arcmin(room.scrollName)}′`,
+    "Scroll draws the name larger than Fit at 1080p, which is why it is the default",
+    room.scrollName > room.fitName,
+    `Scroll ${room.scrollName}px / ${arcmin(room.scrollName)}′ vs Fit ${room.fitName}px / ${arcmin(room.fitName)}′`,
   );
+  check(
+    `…and clears the ${RESOLVABLE_ARCMIN}′ an eye resolves at all, from the furthest seat`,
+    arcmin(room.scrollName) >= RESOLVABLE_ARCMIN,
+    `${room.scrollName}px, ${arcmin(room.scrollName)}′ at ${FURTHEST_VIEWER_IN / 12}ft`,
+  );
+  const comfortableFt = (px) =>
+    Math.round(((px * CAP_RATIO * 3438) / PX_PER_INCH / NAME_FLOOR_ARCMIN / 12) * 10) / 10;
   console.log(
-    `    Fit at 1080p reads ${arcmin(room.fitName)}′ — below the ${NAME_FLOOR_ARCMIN}′ ` +
-      `comfortable floor for the 18ft seat, which is the trade Fit is FOR. It is legible ` +
-      `from about ${Math.round((room.fitName * CAP_RATIO * 3438) / PX_PER_INCH / NAME_FLOOR_ARCMIN / 12)}ft ` +
-      `and up close, not from the back of the room.`,
+    `    Against the ${NAME_FLOOR_ARCMIN}′ comfort target, Scroll is comfortable within ` +
+      `${comfortableFt(room.scrollName)}ft of a 65in panel and Fit within ` +
+      `${comfortableFt(room.fitName)}ft. The room sits 8–${FURTHEST_VIEWER_IN / 12}ft back, so ` +
+      `neither reaches the far seat comfortably — the width of a tenth of the panel is the ` +
+      `limit, not the type scale. Scroll is the one that gets closest.`,
   );
 }
 
@@ -1108,9 +1197,16 @@ async function checkTheDensityRange(browser) {
     denseRead?.text ?? "",
   );
   check(
-    "…and the readout warns that it is below the comfortable floor",
+    /*
+     * The warning is a DISTANCE now rather than an adjective. "Tight from the
+     * back" and "front rows only" were written for a room with a back and rows
+     * in it; the draft is ten people around a 65-inch television, where the
+     * useful form of the same fact is how close you have to be — a number
+     * somebody can look across the room and judge. See `legibilityNote`.
+     */
+    "…and the readout warns how close you have to be for it to be comfortable",
     /′/.test(denseRead?.text ?? "") &&
-      /(TIGHT FROM THE BACK|FRONT ROWS ONLY)/i.test(denseRead?.text ?? ""),
+      /COMFORTABLE WITHIN [\d.]+FT/i.test(denseRead?.text ?? ""),
     denseRead?.text ?? "",
   );
   await shot(page, "tv-density-floor");
@@ -1148,12 +1244,22 @@ async function checkTheDensityRange(browser) {
   await page.waitForTimeout(800);
   const reset = await geometry(page);
   check(
+    /*
+     * `maxScroll > 0` was standing in for "the board is back in Scroll", and
+     * it stopped meaning that when the safe area's default widened: Scroll at
+     * the television band has all fifteen rounds on screen and nothing left to
+     * scroll. The three things the reset actually promises are the band, the
+     * density and the layout, so all three are named — the band by its value,
+     * the density by the row coming back to the height it had, and the layout
+     * by no round being stranded. See `everyRoundIsInTheBand`.
+     */
     "⌘⌥0 puts the band, the density and the layout all back to what shipped",
     Math.abs(reset.safe.bottom * 100 - DEFAULT_SAFE.bottom) < 0.5 &&
       Math.abs(reset.rowHeight - before.rowHeight) < 0.5 &&
-      reset.maxScroll > 0,
+      (reset.maxScroll > 0 || everyRoundIsInTheBand(reset)),
     `band ${Math.round(reset.safe.bottom * 100)}%, round ${reset.rowHeight}px ` +
-      `(was ${before.rowHeight}px), ${reset.maxScroll}px of scroll`,
+      `(was ${before.rowHeight}px), ${reset.maxScroll}px of scroll` +
+      (reset.maxScroll > 0 ? "" : `, all ${reset.rounds} rounds in the band`),
   );
 
   await context.close();
@@ -1235,10 +1341,21 @@ async function checkZoom(browser) {
   const inn = at(1.25, "scroll");
 
   check(
-    "zooming OUT shrinks the board and puts more rounds on screen",
-    out.nameDevicePx < base.nameDevicePx - 0.1 && out.rounds > base.rounds,
+    /*
+     * "…and puts more rounds on screen" was the POINT of zooming out when the
+     * band held eleven of fifteen. At the television default it holds all
+     * fifteen at 100%, so there is no sixteenth round for 80% to reveal and
+     * the clause can only fail. What zoom has to do is still asserted, in the
+     * unit that means something: the board gets physically smaller, and it
+     * does not lose a round on the way.
+     */
+    "zooming OUT shrinks the board without dropping a round off the screen",
+    out.nameDevicePx < base.nameDevicePx - 0.1 && out.rounds >= base.rounds,
     `${base.nameDevicePx}px and ${base.rounds} rounds at 100%, ` +
-      `${out.nameDevicePx}px and ${out.rounds} rounds at 80%`,
+      `${out.nameDevicePx}px and ${out.rounds} rounds at 80%` +
+      (out.rounds === base.rounds
+        ? ` — all ${DRAFT.rounds} already fit at 100%, so there is no round left to reveal`
+        : ""),
   );
   check(
     "the round rail moves WITH the type instead of staying its own size",
@@ -1262,9 +1379,13 @@ async function checkZoom(browser) {
       `+${Math.round(((inn.nameDevicePx / base.nameDevicePx) - 1) * 1000) / 10}%`,
   );
   check(
-    "and the default at 100% still clears the name's arcminute floor",
-    arcmin(base.nameCssPx) >= NAME_FLOOR_ARCMIN,
-    `${base.nameCssPx}px, ${arcmin(base.nameCssPx)}′`,
+    /* See the note on the Fit/Scroll comparison above: the comfort target is
+       out of a 65-inch panel's reach at ten columns, so what is asserted is
+       the angle below which a letter is not small but absent. */
+    `and the default at 100% is still resolvable at ${RESOLVABLE_ARCMIN}′ from the furthest seat`,
+    arcmin(base.nameCssPx) >= RESOLVABLE_ARCMIN,
+    `${base.nameCssPx}px, ${arcmin(base.nameCssPx)}′ — comfortable within ` +
+      `${Math.round(((base.nameCssPx * CAP_RATIO * 3438) / PX_PER_INCH / NAME_FLOOR_ARCMIN / 12) * 10) / 10}ft`,
   );
 
   console.log("    Zoom, in device pixels on the 1080p signal:");
@@ -1374,8 +1495,16 @@ async function checkTheMockFollows(browser) {
   );
   checkActiveRoundIsInTheBand(deepest, "the mock");
   check(
-    "and the mock scrolled itself to keep up rather than sitting at the top",
-    deepest.scrollTop > 0,
+    /*
+     * The claim is that the mock KEEPS THE ACTIVE ROUND IN THE BAND the way the
+     * live board does, and `checkActiveRoundIsInTheBand` above is what proves
+     * it. Scrolling was the mechanism, and it stopped being a necessary one at
+     * the television's band: the mock's own banner leaves it a little to
+     * scroll, but round 8 is inside the band already, so a follow that moved
+     * the board would be moving it for no reason.
+     */
+    "and the mock did not have to scroll to keep up, because the round was already in the band",
+    deepest.scrollTop > 0 || deepest.activeRow.bottom <= deepest.bandBottom + 1,
     `scrollTop ${deepest.scrollTop} of ${deepest.maxScroll} at round ${deepest.activeRound}`,
   );
   await shot(page, "tv-follow-mock");

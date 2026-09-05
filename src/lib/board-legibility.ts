@@ -2,20 +2,59 @@
  * How big the draft board's type has to be for the room it is actually in.
  *
  * ============================================================================
- * THE ROOM
+ * THE ROOM — AND IT IS A ROOM, NOT A CINEMA
  * ============================================================================
- * A floor-to-ceiling golf simulator screen, 16 ft wide and 16:9, driven at
- * 1080p. Ten people at a bar-height table: the furthest seat is about 18 ft from
- * the screen, the closest about 7 ft.
+ * "We're not drafting on a golf simulator. We're drafting on a 65-inch TV… Just
+ * a regular 4K TV is what we're going to be on, not a 1080p fucking 100-inch
+ * screen. It's not a 16- or 18-foot screen. It's a 65-inch television at eye
+ * level for everybody."
  *
- *   192 in wide / 1920 px  =  10.0 px per inch
+ * So: a 65 in diagonal 16:9 panel — 56.65 in wide, 31.9 in tall — at eye level,
+ * with the room between about 8 ft and 12 ft from it.
+ *
+ *   56.65 in wide / 1920 px  =  33.9 px per inch
  *
  * That number is the whole reason this file exists. Every legibility question
  * about this board — is a bye week readable, is a name readable, how many rounds
- * can we afford — is a question about inches on a wall, and the only bridge from
+ * can we afford — is a question about inches of glass, and the only bridge from
  * CSS pixels to inches is that ratio. Change `SCREEN_WIDTH_IN` and everything
- * below follows; the answers for a 12 ft and a 20 ft screen are in
- * `LEGIBILITY_TABLE` so a re-measurement is a one-line change.
+ * below follows; the answers for the panel sizes this might turn out to be are
+ * in `LEGIBILITY_TABLE`, so a re-measurement is a one-line change.
+ *
+ * ============================================================================
+ * WHAT THE CORRECTION COST, BECAUSE IT WAS NOT A ROUNDING ERROR
+ * ============================================================================
+ * This file used to describe a 192 in wide screen — a 220 in DIAGONAL — read
+ * from 18 ft. It is tempting to think a 65 in panel up close comes out about
+ * the same, and for the commissioner's own "100-inch" comparison it nearly
+ * would: 65 in at 10 ft subtends 30°, a 100 in at 18 ft subtends 26°. But the
+ * screen the numbers below were derived against was 220 in, and that subtends
+ * 54°. The board is therefore angularly about HALF what the old model claimed:
+ *
+ *   name at 16.13px, old model, 18 ft from a 220 in screen   18.0 arcmin
+ *   name at 16.13px, 65 in panel at 1920 CSS px, from 10 ft   9.5 arcmin
+ *   …from 12 ft                                               8.0 arcmin
+ *
+ * AND THE BOARD CANNOT SIMPLY GROW ITS WAY OUT OF THAT, which is the fact worth
+ * having written down before someone spends an evening on it. Ten columns
+ * across 56.65 in gives each one about 4.1 in of name line at 1920 CSS px, and
+ * the longest surname in the top 200 fills it at 17.8px. Reaching 16 arcmin
+ * from 12 ft would take 32px. The constraint is the width of a tenth of a
+ * 65-inch television, not the type scale — so the levers that remain are the
+ * density control, closing the roster pane, and where people sit.
+ *
+ * ============================================================================
+ * THE CSS PIXEL IS THE ASSUMPTION THAT MATTERS MOST, AND IT IS NOT THE PANEL'S
+ * ============================================================================
+ * `SCREEN_WIDTH_PX` is how many CSS pixels the BROWSER lays the board out
+ * across, which on a 4K panel is a display-settings question rather than a
+ * hardware one. Screen mirroring and AirPlay hand over 1920; macOS's default
+ * scaled mode for a 4K TV does too; a machine plugged in at native 1:1 hands
+ * over 3840 and every length in this file is then worth half as many inches.
+ * At 3840 the name lands near 4 arcmin from 12 ft, which is at the limit of
+ * what an eye resolves at all. The board fits either way — that is asserted —
+ * but it is only READABLE at 1920, so 1920 is what this file assumes and what
+ * the television should be driven at.
  *
  * ============================================================================
  * WHY ARCMINUTES AND NOT A RULE OF THUMB
@@ -47,21 +86,40 @@
  * fails if it is lower than this, so the assumption cannot rot quietly.
  */
 
-/** Screen and signal. The only two numbers a re-measurement should touch. */
-export const SCREEN_WIDTH_IN = 192;
+/** The panel, by the number written on the box. */
+export const SCREEN_DIAGONAL_IN = 65;
+/** …and across, which is what the board is laid out over. 16:9 of the above. */
+export const SCREEN_WIDTH_IN = 56.65;
+/** CSS pixels across that panel. See the note above: this is a display
+    setting, not a hardware fact, and 3840 halves every inch below. */
 export const SCREEN_WIDTH_PX = 1920;
 
 /** The seats. The far one sets the floor; the near one only says "not absurd". */
-export const FURTHEST_VIEWER_IN = 216;
-export const CLOSEST_VIEWER_IN = 84;
+export const FURTHEST_VIEWER_IN = 144;
+export const CLOSEST_VIEWER_IN = 96;
 
 /** Cap height as a fraction of font size. Asserted against the real font. */
 export const CAP_RATIO = 0.7;
 
-/** Comfortable for sustained reading, and the floor for a player's name. */
+/**
+ * Comfortable for sustained reading. IT IS A TARGET NOW RATHER THAN A FLOOR,
+ * and the difference is the television: a tenth of a 65 in panel cannot hold a
+ * name big enough to reach it from the back of a living room, whatever this
+ * file says it wants. So nothing refuses to render below it. What it drives is
+ * the readout — `legibilityNote` turns it into the distance inside which the
+ * board IS comfortable, which is a number the room can pace out.
+ */
 export const NAME_FLOOR_ARCMIN = 16;
 /** Reference detail: read by whoever is leaning in, not from the back wall. */
 export const META_FLOOR_ARCMIN = 12;
+/**
+ * WHERE A LETTER STOPS BEING A LETTER. 20/20 vision resolves about 5 arcmin, so
+ * below this the mark on the screen is not small, it is absent. This is the one
+ * angular number that is still a hard floor and that `verify-board-fit.mjs`
+ * still refuses to pass: a comfort target the panel cannot reach is a target,
+ * but type the room physically cannot resolve is a broken board.
+ */
+export const RESOLVABLE_ARCMIN = 5;
 
 export const PX_PER_INCH = SCREEN_WIDTH_PX / SCREEN_WIDTH_IN;
 
@@ -84,18 +142,28 @@ export function fontForArcminutes(
 }
 
 /**
- * The same answers for the screen widths this might turn out to be, because the
- * 16 ft measurement was taken with a tape measure and a phone torch.
+ * The same answers for the panels this might turn out to be, because "65-inch"
+ * came off the back of a television rather than out of a tape measure, and
+ * because the next thing that happens to a league that likes its draft board is
+ * somebody buying a bigger screen.
  *
- * Wider screen at the same 1080p means fewer pixels per inch, so the type has to
- * be BIGGER in pixels to hold the same angle — the board gets less dense on a
- * bigger screen, which is the opposite of most people's intuition and worth
- * having written down before somebody "upgrades" the projector.
+ * A BIGGER PANEL AT THE SAME CSS WIDTH IS STRICTLY BETTER HERE, which is the
+ * opposite of what this table used to say. On a projector, widening the screen
+ * at a fixed 1080p spread the same pixels over more wall and the type had to
+ * grow in pixels to hold its angle. A television is not thrown, so the pixels
+ * simply get physically larger and the same 16.13px name gains arcminutes for
+ * free: 75 in buys about 15% over 65 in from the same seat.
+ *
+ * `nameFloorPx` is what it would take to reach the comfort target from the
+ * furthest seat. On a 65 in panel it prints a number about twice the widest
+ * type a column can hold, which is the point — it is the size of the gap.
  */
-export const LEGIBILITY_TABLE = [12, 16, 20].map((feet) => {
-  const pxPerInch = SCREEN_WIDTH_PX / (feet * 12);
+export const LEGIBILITY_TABLE = [55, 65, 75, 85].map((diagonalIn) => {
+  const widthIn = (diagonalIn * 16) / Math.hypot(16, 9);
+  const pxPerInch = SCREEN_WIDTH_PX / widthIn;
   return {
-    screenFeet: feet,
+    diagonalIn,
+    widthIn: Math.round(widthIn * 10) / 10,
     pxPerInch: Math.round(pxPerInch * 100) / 100,
     nameFloorPx: Math.round(fontForArcminutes(NAME_FLOOR_ARCMIN, FURTHEST_VIEWER_IN, pxPerInch) * 10) / 10,
     metaFloorPx: Math.round(fontForArcminutes(META_FLOOR_ARCMIN, FURTHEST_VIEWER_IN, pxPerInch) * 10) / 10,
@@ -105,12 +173,12 @@ export const LEGIBILITY_TABLE = [12, 16, 20].map((feet) => {
 /**
  * THE SAFE AREA'S RANGE, in whole percentages of the window's height.
  *
- * Nobody knows what fraction of that screen is usable until the projector is on
- * and ten people are sitting down, so the edges are keyboard-adjustable in the
- * room — ⌘⇧↑/⌘⇧↓ for the bottom, ⌘⌥↑/⌘⌥↓ for the top, ⌘⌥0 to put both back.
+ * Nobody knows what fraction of that screen is usable until it is on and ten
+ * people are sitting down, so the edges are keyboard-adjustable in the room —
+ * ⌘⇧↑/⌘⇧↓ for the bottom, ⌘⌥↑/⌘⌥↓ for the top, ⌘⌥0 to put both back.
  * Percentages rather than fractions because that is what the overlay prints and
  * what `localStorage` holds, and rounding a fraction for display twice is how
- * "72%" starts reading as "71%".
+ * "94%" starts reading as "93%".
  *
  * 2 a step is 21.6px at 1080p, about a third of a row: fine enough to land on
  * the sightline, coarse enough that four presses are visibly four presses.
@@ -125,7 +193,36 @@ export const LEGIBILITY_TABLE = [12, 16, 20].map((feet) => {
 export const SAFE_TOP_DEFAULT = 0;
 export const SAFE_TOP_MIN = 0;
 export const SAFE_TOP_MAX = 25;
-export const SAFE_BOTTOM_DEFAULT = 72;
+/**
+ * 94, DOWN FROM 72, BECAUSE THE BOTTOM OF A TELEVISION IS NOT THE FLOOR.
+ *
+ * 72 was the right answer to a question this league turns out not to be
+ * asking. It described a floor-to-ceiling projection whose bottom edge was at
+ * ground level and below every sightline at a bar-height table: the last
+ * quarter of that image was not a place a round could be put. A 65 in
+ * television at eye level has no such region. Every pixel of it is readable by
+ * everyone in the room, and reserving 28% of it gave away four rounds of board
+ * to a hazard that does not exist.
+ *
+ * WHAT 94 BUYS, MEASURED AT 1920x1080 RATHER THAN CHOSEN: all fifteen rounds
+ * inside the band in Scroll, at the board's full 16.13px type, with nothing to
+ * scroll and nothing snapping about as picks land — which is the commissioner's
+ * actual requirement, "see the whole board the entire time". The board needs
+ * about 90% to do that; 94 is the first even step with real margin, and the
+ * margin is doing a second job.
+ *
+ * THAT SECOND JOB IS OVERSCAN. He is casting rather than plugging in, and a
+ * television handed a mirrored signal will often crop a few percent off every
+ * edge before it draws anything. 6% at the bottom is about 65px at 1080p — more
+ * than any overscan this side of a plasma — so the last round survives a TV
+ * that quietly zooms. 100 would fit too and would leave nothing in hand.
+ *
+ * THE TOP EDGE STAYS AT 0. Overscan crops it as well, but what sits there is
+ * the header bar rather than a round, and the bar already carries its own
+ * margin. Spending vertical space to protect chrome is what this change is
+ * undoing.
+ */
+export const SAFE_BOTTOM_DEFAULT = 94;
 export const SAFE_BOTTOM_MIN = 50;
 export const SAFE_BOTTOM_MAX = 100;
 export const SAFE_BAND_MIN = 40;
@@ -219,18 +316,23 @@ export function clampSafeArea(
  * THE BOTTOM OF THE SCREEN THAT CAN ACTUALLY BE READ, as a fraction of its
  * height.
  *
- * The projector is floor-to-ceiling: 9 ft of image whose bottom edge is at floor
- * level, read from a bar-height table. The last foot or two of it is below every
- * sightline in the room, so it is not a place a round can be put — and scrolling
- * did not rescue it, because at maximum scroll the last round came to rest
- * against the bottom edge of the scroll box, which IS the floor. Measured at
- * 1920x1080 before this existed: round 16's bottom sat at 99.7% of the screen
- * height at every scroll position there was. "Scrolling to the bottom round 16
- * will still sit on the ground."
+ * WHAT THIS WAS FOR, AND WHY IT IS NOW ALMOST THE WHOLE SCREEN. The projector
+ * this board was first built against was floor-to-ceiling: 9 ft of image whose
+ * bottom edge was at ground level, read from a bar-height table. The last foot
+ * or two was below every sightline in the room, so it was not a place a round
+ * could be put — and scrolling did not rescue it, because at maximum scroll the
+ * last round came to rest against the bottom of the scroll box, which IS the
+ * floor. "Scrolling to the bottom round 16 will still sit on the ground."
  *
- * So the board carries trailing space below its last round, sized from this
- * number, and maximum scroll lifts round 16 to here instead. Nothing is hidden:
- * the space below is empty rather than occupied.
+ * The draft is on a 65 in television at eye level, and none of that is true of
+ * one. So the reserved region is now 6% rather than 28%, and what it protects
+ * is a cast signal being overscanned rather than a round being on the carpet.
+ * See `SAFE_BOTTOM_DEFAULT`. The MECHANISM is unchanged and deliberately so —
+ * the board still carries trailing space below its last round and maximum
+ * scroll still lifts that round clear of the reserved strip, which is what
+ * keeps the projector a supported display rather than a deleted one. Anyone
+ * putting this back on a big throw sets the bottom edge back to 72 with ⌘⇧↑ and
+ * gets the old board exactly.
  *
  * ONE SEAM, DELIBERATELY. The keyboard-adjustable safe area — ⌘⇧↑ and ⌘⇧↓,
  * which is why the density control does not use those chords — sets
@@ -241,8 +343,8 @@ export function clampSafeArea(
  * board actually starts at.
  *
  * TV MODE ONLY. In a browser window the bottom edge of the viewport is at desk
- * height and perfectly readable, and a third of a screen of empty space under
- * the board would read as a bug rather than as a decision.
+ * height and perfectly readable, and empty space under the board would read as
+ * a bug rather than as a decision.
  */
 export const SAFE_AREA_BOTTOM = SAFE_BOTTOM_DEFAULT / 100;
 

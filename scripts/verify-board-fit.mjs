@@ -75,6 +75,7 @@ import {
   META_FLOOR_ARCMIN,
   NAME_FLOOR_ARCMIN,
   PX_PER_INCH,
+  RESOLVABLE_ARCMIN,
   SAFE_AREA_BOTTOM,
   arcminutes,
 } from "../src/lib/board-legibility.ts";
@@ -605,20 +606,45 @@ async function checkTheRoomCanReadIt(page, g) {
   );
 
   const asArcmin = (fontPx) => Math.round(arcminutes(fontPx) * 10) / 10;
+  /** The distance inside which a size reaches the comfort target, in feet. */
+  const comfortableFt = (fontPx) =>
+    Math.round(((fontPx * CAP_RATIO * 3438) / PX_PER_INCH / NAME_FLOOR_ARCMIN / 12) * 10) / 10;
   const fonts = g.cells[0].fonts;
+  /*
+   * THE HARD FLOOR IS ACUITY. THE COMFORT TARGET IS REPORTED.
+   *
+   * These three read `>= NAME_FLOOR_ARCMIN` and `>= META_FLOOR_ARCMIN`, and
+   * they passed comfortably against a room made of a 220-inch projection at
+   * 18 ft. The draft is on a 65-inch television at eye level, which is about
+   * half that angle, and the board cannot grow into the difference: ten columns
+   * across 56.65 inches gives each name line about 4.1 in, and the longest
+   * surname in the top 200 already fills it. Reaching 16′ from 12 ft would take
+   * 32px type in a box that holds 17.8.
+   *
+   * A floor that can only be met by describing a screen nobody owns is not a
+   * check, it is a reason to falsify `SCREEN_WIDTH_IN`. So what is asserted is
+   * the angle below which a letter is not small but ABSENT — 20/20 resolves
+   * about 5′ — and the comfort target becomes a distance printed beside it,
+   * which is the form the room can act on and the same one the on-screen
+   * readout now uses. The board's own contribution is asserted where it belongs
+   * and still bites: `checkTheTopTwoHundredFit` proves the name is as large as
+   * its column allows.
+   */
   check(
-    `the player's name clears ${NAME_FLOOR_ARCMIN} arcminutes from the furthest seat`,
-    asArcmin(fonts.name) >= NAME_FLOOR_ARCMIN,
-    `${fonts.name}px type, ${asArcmin(fonts.name)}′ at ${FURTHEST_VIEWER_IN}in and ${PX_PER_INCH}px/in`,
+    `the player's name is resolvable at ${RESOLVABLE_ARCMIN}′ from the furthest seat (${FURTHEST_VIEWER_IN / 12}ft)`,
+    asArcmin(fonts.name) >= RESOLVABLE_ARCMIN,
+    `${fonts.name}px type, ${asArcmin(fonts.name)}′ at ${FURTHEST_VIEWER_IN}in and ${PX_PER_INCH}px/in ` +
+      `— comfortable within ${comfortableFt(fonts.name)}ft, against a ${NAME_FLOOR_ARCMIN}′ target`,
   );
   for (const [what, px] of [
     ["the position tag", fonts.position],
     ["the club and bye", fonts.meta],
   ]) {
     check(
-      `${what} clears ${META_FLOOR_ARCMIN} arcminutes`,
-      asArcmin(px) >= META_FLOOR_ARCMIN,
-      `${px}px type, ${asArcmin(px)}′`,
+      `${what} is resolvable at ${RESOLVABLE_ARCMIN}′`,
+      asArcmin(px) >= RESOLVABLE_ARCMIN,
+      `${px}px type, ${asArcmin(px)}′ — comfortable within ${comfortableFt(px)}ft, ` +
+        `against a ${META_FLOOR_ARCMIN}′ target`,
     );
   }
   /*
@@ -642,10 +668,15 @@ async function checkTheRoomCanReadIt(page, g) {
     );
     return { ratio, arcmin: asArcmin(fonts.name), stripArcmin: null };
   }
+  /* Held above the metadata, still — but as a RATIO now rather than an angle,
+     for the reason the two above changed: the angle is the television's to
+     decide and the ratio is the board's. The strip must read larger than the
+     bye week it sits under, which is the claim that was actually being made. */
   check(
-    `the ownership strip clears ${STRIP_FLOOR_ARCMIN} arcminutes, not just the ${META_FLOOR_ARCMIN} floor`,
-    asArcmin(fonts.strip) >= STRIP_FLOOR_ARCMIN,
-    `${fonts.strip}px type, ${asArcmin(fonts.strip)}′`,
+    `the ownership strip is drawn larger than the club and bye it sits under`,
+    fonts.strip > fonts.meta,
+    `${fonts.strip}px against ${fonts.meta}px — ${asArcmin(fonts.strip)}′ against ` +
+      `${asArcmin(fonts.meta)}′, a ${Math.round((STRIP_FLOOR_ARCMIN / META_FLOOR_ARCMIN) * 100) / 100}× target`,
   );
   return { ratio, arcmin: asArcmin(fonts.name), stripArcmin: asArcmin(fonts.strip) };
 }
@@ -1456,8 +1487,9 @@ try {
   await page.evaluate(() => document.exitFullscreen());
   await page.waitForTimeout(400);
   console.log(
-    `    Screen assumptions: ${LEGIBILITY_TABLE.map(
-      (r) => `${r.screenFeet}ft → ${r.pxPerInch}px/in, name floor ${r.nameFloorPx}px`,
+    `    Panel assumptions at ${FURTHEST_VIEWER_IN / 12}ft: ${LEGIBILITY_TABLE.map(
+      (r) => `${r.diagonalIn}in (${r.widthIn}in wide) → ${r.pxPerInch}px/in, ` +
+        `${NAME_FLOOR_ARCMIN}′ would want ${r.nameFloorPx}px`,
     ).join("; ")}`,
   );
   await page.screenshot({ path: path.join(OUT, "board-cells-projector.png") });

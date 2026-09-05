@@ -170,8 +170,23 @@ export function useBoardReadout({
   }, [boardRef, enabled, fit, ...deps]);
 }
 
-/** Whether the room can still comfortably read it, in words rather than a number. */
+/**
+ * HOW CLOSE YOU HAVE TO BE FOR IT TO BE COMFORTABLE, IN FEET.
+ *
+ * This used to answer in adjectives — "tight from the back", "front rows only"
+ * — which were written for a room with a back and rows in it. The draft is ten
+ * people around a 65 in television in a living room, and there the useful form
+ * of the same fact is a distance somebody can look across and judge: the board
+ * either reaches the far end of the sofa or it does not.
+ *
+ * Angular size is linear in distance, so the comfortable distance falls
+ * straight out of the angle the furthest seat already measures — no second
+ * measurement, and it moves with the density control while he holds the key
+ * down. Above the target it returns null, because the whole room is inside it
+ * and there is nothing to warn about.
+ */
 export function legibilityNote(arcmin: number): string | null {
-  if (arcmin >= NAME_FLOOR_ARCMIN) return null;
-  return arcmin >= NAME_FLOOR_ARCMIN * 0.75 ? "tight from the back" : "front rows only";
+  if (arcmin >= NAME_FLOOR_ARCMIN || arcmin <= 0) return null;
+  const feet = (FURTHEST_VIEWER_IN * (arcmin / NAME_FLOOR_ARCMIN)) / 12;
+  return `comfortable within ${feet < 10 ? feet.toFixed(1) : Math.round(feet)}ft`;
 }
