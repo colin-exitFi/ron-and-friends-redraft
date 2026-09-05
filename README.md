@@ -35,12 +35,17 @@ on it.
 
 ## The league
 
-Read off Sleeper league `1394372619427381248` and the 2026 Season Proposal,
-which controls where the two disagree. `src/lib/league-config.ts` is the single
-source of truth and every value there is marked with where it came from.
+Read off Sleeper league `1394372619427381248` and the 2026 Season Proposal.
+`src/lib/league-config.ts` is the single source of truth and every value there
+is marked with where it came from.
 
-- 10 teams, snake, **14 rounds — 140 picks**, 120-second advisory clock
-- 9 starters (QB, 2 RB, 2 WR, 2 FLEX, TE, DST — **no kicker**), 5 bench, 2 IR
+Where they disagree, **a live ruling from the commissioner beats both** — he
+changed the round count and the bench on the afternoon of the draft, and the
+config carries the decision before Sleeper does. `npm run build:board` warns
+when the Sleeper pull has not caught up.
+
+- 10 teams, snake, **15 rounds — 150 picks**, 120-second advisory clock
+- 9 starters (QB, 2 RB, 2 WR, 2 FLEX, TE, DST — **no kicker**), 6 bench, 2 IR
 - **Half PPR with a tight end premium**: a TE catch is a full point
 - 6-point passing touchdowns; yardage and 40-yard explosive bonuses
 - **Redraft.** No keepers in 2026, and **no draft-pick trading at all** — every
@@ -58,8 +63,12 @@ hand-edit the snapshot:
 
 ```bash
 npm run pull:sleeper     # data/sleeper/*.json
-npm run build:board      # 10 x 14 = 140 open slots, deterministic
+npm run build:board      # 10 x 15 = 150 open slots, deterministic
 ```
+
+The board's SHAPE comes from `LEAGUE.teams` and `DRAFT.rounds`, not from the
+pull — so a stale Sleeper cache cannot stamp an out-of-date board. The draft
+order and the franchises still come from Sleeper.
 
 `data/managers.json` is the one hand-maintained file: it joins Sleeper's handles
 to real manager names, which the API does not carry.
@@ -73,7 +82,7 @@ npm run lint
 npx tsc --noEmit
 npm run build
 
-npm run verify:draft           # a complete 140-slot draft through the real engine
+npm run verify:draft           # a complete 150-slot draft through the real engine
 npm run verify:draft:dryrun    # the board renders and takes a pick
 npm run verify:board:fit       # the board is legible at the back of the room
 ```
@@ -83,7 +92,7 @@ npm run verify:board:fit       # the board is legible at the back of the room
 Not active. The league runs 2026 as a pure redraft and will vote on a keeper
 framework for 2027, so **the keeper machinery is deliberately kept on disk and
 importable** rather than deleted. It is switched off in the data — the keeper
-declaration files are empty, so the overlay places nothing and all 140 cells are
+declaration files are empty, so the overlay places nothing and all 150 cells are
 open — and `FEATURES.keepers` gates the surfaces.
 
 ## Where things are documented

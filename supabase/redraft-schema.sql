@@ -155,9 +155,14 @@ end $$;
 -- Shape validation
 -- ===========================================================================
 -- Rounds, columns and overall pick numbers are bounded by the season's own
--- `leagues` row rather than by literals, so this league's 14 rounds / 10 teams
--- / 140 slots are enforced without being frozen into a CHECK that a rules
--- change would have to migrate around.
+-- `leagues` row rather than by literals, so this league's shape is enforced
+-- without being frozen into a CHECK that a rules change would have to migrate
+-- around. That flexibility earned itself on draft day 2026, when the round
+-- count went from 14 to 15 hours before kickoff.
+--
+-- THE COROLLARY: THE `leagues` ROW HAS TO BE RIGHT. Because the bound is read
+-- from data rather than hardcoded, a stale `draft_rounds` there will REJECT a
+-- legal pick in the last round. Whoever changes `DRAFT.rounds` must re-seed it.
 --
 -- `search_path` is pinned empty and every reference fully qualified, so these
 -- cannot be redirected at a `public` table by a caller's search_path.

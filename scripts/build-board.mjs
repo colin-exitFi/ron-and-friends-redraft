@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Stamp out the draft board: ten franchises, fourteen rounds, 140 open cells.
+ * Stamp out the draft board: one open cell per franchise per round, its shape
+ * read from `LEAGUE.teams` and `DRAFT.rounds` rather than written down here.
  *
  * WHY A GENERATOR AND NOT A HAND-WRITTEN FILE
  * ============================================================================
@@ -8,8 +9,9 @@
  * used to come out of another product (Smart Draft) for the previous league.
  * Ron and Friends drafts here and nowhere else, so there is no room to pull
  * from — the snapshot is ours to produce. Producing it with a script rather
- * than by hand matters for one specific reason: if the draft order changes,
- * re-running this is the whole fix. Editing 140 objects by hand at 6pm is not.
+ * than by hand matters for one specific reason: if the draft order or the round
+ * count changes, re-running this is the whole fix. Editing a hundred and fifty
+ * objects by hand at 6pm is not.
  *
  * DETERMINISTIC BY CONSTRUCTION
  * ============================================================================
@@ -37,6 +39,13 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
+/*
+ * `league-config.ts` has no imports of its own, so Node's type stripping is all
+ * that is needed to read it — no alias resolution to arrange. The npm script
+ * passes `--experimental-strip-types` for this.
+ */
+import { DRAFT, LEAGUE, ROSTER } from "../src/lib/league-config.ts";
 
 const ROOT = process.cwd();
 const dataPath = (...p) => path.join(ROOT, "data", ...p);
@@ -69,21 +78,61 @@ function deterministicUuid(key) {
 
 const { managers } = readJson("managers.json");
 
-// Sleeper is authoritative for the shape of the draft. Read it rather than
-// restating it, so a re-pull that changes the round count changes the board.
 const sleeperDraft = readJson("sleeper", "draft.json");
 const sleeperLeague = readJson("sleeper", "league.json");
 
-const ROUNDS = sleeperDraft.settings?.rounds;
-const TEAMS = sleeperDraft.settings?.teams ?? sleeperLeague.total_rosters;
+/*
+ * THE LEAGUE CONFIG IS AUTHORITATIVE FOR THE BOARD'S SHAPE. SLEEPER IS NOT.
+ *
+ * This used to read `settings.rounds` straight out of the Sleeper pull, on the
+ * reasoning that Sleeper owns the draft's shape. That broke the day the
+ * commissioner changed the round count: he decides, then he edits Sleeper, and
+ * in between the cached pull still says the old number. A generator that
+ * believes the pull stamps the OLD board and looks like it worked.
+ *
+ * So the round count comes from `DRAFT.rounds` and the team count from
+ * `LEAGUE.teams`, and Sleeper is CROSS-CHECKED rather than obeyed — a
+ * disagreement is a warning naming which side has not caught up, not a failure
+ * and not a silent overwrite.
+ */
+const ROUNDS = DRAFT.rounds;
+const TEAMS = LEAGUE.teams;
 const SEASON = Number(sleeperLeague.season);
 const SNAKE = (sleeperDraft.type ?? "snake") === "snake";
 
 // --- Checks that are worth failing on -------------------------------------
 
 if (!ROUNDS || !TEAMS) {
-  console.error("data/sleeper/draft.json has no round or team count. Re-run `npm run pull:sleeper`.");
+  console.error("src/lib/league-config.ts has no round or team count. Fix DRAFT.rounds / LEAGUE.teams.");
   process.exit(1);
+}
+
+/*
+ * Sleeper runs the clock in the room tonight, so a mismatch here is worth
+ * saying out loud every single time the board is stamped.
+ */
+const sleeperRounds = sleeperDraft.settings?.rounds;
+const sleeperTeams = sleeperDraft.settings?.teams ?? sleeperLeague.total_rosters;
+const sleeperBench = sleeperDraft.settings?.slots_bn;
+const drift = [];
+if (sleeperRounds && sleeperRounds !== ROUNDS) {
+  drift.push(`rounds: config says ${ROUNDS}, Sleeper's last pull says ${sleeperRounds}`);
+}
+if (sleeperTeams && sleeperTeams !== TEAMS) {
+  drift.push(`teams: config says ${TEAMS}, Sleeper's last pull says ${sleeperTeams}`);
+}
+if (typeof sleeperBench === "number" && sleeperBench !== ROSTER.bench) {
+  drift.push(`bench: config says ${ROSTER.bench}, Sleeper's last pull says ${sleeperBench}`);
+}
+if (drift.length) {
+  console.warn("\n  ⚠ SLEEPER HAS NOT CAUGHT UP WITH THE LEAGUE CONFIG\n");
+  for (const d of drift) console.warn(`    · ${d}`);
+  console.warn(
+    "\n    The board below is stamped from the CONFIG, which is the commissioner's\n" +
+      "    decision and wins. But SLEEPER IS WHAT RUNS THE CLOCK IN THE ROOM, so it\n" +
+      "    has to be changed there too before kickoff. If he has already saved it,\n" +
+      "    re-run `npm run pull:sleeper` and this warning will go away.\n",
+  );
 }
 
 if (managers.length !== TEAMS) {
@@ -173,11 +222,14 @@ const snapshot = {
   _PROVENANCE: {
     generatedBy: "scripts/build-board.mjs",
     generatedAt: new Date().toISOString(),
-    from: `Sleeper league ${sleeperLeague.league_id} (${sleeperLeague.name}) and data/managers.json`,
+    from: `src/lib/league-config.ts for the shape; Sleeper league ${sleeperLeague.league_id} (${sleeperLeague.name}) and data/managers.json for the franchises`,
     shape: `${TEAMS} teams x ${ROUNDS} rounds = ${boardSlots.length} slots`,
+    shapeAuthority:
+      "LEAGUE.teams and DRAFT.rounds in src/lib/league-config.ts. NOT the Sleeper pull — the " +
+      "commissioner decides the round count and edits Sleeper afterwards, so the pull lags.",
     keepers: "None. Redraft — every cell is open.",
     tradedPicks: "None. Inaugural season — no pick has changed hands.",
-    reRunWhen: "The draft order changes, a franchise changes its short name, or the round count changes on Sleeper.",
+    reRunWhen: "The draft order changes, a franchise changes its short name, or DRAFT.rounds changes.",
   },
   state: {
     roomId: deterministicUuid(`ron-and-friends:${SEASON}:room`),
@@ -193,7 +245,11 @@ const snapshot = {
         FLEX: sleeperDraft.settings?.slots_flex ?? 0,
         DST: sleeperDraft.settings?.slots_def ?? 0,
         K: sleeperDraft.settings?.slots_k ?? 0,
-        BN: sleeperDraft.settings?.slots_bn ?? 0,
+        // From the config, not the pull, for the same reason as the round
+        // count: the sixth bench spot is the commissioner's decision and
+        // Sleeper may not have been edited yet. The `drift` warning above says
+        // so when they disagree.
+        BN: ROSTER.bench,
       },
       scoringFormat: sleeperDraft.metadata?.scoring_type ?? null,
       pickTimerSeconds: sleeperDraft.settings?.pick_timer ?? null,

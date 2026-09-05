@@ -10,7 +10,7 @@
     "pull:room": "node scripts/smartdraft-pull.mjs",
     "diff:room": "node scripts/smartdraft-diff.mjs",
     "pull:sleeper": "node scripts/sleeper-pull.mjs",
-    "build:board": "node scripts/build-board.mjs",
+    "build:board": "node --experimental-strip-types --no-warnings scripts/build-board.mjs",
     "verify:keepers": "node --experimental-strip-types --no-warnings --import ./scripts/ts-alias.mjs scripts/verify-keeper-clock.mts",
     "verify:draft": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/simulate-draft.mts",
     "verify:draft:dryrun": "node scripts/verify-draft-dryrun.mjs",

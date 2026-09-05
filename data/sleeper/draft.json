@@ -1,5 +1,5 @@
 {
- "_pulledAt": "2026-09-05T16:49:17.542Z",
+ "_pulledAt": "2026-09-05T17:58:33.101Z",
  "created": 1786806848078,
  "creators": [
   "1394370721353854976"
@@ -40,8 +40,8 @@
   "pick_timer": 120,
   "player_type": 0,
   "reversal_round": 0,
-  "rounds": 14,
-  "slots_bn": 5,
+  "rounds": 15,
+  "slots_bn": 6,
   "slots_def": 1,
   "slots_flex": 2,
   "slots_qb": 1,

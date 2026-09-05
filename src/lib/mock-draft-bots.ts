@@ -103,9 +103,19 @@ export type BotArchetype = {
 /**
  * The archetypes, most conventional first.
  *
- * Every `target` sums to `ROSTER.activeCap` (16) and respects `BOT_LIMITS.hardMax`
+ * Every `target` sums to `ROSTER.activeCap` and respects `BOT_LIMITS.hardMax`
  * — asserted by `verify:mock` rather than trusted, because a target that does
  * not add up produces a bot that quietly cannot finish a roster.
+ *
+ * THAT SUM IS 15, AND IT MOVED. These targets summed to 16, the active cap of
+ * the sixteen-round league this app was forked from; the commissioner set Ron
+ * and Friends to 15 rounds with a sixth bench spot on draft afternoon. A bot
+ * makes exactly one pick per round, so the sum has to equal the round count or
+ * the last need is never satisfiable. The pick came off each archetype's
+ * DEEPEST position rather than off the board evenly, so that no personality was
+ * flattened into another: `robust-rb` still hoards runners, `zero-rb` still
+ * hoards receivers, and `hero-rb` keeps the second tight end that distinguishes
+ * it from `zero-rb`.
  */
 export const BOT_ARCHETYPES: BotArchetype[] = [
   {
@@ -116,7 +126,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 5,
     needWeight: 1,
     scarcityWeight: 0.9,
-    target: { QB: 2, RB: 5, WR: 6, TE: 2, DST: 1 },
+    target: { QB: 2, RB: 5, WR: 5, TE: 2, DST: 1 },
     tilt: [],
     noise: 0.25,
   },
@@ -129,7 +139,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     needWeight: 0.3,
     valueWeight: 1.3,
     scarcityWeight: 0.35,
-    target: { QB: 2, RB: 6, WR: 6, TE: 1, DST: 1 },
+    target: { QB: 2, RB: 6, WR: 5, TE: 1, DST: 1 },
     tilt: [],
     noise: 0.2,
   },
@@ -141,7 +151,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 6,
     needWeight: 1.15,
     scarcityWeight: 0.9,
-    target: { QB: 2, RB: 5, WR: 7, TE: 1, DST: 1 },
+    target: { QB: 2, RB: 4, WR: 7, TE: 1, DST: 1 },
     tilt: [
       { positions: ["RB"], through: 4, factor: 0.1 },
       { positions: ["WR"], through: 5, factor: 1.5 },
@@ -157,7 +167,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 6,
     needWeight: 1.1,
     scarcityWeight: 1,
-    target: { QB: 2, RB: 7, WR: 5, TE: 1, DST: 1 },
+    target: { QB: 2, RB: 7, WR: 4, TE: 1, DST: 1 },
     tilt: [
       { positions: ["RB"], through: 6, factor: 2.3 },
       { positions: ["WR"], through: 3, factor: 0.7 },
@@ -172,7 +182,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 5,
     needWeight: 1.1,
     scarcityWeight: 0.9,
-    target: { QB: 2, RB: 4, WR: 7, TE: 2, DST: 1 },
+    target: { QB: 2, RB: 4, WR: 6, TE: 2, DST: 1 },
     tilt: [
       // Through round ONE, not two. Most franchises pick twice in the first two
       // rounds, so a two-round band bought two elite backs and the archetype
@@ -191,7 +201,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 7,
     needWeight: 1.2,
     scarcityWeight: 0.8,
-    target: { QB: 2, RB: 5, WR: 6, TE: 2, DST: 1 },
+    target: { QB: 2, RB: 5, WR: 5, TE: 2, DST: 1 },
     tilt: [
       { positions: ["QB"], through: 7, factor: 2.0 },
       { positions: ["TE"], through: 6, factor: 0.7 },
@@ -207,7 +217,7 @@ export const BOT_ARCHETYPES: BotArchetype[] = [
     reach: 5,
     needWeight: 1.05,
     scarcityWeight: 0.85,
-    target: { QB: 1, RB: 6, WR: 7, TE: 1, DST: 1 },
+    target: { QB: 1, RB: 6, WR: 6, TE: 1, DST: 1 },
     tilt: [
       { positions: ["QB", "TE"], through: 9, factor: 0.15 },
       { positions: ["RB", "WR"], through: 9, factor: 1.35 },
@@ -247,8 +257,8 @@ export const BOT_LIMITS = {
   /**
    * A defense before this round is a bot doing something no manager does. The
    * best defense on the board sits at ADP 101, which lands in round 11 of a
-   * 16-round, 10-team board, so this is barely a thumb on the scale — it just
-   * stops one landing in round 6.
+   * ten-team board, so this is barely a thumb on the scale — it just stops one
+   * landing in round 6.
    */
   dstEarliestRound: 12,
   /** No defense by here and the bot takes one, wherever the value sits. */

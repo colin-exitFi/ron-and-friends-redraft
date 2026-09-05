@@ -1337,8 +1337,9 @@ try {
    * allowed to be made in the box the strip already had.
    *
    * ELEVEN IS A DENSITY FLOOR, NOT A BOARD SHAPE, so it survives the move to a
-   * shorter board — but it cannot exceed the board. On this league's 14 rounds
-   * the whole board clears the fold, and the floor is what it always was.
+   * shorter board — but it cannot exceed the board. `DRAFT.rounds` has already
+   * moved twice today (16 in the source league, 14, now 15), which is the whole
+   * argument for deriving it here rather than typing it a fourth time.
    */
   const DENSITY_FLOOR = Math.min(11, DRAFT.rounds);
   check(

@@ -31,8 +31,8 @@ import type { DraftRoomView } from "@/lib/draft-types";
  * the real board produces and what a mock draft produces, so a finished mock is
  * judged by the identical layout as Saturday's real result. That is the whole
  * reason to lay a roster out by starting slot rather than as a list: the
- * question being asked of a mock is "is this a real team", and a list of
- * fourteen names cannot answer it while nine named slots can.
+ * question being asked of a mock is "is this a real team", and a flat list of
+ * fifteen names cannot answer it while nine named slots can.
  *
  * IT HAS TO WORK EMPTY. Until Saturday every franchise holds only keepers, so
  * the pre-draft state is the normal state, not an error state — seven of the

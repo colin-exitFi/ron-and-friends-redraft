@@ -274,7 +274,14 @@ export const DENSITY_STEP = 0.05;
  * much of the board as possible." So the floor is the step that reaches ALL
  * SIXTEEN ROUNDS inside the default band in Scroll mode, measured at 1080p
  * rather than predicted: 0.5 shows fourteen, and 0.45 is where round 16's
- * bottom edge lands on the band's to the hundredth of a pixel. 0.4 is one step
+ * bottom edge lands on the band's to the hundredth of a pixel.
+ *
+ * THOSE SIXTEEN ROUNDS ARE THE LEAGUE THIS WAS DERIVED AGAINST, NOT THIS ONE.
+ * Ron and Friends drafts 15, so the floor has a round of headroom it did not
+ * have when it was chosen. The derivation is kept as-is because it is the
+ * tighter case: a control proven to reach 16 rounds reaches 15.
+ *
+ * 0.4 is one step
  * past that, because a range whose last step is the answer reads as a control
  * that ran out rather than one that arrived — and the two steps of slack are
  * what absorb a franchise name wrapping to a second line and taking the header

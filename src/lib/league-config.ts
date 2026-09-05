@@ -126,7 +126,7 @@ export const FEATURES = {
    * KEEPERS ARE TURNED OFF IN THE DATA, WHICH IS THE LAYER THAT DECIDES. The
    * board pre-places keepers from `data/keeper-declarations.json` and friends
    * via `applyKeeperOverlay`; those files are empty, so nothing is placed and
-   * every one of the 140 cells is open. This flag gates SURFACES only.
+   * every one of the `TOTAL_PICKS` cells is open. This flag gates SURFACES only.
    */
   keepers: false,
   /**
@@ -176,9 +176,14 @@ export const STARTING_LINEUP: { slot: string; count: number; note: string }[] = 
  * routine — so leaving one open on draft night is a plan, not a hole.
  *
  * Team defences are streamed: the position turns over on waivers every week and
- * spending a fourteenth-round pick on one is the cheapest thing on the board to
- * replace. With only five bench spots and a live waiver market, that is more
- * true here than in the league this board came from, not less.
+ * spending a last-round pick on one is the cheapest thing on the board to
+ * replace. A live waiver market is what makes that true, and it still is.
+ *
+ * THE OLD REASONING HERE IS RETIRED. This used to argue from "only five bench
+ * spots", which was a twelve-team constraint meant to thin the free-agent pool
+ * and force fee-paying transactions. The commissioner retired it on 2026-09-05:
+ * at ten teams the pool is comfortable and the transactions happen anyway. The
+ * bench is six, and streaming a defence is a choice rather than a squeeze.
  */
 export const POST_DRAFT_STARTER_SLOTS: readonly string[] = ["DST"];
 
@@ -196,18 +201,30 @@ export function isPostDraftSlot(slot: string): boolean {
 }
 
 /**
- * @fromProposal Section 2 — 9 starters + 5 bench = 14 active, plus 2 IR.
- * @fromSleeper `slots_bn` 5 and `reserve_slots` 2. 14 is also exactly the round
- * count, which is what makes a 14-round draft fill every active seat.
+ * @fromCommissioner 2026-09-05 — 9 starters + 6 bench = 15 active, plus 2 IR.
  *
- * "No positional maximums. Roster construction is self-policing with only five
- * bench spots." So `positionalMax` is deliberately empty rather than unknown.
+ * THE SIXTH BENCH SPOT SUPERSEDES THE PROPOSAL AND SLEEPER. Section 2 said 5
+ * bench and Sleeper's `slots_bn` still said 5 when it was last pulled. The
+ * commissioner raised it to 6 on the afternoon of the draft.
+ *
+ * His reasoning is the load-bearing part, because it retires an argument rather
+ * than just changing a number: the five-bench rule was designed for a TWELVE
+ * team league, to keep the free-agent pool thin and force transactions, which
+ * grew the pot through $1-per-move fees. At ten teams the pool is comfortable
+ * anyway and the transactions will happen regardless, so the constraint has
+ * lost its purpose. The old "roster construction is self-policing with only
+ * five bench spots" rationale is therefore OBSOLETE — it must not survive as
+ * stale copy anywhere.
+ *
+ * 15 is also exactly the round count, which is what makes a 15-round draft fill
+ * every active seat. `positionalMax` is deliberately empty rather than unknown:
+ * there are still no positional maximums.
  */
 export const ROSTER = {
   starters: 9,
-  bench: 5,
+  bench: 6,
   irSlots: 2,
-  activeCap: 14,
+  activeCap: 15,
   positionalMax: {} as Record<string, number>,
 } as const;
 
@@ -224,13 +241,23 @@ export const IR_ELIGIBILITY: { designation: string; eligible: boolean; note: str
 // --- Draft ------------------------------------------------------------------
 
 /**
- * @fromProposal Section 4 — "Snake draft; fourteen (14) rounds; 120-second
- * clock." @fromSleeper `rounds` 14, `type` snake, `pick_timer` 120. The
- * document and the platform agree on every one of these.
+ * @fromCommissioner 2026-09-05 — fifteen rounds, snake, 120-second clock.
+ *
+ * THE ROUND COUNT SUPERSEDES BOTH THE PROPOSAL AND SLEEPER. Section 4 said
+ * "Snake draft; fourteen (14) rounds" and Sleeper's `rounds` read 14 when it
+ * was last pulled. The commissioner moved it to 15 on draft afternoon so the
+ * board fills the sixth bench spot, and he is editing Sleeper by hand.
+ *
+ * SO A FRESH SLEEPER PULL MAY STILL SAY 14. That is him not having saved yet,
+ * not a conflict to resolve, and this file must NOT be "corrected" back to 14
+ * on the strength of it. Sleeper does have to say 15 before kickoff, because
+ * Sleeper is what runs the clock in the room tonight.
+ *
+ * `type` snake and `pick_timer` 120 are unchanged and still agree everywhere.
  */
 export const DRAFT = {
-  /** Board size = rounds × LEAGUE.teams = 140. */
-  rounds: 14,
+  /** Board size = rounds × LEAGUE.teams = 150. */
+  rounds: 15,
   snake: true,
   /**
    * The room drafts in person off this board, so the clock is advisory:
@@ -528,7 +555,7 @@ export const PLATFORM_SETTINGS: { area: string; configuration: string }[] = [
   { area: "Draft", configuration: `${DRAFT.snake ? "Snake" : "Linear"} draft; ${DRAFT.rounds} rounds; ${DRAFT.clockSeconds}s clock; run in person` },
   { area: "Starting Lineup", configuration: STARTING_LINEUP.map((s) => `${s.count} ${s.slot}`).join(", ") + "; 0 K" },
   { area: "Bench / IR", configuration: `${ROSTER.bench} bench; ${ROSTER.irSlots} IR slots; ${ROSTER.activeCap} active` },
-  { area: "Position Limits", configuration: "None — five bench spots are the only constraint" },
+  { area: "Position Limits", configuration: `None — the ${ROSTER.activeCap}-man roster is the only constraint` },
   { area: "Scoring", configuration: `${SCORING_FORMAT}; 6-point passing TD; yardage and explosive bonuses; no kicker` },
   { area: "Playoffs", configuration: `${LEAGUE.playoffTeams} teams; weeks ${LEAGUE.playoffWeeks[0]}–${LEAGUE.playoffWeeks[1]}` },
   { area: "Keepers", configuration: "Not activated for 2026 — pure redraft. Framework deferred to a 2027 vote." },
