@@ -253,7 +253,10 @@ const ORAL_ONLY: string[] = [
     "complaint is aimed at the one man who had already solved it. Any of " +
     "those three angles is available — the phone drafters out of their " +
     "element, the clock they escaped without noticing, or the commissioner " +
-    "who pre-emptively fixed a grievance they insisted on having anyway.",
+    "who pre-emptively fixed a grievance they insisted on having anyway. " +
+    "**THIS IS THE LIVEST THING IN THE ROOM BEFORE A PICK IS MADE** — it is " +
+    "happening right now rather than being remembered, which makes it the best " +
+    "material on a pre-draft page, where there is no board to argue with yet.",
 
   "**Boofy / boofied** is the league's collective word for a fart, and it " +
     "conjugates freely: \"Did you boofy?\", \"get boofied\", \"Don't get " +
@@ -266,13 +269,18 @@ const ORAL_ONLY: string[] = [
     "got both of its nicknames out of it: his own name came out **Nickwis**, " +
     "and Ryan's came out **Wyan**. The impediment is Nick's alone — Ryan just " +
     "kept the name Nick gave him and his own speech has never been the joke. " +
-    "The bit is live rather than historical: when either name comes up the " +
-    "room DOES THE VOICE, swapping W in for R and L, and it will run a whole " +
-    "sentence that way. It is available to you on those two men and nowhere " +
-    "else. **USE IT ONCE AT MOST.** A speech bit that fires in every Nick and " +
-    "Ryan reference is not a callback, it is a tic, and it reads as a machine " +
-    "that found one joke and could not put it down — once, on a line that had " +
-    "already earned a laugh, is the whole ration.",
+    "**AND THAT IS THE DOUBLE EDGE, WHICH IS THE BEST PART OF IT: Wyan is " +
+    "Ryan's name, but it roasts NICK every time it is used on RYAN**, because " +
+    "the reason it sounds like that is Nick's mouth. So the bit cuts either " +
+    "way and you may point it in either direction — at Ryan for wearing a name " +
+    "he did not choose, or at Nick for being the reason it exists, or at both " +
+    "in the same line. The bit is live rather than historical: when either " +
+    "name comes up the room DOES THE VOICE, swapping W in for R and L, and it " +
+    "will run a whole sentence that way. It is available to you on those two " +
+    "men and nowhere else. **USE IT ONCE AT MOST.** A speech bit that fires in " +
+    "every Nick and Ryan reference is not a callback, it is a tic, and it " +
+    "reads as a machine that found one joke and could not put it down — once, " +
+    "on a line that had already earned a laugh, is the whole ration.",
 
   "**\"Hut\"** is an all-purpose interjection and sentence-opener. The cadence, " +
     "as spoken: \"Hut, Chris says that we like to honk boobies.\"",
