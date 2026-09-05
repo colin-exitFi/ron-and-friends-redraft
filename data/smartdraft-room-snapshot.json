@@ -1,7 +1,7 @@
 {
  "_PROVENANCE": {
   "generatedBy": "scripts/build-board.mjs",
-  "generatedAt": "2026-09-05T16:52:33.555Z",
+  "generatedAt": "2026-09-05T17:34:36.721Z",
   "from": "Sleeper league 1394372619427381248 (Ron and Friends) and data/managers.json",
   "shape": "10 teams x 14 rounds = 140 slots",
   "keepers": "None. Redraft — every cell is open.",
@@ -55,9 +55,9 @@
    },
    {
     "id": "1393416786937925632",
-    "name": "Biff",
+    "name": "Chris",
     "orderKey": 30,
-    "ownerName": "Biff",
+    "ownerName": "Chris",
     "claimed": true,
     "claimedByUserId": "1393416786937925632",
     "deletedAt": null,
@@ -77,9 +77,9 @@
    },
    {
     "id": "1369512244987052032",
-    "name": "LeCap",
+    "name": "Nick",
     "orderKey": 50,
-    "ownerName": "LeCapitalG",
+    "ownerName": "Nick",
     "claimed": true,
     "claimedByUserId": "1369512244987052032",
     "deletedAt": null,
@@ -110,9 +110,9 @@
    },
    {
     "id": "1394473780184625152",
-    "name": "Chilly",
+    "name": "Ryan",
     "orderKey": 80,
-    "ownerName": "ChillyWonka",
+    "ownerName": "Ryan",
     "claimed": true,
     "claimedByUserId": "1394473780184625152",
     "deletedAt": null,
@@ -121,9 +121,9 @@
    },
    {
     "id": "1394742502304514048",
-    "name": "Jolly",
+    "name": "Keith",
     "orderKey": 90,
-    "ownerName": "JollyRushers",
+    "ownerName": "Keith",
     "claimed": true,
     "claimedByUserId": "1394742502304514048",
     "deletedAt": null,
@@ -132,9 +132,9 @@
    },
    {
     "id": "1395203014372909056",
-    "name": "Gizzy",
+    "name": "Dre",
     "orderKey": 100,
-    "ownerName": "GizzyDillespie",
+    "ownerName": "Andrew",
     "claimed": true,
     "claimedByUserId": "1395203014372909056",
     "deletedAt": null,

@@ -1,7 +1,7 @@
 {
  "_provenance": "The ten franchises, read from Sleeper league 1394372619427381248 on 2026-09-05 by scripts/sleeper-pull.mjs. Sleeper is authoritative for the draft slot, the Sleeper user id, and the franchise name. It is NOT authoritative for a manager's real name, because the Sleeper API carries no real names at all — only handles and optional team names.",
 
- "_NEEDS_COMMISSIONER_REVIEW": "Every `shortName` and `fullName` below was DERIVED FROM THE SLEEPER HANDLE and is a guess. `shortName` is what the board prints in a 40px-wide cell, so it is the one the room will read all night. Correct them here and nowhere else — every surface joins on `shortName`, and `npm run build:board` re-stamps the board from this file. Nothing else needs touching.",
+ "_commissionerReview": "REVIEWED AND CONFIRMED by the commissioner on 2026-09-05. Every `shortName` and `fullName` below is now his transcription, not a guess derived from the Sleeper handle. Do not 'tidy' them. Two are deliberately asymmetric and are correct as they stand: slot 10 prints `Dre` but his name is Andrew, and slot 7 prints `Colin` even though the franchise is CullenGPT. `franchiseName` and `franchiseAbbrev` are the Sleeper team identities and were never in question.",
 
  "_shortNameRule": "Short names are the join key for every other source, so they must be unique and they must be short. First names are safe in this league: unlike the previous one, no two managers share one.",
 
@@ -27,8 +27,8 @@
    "draftSlot": 2
   },
   {
-   "shortName": "Biff",
-   "fullName": "Biff",
+   "shortName": "Chris",
+   "fullName": "Chris",
    "franchiseName": "BigboofieBiff",
    "franchiseAbbrev": "BIF",
    "sleeperUserId": "1393416786937925632",
@@ -47,8 +47,8 @@
    "draftSlot": 4
   },
   {
-   "shortName": "LeCap",
-   "fullName": "LeCapitalG",
+   "shortName": "Nick",
+   "fullName": "Nick",
    "franchiseName": "LeCapitalG",
    "franchiseAbbrev": "LCG",
    "sleeperUserId": "1369512244987052032",
@@ -78,8 +78,8 @@
    "commissioner": true
   },
   {
-   "shortName": "Chilly",
-   "fullName": "ChillyWonka",
+   "shortName": "Ryan",
+   "fullName": "Ryan",
    "franchiseName": "ChillyWonka",
    "franchiseAbbrev": "CHW",
    "sleeperUserId": "1394473780184625152",
@@ -88,8 +88,8 @@
    "draftSlot": 8
   },
   {
-   "shortName": "Jolly",
-   "fullName": "JollyRushers",
+   "shortName": "Keith",
+   "fullName": "Keith",
    "franchiseName": "JollyRushers",
    "franchiseAbbrev": "JOL",
    "sleeperUserId": "1394742502304514048",
@@ -98,8 +98,8 @@
    "draftSlot": 9
   },
   {
-   "shortName": "Gizzy",
-   "fullName": "GizzyDillespie",
+   "shortName": "Dre",
+   "fullName": "Andrew",
    "franchiseName": "GizzyDillespie",
    "franchiseAbbrev": "GIZ",
    "sleeperUserId": "1395203014372909056",

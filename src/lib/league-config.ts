@@ -67,11 +67,18 @@ export const CURRENT_SEASON: number = LEAGUE.currentSeason;
  * `data/managers.json`, which is the file to edit.
  *
  * MANAGER NAMES ARE NOT SLEEPER'S TO GIVE. The API carries handles and optional
- * team names and no real names at all, so `manager` below is derived from the
- * handle and is a best guess. `data/managers.json` says so loudly and is the
- * one place to correct it — nothing here is a second copy to keep in step,
- * because `league-json.ts` reads the file and falls back to this list only for
- * a field the file is missing.
+ * team names and no real names at all, so the names below cannot come from the
+ * pull. They were the commissioner's own transcription on 2026-09-05 and are no
+ * longer guesses derived from the handle.
+ *
+ * THIS LIST IS A SECOND COPY AND MUST BE KEPT IN STEP WITH
+ * `data/managers.json`. `league-json.ts` does read the file and fall back here
+ * only for a missing field, but `recap-grade.ts` and `verify-recap-clean.mts`
+ * import `FRANCHISES` directly, so a short name left stale here reaches the
+ * recap even when the JSON is correct. Edit the JSON first, then mirror it.
+ *
+ * Two entries are deliberately asymmetric: slot 10 prints `Dre` but the manager
+ * is Andrew, and slot 7 prints `Colin` though the franchise is CullenGPT.
  *
  * Unlike the previous league, no two managers share a first name, so short
  * names are unambiguous.
@@ -87,14 +94,14 @@ export type Franchise = {
 export const FRANCHISES: Franchise[] = [
   { shortName: "Steve", franchiseName: "Mahomies", abbrev: "MAH", manager: "Steve" },
   { shortName: "Dennis", franchiseName: "dennisphinney", abbrev: "DEN", manager: "Dennis" },
-  { shortName: "Biff", franchiseName: "BigboofieBiff", abbrev: "BIF", manager: "Biff" },
+  { shortName: "Chris", franchiseName: "BigboofieBiff", abbrev: "BIF", manager: "Chris" },
   { shortName: "Scott", franchiseName: "ScottBrennanstl", abbrev: "SCO", manager: "Scott" },
-  { shortName: "LeCap", franchiseName: "LeCapitalG", abbrev: "LCG", manager: "LeCapitalG" },
+  { shortName: "Nick", franchiseName: "LeCapitalG", abbrev: "LCG", manager: "Nick" },
   { shortName: "Tom", franchiseName: "TopNotchTom", abbrev: "TNT", manager: "Tom" },
   { shortName: "Colin", franchiseName: "CullenGPT", abbrev: "CGP", manager: "Colin Tracy" },
-  { shortName: "Chilly", franchiseName: "ChillyWonka", abbrev: "CHW", manager: "ChillyWonka" },
-  { shortName: "Jolly", franchiseName: "JollyRushers", abbrev: "JOL", manager: "JollyRushers" },
-  { shortName: "Gizzy", franchiseName: "GizzyDillespie", abbrev: "GIZ", manager: "GizzyDillespie" },
+  { shortName: "Ryan", franchiseName: "ChillyWonka", abbrev: "CHW", manager: "Ryan" },
+  { shortName: "Keith", franchiseName: "JollyRushers", abbrev: "JOL", manager: "Keith" },
+  { shortName: "Dre", franchiseName: "GizzyDillespie", abbrev: "GIZ", manager: "Andrew" },
 ];
 
 const FRANCHISES_BY_SHORT_NAME = new Map(FRANCHISES.map((f) => [f.shortName.toLowerCase(), f]));
