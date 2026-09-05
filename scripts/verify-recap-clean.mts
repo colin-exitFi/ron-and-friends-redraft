@@ -37,7 +37,7 @@ import { recapSystemPrompt } from "@/lib/recap-prompt";
 import { loreBlock, ASSIGNED_SAVAGE } from "@/lib/league-lore";
 import { positionalNormsBlock } from "@/lib/positional-norms";
 import { readGradeHistory } from "@/lib/recap-grade-source";
-import { FRANCHISES, LEAGUE } from "@/lib/league-config";
+import { CURRENT_SEASON, FEATURES, FRANCHISES, LEAGUE } from "@/lib/league-config";
 
 let checks = 0;
 const failures: string[] = [];
@@ -224,17 +224,101 @@ check(
   new Set(roster.map((s) => s.toLowerCase())).size === roster.length,
 );
 
-section("8. The keeper row is recorded as an argument, never as this season's format");
+section("8. The keeper machinery does not render into a redraft");
 /*
- * THE ONE PLACE "KEEPER" IS ALLOWED TO APPEAR IN THE LORE, AND WHY IT IS FENCED.
+ * THE SECOND WAY A PROMPT LIES TO THE ROOM, AND IT IS NOT A FOREIGN NAME.
+ *
+ * Sections 1–5 stop another league's PEOPLE reaching the model. This one stops
+ * another league's FORMAT reaching it, which shipped for exactly as long and
+ * was harder to see because none of it is a proper noun.
+ *
+ * `FEATURES.keepers` is false: Section 10 of the ruleset writes the keeper
+ * framework down and deliberately leaves it switched off, so nobody kept
+ * anybody and every keeper-shaped field in the dossier is empty. The prompt
+ * nonetheless carried several thousand words on how to price a keeper, how to
+ * judge a passed-over keeper, and how to read a board reshaped by pick trades
+ * this league forbids — and the pre-draft branch was a KEEPER AUDIT from its
+ * title down, against a board with no keepers to audit.
+ *
+ * A model handed instructions for machinery that is not there does not fall
+ * silent. It explains the absence, or it borrows the vocabulary and writes a
+ * sentence about a keeper in a league that has none, in front of ten men who
+ * will notice immediately. So the gating is asserted rather than assumed, by
+ * the FIELD NAMES: a schema key like `slotsSavedByKeeping` cannot appear in a
+ * correct redraft prompt for any innocent reason, which makes it the same kind
+ * of unambiguous tripwire as a full name in `FOREIGN_LORE`.
+ *
+ * Everything here reverses cleanly if the league votes keepers in for 2027 —
+ * the checks are written against the switch, not against the string.
+ */
+check(`FEATURES.keepers is off, so ${CURRENT_SEASON} is the redraft this section assumes`, !FEATURES.keepers);
+
+if (!FEATURES.keepers) {
+  /** Schema keys that only exist to price a keeper. None may reach the model. */
+  const KEEPER_FIELDS = [
+    "slotsSavedByKeeping",
+    "pickIfReleased",
+    "costOverallPick",
+    "passedOnKeepers",
+    "keeperConsumedRounds",
+    "keepersOutOfPool",
+    "unusedKeeperSlots",
+    "roundsCheaperToKeep",
+  ];
+
+  for (const stage of ["predraft", "midraft", "postdraft"] as const) {
+    const prompt = recapSystemPrompt(stage);
+    const leaked = KEEPER_FIELDS.filter((f) => prompt.includes(f));
+    check(`${stage}: no keeper field name survives in the prompt`, leaked.length === 0, leaked.join(", "));
+  }
+
+  const post = recapSystemPrompt("postdraft");
+  check(
+    "the format is stated as a redraft in the opening, not as a keeper league",
+    /-team redraft fantasy football league/.test(post) &&
+      !/-team keeper fantasy football league/.test(post),
+  );
+  check(
+    "…and Part 1 says outright that nobody kept anybody",
+    /THIS IS A PURE REDRAFT AND NOBODY KEPT ANYBODY/.test(post),
+  );
+  check(
+    "…and Part 3 names the keeper framework as switched off rather than absent",
+    /NO KEEPERS THIS SEASON/.test(post) && /a keeper vote is a 2027 conversation/.test(post),
+  );
+  check(
+    "the one surviving value measure is the ADP comparison, and it is named as the only one",
+    /There is exactly ONE measure of value on this page/.test(post) &&
+      /\`expectedPick - overallPick\`/.test(post),
+  );
+
+  /*
+   * The pre-draft branch, which was the worst of it: a keeper audit by name,
+   * ordering a model to judge declarations that do not exist, and narrating a
+   * projected table computed off rosters with no players in them.
+   */
+  const pre = recapSystemPrompt("predraft");
+  check("the pre-draft branch is a roast and no longer a keeper audit", /PRE-DRAFT ROAST/.test(pre) && !/KEEPER AUDIT/.test(pre));
+  check(
+    "…and it forbids a projected finish outright, because nobody owns a player",
+    /NO PROJECTED STANDINGS/.test(pre) && !/\`projectedStandings\.spread\`/.test(pre),
+  );
+  check(
+    "…and it names what IS known before a pick: the seat, the franchise, who is new, the lore",
+    /Where he is sitting, and what that seat is worth/.test(pre) && /draftSlot/.test(pre),
+  );
+}
+
+section("9. The keeper row is recorded as an argument, never as this season's format");
+/*
+ * THE ONE PLACE "KEEPER" IS STILL ALLOWED TO APPEAR, AND WHY IT IS FENCED.
  *
  * Chris is loudly against a keeper league that was floated and not adopted, and
  * the commissioner wanted the row recorded because it is the funniest thing
  * happening in the room tonight. It is also the single easiest way for a blurb
- * to state that this league has keepers — `FEATURES.keepers` is false and 2026
- * is a pure redraft — so the lore has to carry the grievance AND the fact that
- * it is about a proposal, and his quote has to stay a thing he said rather than
- * a thing that is true.
+ * to state that this league has keepers — so the lore has to carry the
+ * grievance AND the fact that it is about a proposal, and his quote has to stay
+ * a thing he said rather than a thing that is true.
  */
 check(
   "the lore records the keeper league as a proposal that was not adopted",
@@ -249,9 +333,8 @@ check(
 /*
  * THE INVERSION, ASSERTED BECAUSE IT WAS RECORDED BACKWARDS ONCE. Chris and
  * Ryan have never done an OFFLINE draft — they are Yahoo-app phone drafters and
- * a room full of people is the new thing. Written the other way round the joke
- * still reads perfectly and is the exact opposite of true about two men who
- * will be sitting here while it is read out.
+ * the room is the new thing. Written the other way round the joke still reads
+ * perfectly and is the opposite of true about two men who will be sitting here.
  */
 check(
   "the offline draft is the new thing for them, not the online one",
