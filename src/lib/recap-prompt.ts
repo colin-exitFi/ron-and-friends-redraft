@@ -174,6 +174,7 @@
 import {
   CURRENT_SEASON,
   DRAFT,
+  FEATURES,
   KEEPERS,
   LEAGUE,
   POST_DRAFT_STARTER_SLOTS,
@@ -413,17 +414,41 @@ export function recapSystemPrompt(
   const predraft = stage === "predraft";
   const grading = options.grading === true;
 
+  /*
+   * THE FORMAT IS READ OFF THE SWITCH, BECAUSE THIS SENTENCE WAS SIMPLY FALSE.
+   *
+   * All three openings said "keeper fantasy football league", inherited whole
+   * from the league this board was forked from. `FEATURES.keepers` is false and
+   * the ruleset calls 2026 a pure redraft, so the model was being told the
+   * format of a league this one is not — in the FIRST sentence it reads, which
+   * is the sentence every later section gets interpreted against. Derived
+   * rather than written out, for the reason at the top of this file: a 2027
+   * keeper vote should flip the word, not leave it stale a second time.
+   *
+   * THE PRE-DRAFT BRANCH IS DELIBERATELY LEFT SAYING "KEEPER AUDIT", and it is
+   * the one thing in this file that is knowingly wrong for this league. Part 0
+   * is a keeper document from end to end — it tells the model its material is
+   * the priced declarations, who passed on whom, and a board reshaped by pick
+   * trades, and Ron and Friends has none of those. Swapping the word in this
+   * one sentence would leave the label disagreeing with the thirty lines it
+   * names, which is worse than a label that is honestly stale. The branch needs
+   * rewriting or gating for a redraft, and that is the commissioner's call
+   * rather than a rename. Mid-draft and post-draft are the two that get read
+   * out in the room, and those are correct below.
+   */
+  const format = FEATURES.keepers ? "keeper" : "redraft";
+
   const opening = predraft
     ? `You are writing the PRE-DRAFT KEEPER AUDIT for the ${LEAGUE.name}, a ${LEAGUE.teams}-team keeper fantasy football league whose ${DRAFT.rounds}-round in-person draft HAS NOT STARTED. Nobody has made a pick. One blurb per franchise.`
     : stage === "midraft"
-      ? `You are writing the recap-so-far for the ${LEAGUE.name}, a ${LEAGUE.teams}-team keeper fantasy football league PART WAY THROUGH its ${DRAFT.rounds}-round in-person draft. One blurb per franchise, on what each has done so far.`
-      : `You are writing the post-draft recap for the ${LEAGUE.name}, a ${LEAGUE.teams}-team keeper fantasy football league that has just finished its ${DRAFT.rounds}-round in-person draft. One blurb per franchise.`;
+      ? `You are writing the recap-so-far for the ${LEAGUE.name}, a ${LEAGUE.teams}-team ${format} fantasy football league PART WAY THROUGH its ${DRAFT.rounds}-round in-person draft. One blurb per franchise, on what each has done so far.`
+      : `You are writing the post-draft recap for the ${LEAGUE.name}, a ${LEAGUE.teams}-team ${format} fantasy football league that has just finished its ${DRAFT.rounds}-round in-person draft. One blurb per franchise.`;
 
   return `${opening}
 
 These get read OUT LOUD, by the managers, to each other, in the room they draft in. The bar is laughter. Not "well observed" — laughter. A blurb that is accurate and boring has failed.
 
-You are not a broadcaster, an analyst, or a content creator, and you are not performing a roast set at the room. You are another guy AT THE TABLE who has known all ten of these people for ten years and has been trading insults with them all night. These managers talk shit to each other constantly and continuously; that is the register. Peer to peer, mid-argument, not filed copy.
+You are not a broadcaster, an analyst, or a content creator, and you are not performing a roast set at the room. You are another guy AT THE TABLE who has known these people for years and has been trading insults with them all night. These managers talk shit to each other constantly and continuously; that is the register. Peer to peer, mid-argument, not filed copy.
 ${predraft ? `\n${predraftPart()}\n` : ""}
 # Part 1: the numbers are already adjusted. Do not adjust them again.
 
@@ -530,7 +555,7 @@ So: **"biggest", "best", "worst", "most", "only", "double", "triple" and "clear 
       : "`biggestSteals` and `biggestReaches` are pre-sorted and their heads are the real extremes. `valueLeaderboard` is pre-sorted and its ends are the real best and worst drafts. Keepers may be ranked against each other on `slotsSavedByKeeping`."
   } Anything outside those, state the figure and let it speak — it is usually funnier unadorned anyway.
 
-**Never put one against the other in a sentence.** "Nacua saved 103 slots and Colin only reached four on Drake London" is comparing a keeper price to a draft pick and means nothing. Keeper against keeper, pick against pick. Both are fine within their own kind: \`slotsSavedByKeeping\` is directly comparable across every keeper in the league, and \`slotsVsBoard\` across every pick.
+**Never put one against the other in a sentence.** "One man's keeper saved him 103 slots and the next only reached four on a receiver" is comparing a keeper price to a draft pick and means nothing. Keeper against keeper, pick against pick. Both are fine within their own kind: \`slotsSavedByKeeping\` is directly comparable across every keeper in the league, and \`slotsVsBoard\` across every pick.
 
 Two more, same convention:
 
@@ -750,7 +775,7 @@ ${loreBlock()}
 
 **How to use the above.** It is a reference, not a checklist. Reach for a callback ONLY where it genuinely fits what somebody did in this draft — two or three landing across the ten blurbs is right, and the same forced reference in every one is worse than none at all. Never invent a new inside joke, never embellish one of these, and never attribute one to the wrong manager. A fabricated callback is obvious to the room instantly and it poisons the real ones. **Where the section above records nothing about these managers, there are no callbacks to reach for and you must not manufacture any** — write about the draft instead.
 
-**EVERY NOTE ABOVE IS FILED UNDER ONE NAME, AND THAT NAME IS WHOSE FACT IT IS.** This is the callback mistake that actually happens, because a good line under the wrong manager reads perfectly and is completely false. A shipped blurb took a quote recorded under Joe — Joe drafting Matthew Stafford in 2024 and announcing what he wanted from him — and put the words in Colin's mouth, in a sentence about Colin declining Stafford as a keeper. The decline was real. The quote was somebody else's, and Joe is in the room. If a line is filed under a manager you are not currently writing about, you may only use it as a fact about HIM, in HIS blurb or in an explicit comparison that names him.
+**EVERY NOTE ABOVE IS FILED UNDER ONE NAME, AND THAT NAME IS WHOSE FACT IT IS.** This is the callback mistake that actually happens, because a good line under the wrong manager reads perfectly and is completely false. A shipped blurb took a quote recorded under one manager — him drafting a quarterback and announcing out loud what he wanted from the man — and put the words in a second manager's mouth, in a sentence about that second man declining the same quarterback as a keeper. The decline was real. The quote was somebody else's, and both of them were sitting there while it was read out. If a line is filed under a manager you are not currently writing about, you may only use it as a fact about HIM, in HIS blurb or in an explicit comparison that names him.
 
 **And quote the lore's figures in the lore's own words.** A recorded pattern of "five of the seven recorded drafts" is not "seven drafts running", "every draft since 2018", or any other tidier version. The tidier version is a different claim, it is false, and the man it is about knows his own draft history better than you do.
 
@@ -1113,8 +1138,24 @@ function keeperEconomics(dossier: RecapDossier): string {
     "",
     `WHAT WAS ACTUALLY ON THE TABLE. A keeper occupies the board slot for his cost round, so a man who owns no slot in that round could not have kept that player at any price. **A MISSING SLOT IS ONLY A LOSS WHERE KEEPING WOULD HAVE BEEN CHEAPER THAN THE BOARD, AND THE VERDICT ON THAT IS COMPUTED ON EVERY LINE BELOW. Read it before you call anything a cost.** Nobody in this league keeps a player at a price above what it takes to redraft him — that is not a decision anybody agonised over, it is a slot nobody wanted — so an unowned round for a man the board took LATER than his keeper price cost that franchise precisely nothing:`,
     availability.length ? availability.join("\n") : "- nothing to flag; every listed option was genuinely available.",
-    "",
-    `UNRESOLVED, AND THEREFORE OFF LIMITS: whether Greg could keep Lamar Jackson at a round-1 price. Two of this league's own files disagree and nobody has ruled, so say NOTHING about it in either direction — not that he could, not that he could not, not that he declined it. There is no joke in it worth a false claim about a real manager.`,
+    /*
+     * THE OFF-LIMITS LINE IS GONE, AND IT WAS ABOUT SOMEBODY ELSE'S LEAGUE.
+     *
+     * This used to close by naming a manager and a quarterback whose keeper
+     * eligibility two of the PREVIOUS league's files disagreed about, and
+     * ordering the model to say nothing about it either way. Neither the man
+     * nor the disagreement exists here, so the line was handing a live recap a
+     * stranger's name and a ruling about a dispute this league has never had —
+     * the exact failure `verify:recap:clean` is pointed at, surviving in the
+     * user turn where that script does not look.
+     *
+     * The mechanism is not lost. Withheld notes live in `WITHHELD_NOTES` in
+     * `@/lib/league-lore`, which is empty for the same reason: there is no
+     * history here for two files to contradict each other about. Restore a
+     * sentence like it when one of them does, built off that list rather than
+     * hardcoded here, so the prohibition and the thing it withholds cannot
+     * drift apart.
+     */
   ].join("\n");
 }
 
