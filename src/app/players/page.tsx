@@ -2,7 +2,6 @@ import { ChevronDown, Radio, TriangleAlert } from "lucide-react";
 
 import { PageBody, PageHeader } from "@/components/page-header";
 import { CheatSheet } from "@/components/cheat-sheet";
-import { FantasyProsRefresh } from "@/components/fantasypros-refresh";
 import { buildCheatSheet } from "@/lib/cheat-sheet";
 import { draftedFromView, type DraftedBy } from "@/lib/cheat-sheet-view";
 import { getPoolFetchedAt, getPoolProvenance } from "@/lib/smartdraft";
@@ -146,11 +145,23 @@ export default async function PlayersPage() {
           tap away — collapsed, not deleted, because none of it is optional
           once somebody wants to know why the numbers disagree.
         */}
-        {/* Stacked on a phone. Side by side, the refresh button took a third of
-            a 390px screen and squeezed the summary into a column four words
-            wide, which is slower to read than the paragraph it replaced. */}
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <details className="group border-border bg-card/40 min-w-0 flex-1 rounded-lg border">
+        {/*
+          NO "REFRESH FROM FANTASYPROS" BUTTON, AND NOTHING RED.
+
+          It advertised a capability that does not work — FantasyPros cannot be
+          reached from the deployment — and its failure message ("could not be
+          reached, these are the last good ones") turned a page whose numbers are
+          correct into one that looks broken. Ten managers are about to read this
+          on their phones during a live draft, and red text beside a column of
+          figures is an invitation to distrust the figures. The provenance is
+          stated plainly instead, below and in the disclosure inside this block.
+
+          `FantasyProsRefresh` and `/api/fantasypros/refresh` are left in the
+          repo. The commissioner still refreshes from the command line, and
+          deleting a working route to hide a button nobody can see is a change
+          with more ways to go wrong than to go right.
+        */}
+        <details className="group border-border bg-card/40 min-w-0 rounded-lg border">
             <summary className="text-muted-foreground flex cursor-pointer list-none items-start gap-2 p-3 text-xs touch:min-h-11">
               {sheetIsHealthy ? (
                 <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -294,9 +305,7 @@ export default async function PlayersPage() {
                 .
               </p>
             </div>
-          </details>
-          <FantasyProsRefresh />
-        </div>
+        </details>
 
         {boardProblem && (
           <p className="text-warning flex items-start gap-2 text-xs">
@@ -314,6 +323,16 @@ export default async function PlayersPage() {
           initialDrafted={drafted}
           liveEnabled={savesAreShared()}
           meta={meta}
+          /*
+           * FORMATTED HERE, ON THE SERVER, rather than from the ISO string in
+           * `meta` inside the client component. `toLocaleString` in a client
+           * render resolves in the viewer's timezone and this deployment's
+           * server runs in UTC, so the two would disagree by five hours and
+           * React would replace the text after hydration — a provenance line
+           * that changes its own timestamp in front of somebody is worse than
+           * no provenance line.
+           */
+          rankingsUpdated={meta.board ? when(meta.board.exportedAt) : null}
         />
       </PageBody>
     </>

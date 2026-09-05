@@ -106,6 +106,7 @@ export function CheatSheet({
   initialDrafted,
   liveEnabled,
   meta,
+  rankingsUpdated,
 }: {
   rows: CheatSheetRow[];
   initialDrafted: DraftedBy;
@@ -118,6 +119,16 @@ export function CheatSheet({
    */
   liveEnabled: boolean;
   meta: CheatSheetMeta;
+  /**
+   * When the FantasyPros consensus this sheet is ordered by was exported,
+   * already formatted for display. Null when there is no league-scoped export.
+   *
+   * FROM THE EXPORT'S OWN PROVENANCE, not a date typed into the source. A
+   * hardcoded "2:00 PM" is right for one afternoon and quietly wrong every day
+   * after it, and a stale timestamp on a provenance line is worse than none —
+   * it is the page telling a confident lie about its own freshness.
+   */
+  rankingsUpdated: string | null;
 }) {
   const [drafted, setDrafted] = useState<DraftedBy>(initialDrafted);
   const [q, setQ] = useState("");
@@ -360,13 +371,34 @@ export function CheatSheet({
       {meta.projectedCount > 0 && (
         <p className="text-muted-foreground border-border/60 bg-card/30 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs">
           <Sigma className="text-primary mt-px h-3.5 w-3.5 shrink-0" />
+          {/*
+            ONE PROVENANCE STATEMENT, NOT TWO NOTICES. Where the order came from
+            and how the points are scored are different facts, and a manager
+            reads them as one thought — "these are FantasyPros' rankings, priced
+            in our rules". Split across two blocks they compete for the same
+            glance and the second one gets skipped.
+          */}
           <span>
-            <span className="text-foreground font-medium">Proj</span> is scored to Ron
+            These are{" "}
+            <span className="text-foreground font-medium">
+              FantasyPros&apos; expert consensus
+            </span>{" "}
+            rankings{rankingsUpdated ? <>, updated {rankingsUpdated}</> : null}.{" "}
+            {/*
+              The explicit `{" "}` is not decoration. JSX drops whitespace that
+              contains a newline, so a space sitting between `</span>` and a line
+              break disappears — which is why this paragraph read "Projis scored"
+              on the deployed page. Prettier will re-wrap this line at any time,
+              so the space has to be a real expression rather than a character
+              that happens to be on the right side of a wrap.
+            */}
+            <span className="text-foreground font-medium">Proj</span>{" "}
+            is scored to Ron
             and Friends&apos; own settings — {meta.scoringFormat}, where a tight end
             catches at {meta.tePremiumReception} and a passing touchdown is worth{" "}
-            {meta.passTd} — so it will disagree with generic cheat sheets, printed
-            rankings and standard half-PPR boards.{" "}
-            Every column below is his projected {meta.projectionSeason ?? ""} stat line.
+            {meta.passTd} — so it will disagree with generic cheat sheets and standard
+            half-PPR boards; every column is his projected{" "}
+            {meta.projectionSeason ?? ""} stat line.
           </span>
         </p>
       )}

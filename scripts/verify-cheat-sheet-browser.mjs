@@ -474,7 +474,53 @@ const run = async () => {
         `${blanks.dashes} dashes, ${blanks.empty} truly empty`,
       );
 
-      // The disclosure he liked. It is the panel he objected to, not this.
+      /*
+       * THE PROVENANCE LINE, AND THE ABSENCE OF THE THINGS IT REPLACED.
+       *
+       * A "Refresh from FantasyPros" button advertised a capability the
+       * deployment does not have, and its failure message was red text sitting
+       * directly above a set of numbers that had just been audited clean. On a
+       * phone, in a live draft, that reads as "do not trust this page". So the
+       * button's absence is asserted, and so is the absence of ANY red text
+       * above the table — a warning nobody put back on purpose is exactly the
+       * kind of thing that creeps back in.
+       */
+      check(
+        "the broken “Refresh from FantasyPros” button is gone",
+        (await page.getByRole("button", { name: /Refresh from FantasyPros/i }).count()) ===
+          0,
+      );
+      check(
+        "…and so is the red “could not be reached” warning",
+        (await page.locator("text=/could not be reached/i").count()) === 0,
+      );
+      const alarming = await page.evaluate(() => {
+        const table = document.querySelector("table");
+        const nodes = [...document.querySelectorAll("main *, body > div *")].filter(
+          (el) =>
+            el.children.length === 0 &&
+            el.textContent.trim() &&
+            table &&
+            table.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING,
+        );
+        // The league's warning hue, as the token resolves at runtime.
+        return nodes
+          .map((el) => getComputedStyle(el).color)
+          .filter((c) => {
+            const m = c.match(/\d+/g);
+            if (!m) return false;
+            const [r, g, b] = m.map(Number);
+            return r > 150 && g < 110 && b < 110;
+          }).length;
+      });
+      check(
+        "…and nothing above the table is coloured like an error at all",
+        alarming === 0,
+        `${alarming} red text node(s) above the sheet`,
+      );
+
+      // The disclosure he liked, now carrying where the rankings came from as
+      // well as how the points are scored — one statement rather than two.
       const disclosure = await page
         .locator("text=/is scored to Ron and Friends/")
         .first()
@@ -484,6 +530,13 @@ const run = async () => {
         /TE premium|tight end catches/.test(disclosure),
         disclosure.slice(0, 90),
       );
+      check(
+        "…and it now says the rankings are FantasyPros' consensus, and when",
+        /FantasyPros.{0,30}consensus/s.test(disclosure) &&
+          /updated \w+ \d+, \d+:\d\d/.test(disclosure),
+        disclosure.replace(/\s+/g, " ").slice(0, 150),
+      );
+      console.log(`  · “${disclosure.replace(/\s+/g, " ").slice(0, 120)}…”`);
       check(
         "…and so is the invitation to scroll sideways",
         await page.locator("text=/Scroll the table sideways/").first().isVisible(),
