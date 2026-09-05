@@ -37,7 +37,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { DB_SCHEMA } from "../src/lib/supabase/schema.mjs";
+import { DB_SCHEMA } from "../src/lib/db-schema.mjs";
 
 const repo = dirname(dirname(fileURLToPath(import.meta.url)));
 const sqlPath = join(repo, "supabase", "redraft-schema.sql");
