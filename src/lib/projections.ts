@@ -157,13 +157,49 @@ export type ProjectionSnapshot = {
 };
 
 /**
+ * What a reception is worth to a player at this position.
+ *
+ * ============================================================================
+ * THE TIGHT END PREMIUM, WHICH THIS FILE USED TO DROP ON THE FLOOR
+ * ============================================================================
+ * `SCORING_SPEC.recTePremium` has been 0.5 since the scoring was rebuilt off
+ * the live Sleeper pull, and until now NOTHING READ IT. `pointsFromStats` took
+ * a stat line and no position, so it had no way to tell a tight end's catch
+ * from a receiver's and paid every one of them the base 0.5.
+ *
+ * That is not a rounding error. Sleeper pays a tight end a full point per
+ * reception, so a 100-catch tight end was being valued fifty points light —
+ * about a fifth of his season, landing on exactly one position, in the one
+ * league where that position is deliberately mispriced relative to the market.
+ * The projected standings ranked "TE" as a franchise's weakest slot partly
+ * because of it, and the whole reason the league carries a TE premium is that
+ * it is supposed to change who you draft.
+ *
+ * Position is optional so a caller holding a bare stat line still gets the
+ * base rate, which is the honest answer when nobody has said who caught them.
+ */
+export function receptionValue(position?: string | null): number {
+  const s = SCORING_SPEC;
+  return position?.toUpperCase() === "TE" ? s.ppr + s.recTePremium : s.ppr;
+}
+
+/**
  * Season fantasy points under THIS league's scoring.
  *
  * Reads every coefficient from `SCORING_SPEC`. Nothing about six-point passing
- * touchdowns or full PPR is written down here, so re-pointing the league's
- * scoring re-points this with it.
+ * touchdowns or the tight end premium is written down here, so re-pointing the
+ * league's scoring re-points this with it.
+ *
+ * WHAT A SEASON TOTAL CANNOT CARRY. The milestone and explosive bonuses —
+ * `bonusPass300`, `bonusRec100`, `bonusPlay40` and the rest — are per-GAME
+ * events, and a season projection publishes only the season total. There is no
+ * way to recover "how many 100-yard games" from "1,400 receiving yards" without
+ * inventing a distribution, so they are deliberately not applied here. Every
+ * player is understated by the same handful of points and the ORDER, which is
+ * the only thing anything ranks on, is unaffected. Stated so the omission is a
+ * decision on the record rather than a gap somebody later reads as a bug.
  */
-export function pointsFromStats(stats: ProjectedStats): number {
+export function pointsFromStats(stats: ProjectedStats, position?: string | null): number {
   const s = SCORING_SPEC;
   const n = (v: number | undefined) => v ?? 0;
 
@@ -173,7 +209,7 @@ export function pointsFromStats(stats: ProjectedStats): number {
     n(stats.interceptions) * s.interceptionThrown +
     n(stats.rushYards) / s.rushRecYardsPerPoint +
     n(stats.rushTd) * s.rushTd +
-    n(stats.receptions) * s.ppr +
+    n(stats.receptions) * receptionValue(position) +
     n(stats.recYards) / s.rushRecYardsPerPoint +
     n(stats.recTd) * s.recTd +
     n(stats.fumblesLost) * s.fumbleLost +
@@ -307,7 +343,7 @@ export function indexProjections(snapshot: ProjectionSnapshot): ProjectionIndex 
     let points: number;
     let basis: ProjectionBasis;
     if (hasScorableStats(row.stats)) {
-      points = pointsFromStats(row.stats);
+      points = pointsFromStats(row.stats, row.position);
       basis = "league";
       leagueScoredCount++;
       const keys = Object.keys(row.stats);
