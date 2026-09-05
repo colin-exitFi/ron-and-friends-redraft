@@ -24,8 +24,8 @@
  *      than the same board outside TV mode.
  *   2. The active round sits inside the safe band — found by walking from the
  *      on-the-clock cell to its `[data-round]` row.
- *   3. Following works: the cursor is walked to rounds 1, 8 and 16 and (2) is
- *      re-asserted at each.
+ *   3. Following works: the cursor is walked to the first round, a round in the
+ *      middle and the last round, and (2) is re-asserted at each.
  *   4. A committed pick re-follows, entered with the keyboard against the real
  *      API. That writes the live board, so it is borrowed through
  *      `live-board-guard.mjs` and the sha is confirmed unchanged at the end.
@@ -40,8 +40,8 @@
  *      still under zoom and comparing those is how you conclude nothing
  *      happened when the whole screen just changed size. See `checkZoom` for
  *      how the zoom is driven and why it is driven that way.
- *  10. The density range reaches all sixteen rounds inside the band, clamps at
- *      both ends, and the readout says how many rounds are on screen.
+ *  10. The density range reaches every round on the board inside the band,
+ *      clamps at both ends, and the readout says how many are on screen.
  *
  * And the mock, which renders the same grid: it follows too. The repo's own
  * note is that drift between the mock and the live board gets discovered on
@@ -70,6 +70,27 @@ import {
   NAME_FLOOR_ARCMIN,
   PX_PER_INCH,
 } from "../src/lib/board-legibility.ts";
+/*
+ * THE BOARD'S SHAPE, READ RATHER THAN PINNED.
+ *
+ * This harness was written against a 10 x 16 board and asserted both halves of
+ * that as literals: 160 cells, and "round 16" as the bottom of the board in
+ * every follow, Fit and zoom check. Ron and Friends drafts 10 x 15, so all of
+ * them failed on the LEAGUE rather than on a bug — twenty-four times over.
+ *
+ * The failure text is the dangerous part. "expected 160, got 150" reads as a
+ * board that is a round short, two hours before the room sits down, and the fix
+ * it invites is to regenerate the board to sixteen rounds. The board is right:
+ * 10 x 15 = 150 is Sleeper's live draft setting and the commissioner's own
+ * ruling. So the assertions are what move, and they move to being derived,
+ * because `DRAFT.rounds` has changed twice today already — 16 in the source
+ * league, then 14, now 15 — and a fourth literal typed in here would be wrong
+ * the next time he changes his mind.
+ *
+ * `league-config.ts` has no imports of its own, so there is no alias resolution
+ * to arrange here — the same reason `verify-board-fit.mjs` imports it directly.
+ */
+import { DRAFT, LEAGUE, TOTAL_PICKS } from "../src/lib/league-config.ts";
 
 const BASE = process.env.BASE ?? "http://localhost:3210";
 const OUT = path.join(process.cwd(), "screenshots");
@@ -89,6 +110,20 @@ const STEP = 2;
 const DEFAULT_SAFE = { top: 0, bottom: 72 };
 /** Matches `FLASH_MS` in `draft-surface.tsx`. */
 const FLASH_MS = 3400;
+
+/**
+ * The last round on the board — the one every "does it reach the bottom" claim
+ * is about, and the only round whose number is load-bearing here.
+ */
+const LAST_ROUND = DRAFT.rounds;
+/**
+ * A round in the middle of the board, which is where the safe-area and
+ * following checks want the cursor: far enough down that the board has had to
+ * scroll to put it in the band, and not so far that it is pinned at the end.
+ */
+const MID_ROUND = Math.ceil(DRAFT.rounds / 2);
+/** First, middle, last — the three the follow check walks the cursor to. */
+const FOLLOW_ROUNDS = [1, MID_ROUND, LAST_ROUND];
 
 mkdirSync(OUT, { recursive: true });
 
@@ -158,6 +193,17 @@ async function geometry(page) {
       board: true,
       rounds: rows.length,
       rowHeight: rows[2] ? round(rows[2].getBoundingClientRect().height) : null,
+      /*
+       * The height a row is GUARANTEED, `3.45rem × density`, read off the row
+       * rather than restated here so the density control moves it. A row is
+       * `grow`, so on a screen where the whole board fits it is stretched well
+       * past this floor and the drawn height says as much about the leftover
+       * space as about the board. See the row-height check in
+       * `checkEachViewport`, which is why this is measured at all.
+       */
+      minRowHeight: rows[2]
+        ? round(parseFloat(getComputedStyle(rows[2]).minHeight) || 0)
+        : null,
       /* The round-number rail. It is the board's other type size, and the one
          that was left in `vw` and therefore immune to zoom. */
       railPx: rows[0]?.firstElementChild
@@ -210,7 +256,8 @@ async function geometry(page) {
  *
  * Every type size the cell renders, plus the two things that decide whether a
  * board this dense is still a board: whether any box is holding more than it
- * was given, and whether all 160 cells still lay their slots out identically.
+ * was given, and whether all `TOTAL_PICKS` cells still lay their slots out
+ * identically.
  * The arcminutes are computed from the measured name size out here, against the
  * same room constants `board-legibility.ts` holds.
  */
@@ -314,8 +361,8 @@ const arcmin = (fontPx) =>
  * a real disagreement rather than two roundings.
  *
  * N rounds occupy `N × pitch − gap`. Charging the last round for a gap it does
- * not have loses a whole round at exactly the density where sixteen start to
- * fit, which is the figure the whole widening is judged on.
+ * not have loses a whole round at exactly the density where the whole board
+ * starts to fit, which is the figure the widening is judged on.
  */
 function roundsInBand(g) {
   if (!g.pitch || g.pitch <= 0) return 0;
@@ -323,9 +370,21 @@ function roundsInBand(g) {
   return Math.min(g.rounds, Math.floor((g.bandBottom - g.headerBottom + gap) / g.pitch));
 }
 
-/** The claims that hold in BOTH modes: nothing cut, every cell the same. */
+/**
+ * The claims that hold in BOTH modes: nothing cut, every cell the same.
+ *
+ * The labels below count in `TOTAL_PICKS` rather than in `m.count`. That is
+ * deliberate: interpolating the MEASURED count into a label while comparing it
+ * against the expected one prints "all 150 cells drew — 150" on a failure and
+ * reads as the board disagreeing with itself, which is the same trap
+ * `verify-board-fit.mjs` had to be dug out of.
+ */
 function checkTheCellsSurvive(m, where) {
-  check(`${where}: all ${m.count} cells drew`, m.count === 160, `${m.count}`);
+  check(
+    `${where}: all ${TOTAL_PICKS} cells drew`,
+    m.count === TOTAL_PICKS,
+    `${m.count}, expected ${LEAGUE.teams} teams x ${DRAFT.rounds} rounds`,
+  );
   check(
     `${where}: nothing is clipped, ellipsized or overflowing its own box`,
     m.cutters === 0 && m.overflowing === 0,
@@ -337,7 +396,7 @@ function checkTheCellsSurvive(m, where) {
     `tightest clearance ${m.tightest}px`,
   );
   check(
-    `${where}: all 160 cells lay their slots out at the same offsets, to the pixel`,
+    `${where}: all ${TOTAL_PICKS} cells lay their slots out at the same offsets, to the pixel`,
     m.slotSpread < 1 && m.heightSpread < 1,
     `slots drift ${m.slotSpread}px, heights ${m.heightSpread}px`,
   );
@@ -452,27 +511,91 @@ async function checkEachViewport(browser) {
     const name = `${viewport.width}x${viewport.height}`;
     section(`TV mode at ${name}`);
 
-    /* The same board WITHOUT `?tv=1`, for the row-height comparison. */
+    /* The same board WITHOUT `?tv=1`, to hold the two against each other. */
     const plain = await browser.newPage({ viewport, deviceScaleFactor: 1 });
     await plain.goto(`${BASE}/draft`, { waitUntil: "networkidle" });
     await plain.waitForSelector("[data-slot-id][title]");
     await plain.waitForTimeout(500);
     const off = await geometry(plain);
+    const offCells = await cellMetrics(plain);
     await plain.close();
 
     const { context, page } = await tvPage(browser, viewport);
     const g = await geometry(page);
+    const onCells = await cellMetrics(page);
 
     check(`${name}: the board hydrated, so TV mode is answerable at all`, g.hydrated);
+    /*
+     * THE FLOOR IS RESERVED, AND NO ROUND IS STRANDED BELOW THE FOLD.
+     *
+     * This used to read "reserves the floor and therefore scrolls", and the
+     * second half of that was an assumption about the LEAGUE rather than a
+     * property of TV mode: a 16-round board is taller than any screen in the
+     * room, so there was always something left to scroll. Fifteen rounds fit
+     * inside the band at 1440p, and the old form failed there — reporting a
+     * board with every round already on screen as a board that had broken.
+     *
+     * So the claim is stated as what was actually wanted: the floor is given
+     * up, and either the board scrolls or it has nothing left to scroll
+     * BECAUSE the whole draft is inside the band. That second branch is
+     * stronger than the assertion it replaces, not weaker — "0px of scroll" on
+     * its own would also describe a board that had lost its last five rounds.
+     */
+    const wholeBoardInBand =
+      g.rounds === DRAFT.rounds &&
+      g.lastRow != null &&
+      g.lastRow.bottom <= g.bandBottom + 1;
     check(
-      `${name}: TV mode reserves the floor and therefore scrolls`,
-      g.padBottom > 0 && g.maxScroll > 0,
-      `${g.padBottom}px of trailing space, ${g.maxScroll}px of scroll`,
+      `${name}: TV mode reserves the floor, and nothing is stranded below the fold`,
+      g.padBottom > 0 && (g.maxScroll > 0 || wholeBoardInBand),
+      `${g.padBottom}px of trailing space, ${g.maxScroll}px of scroll` +
+        (g.maxScroll > 0
+          ? ""
+          : ` — all ${g.rounds} rounds already inside the band, so there is nothing to scroll`),
     );
+    /*
+     * TV MODE MUST NOT COME OUT SMALLER THAN A BROWSER WINDOW, and the thing to
+     * measure that on is the TYPE rather than the row.
+     *
+     * The row was the wrong ruler. A row is `grow`, so on a screen where the
+     * whole board fits it is stretched into the slack: at 1080p a window draws
+     * a 62.36px row against TV mode's 55.19px, and the difference is not TV
+     * mode shrinking anything — it is the room deliberately giving the bottom
+     * 28% of the screen away as unviewable floor. Comparing the two measured
+     * the safe area and filed it as a regression. It only held while the board
+     * was taller than every screen, which is another 16-round assumption.
+     *
+     * The type is genuinely like-for-like: in Scroll mode it follows the
+     * density and the viewport, not the row, so it is IDENTICAL in TV mode and
+     * in a window at the same size. That is the claim worth defending, and a
+     * TV mode that shrank the board would fail it.
+     */
     check(
-      `${name}: the rows are no shorter than outside TV mode`,
-      g.rowHeight >= off.rowHeight - 0.5,
-      `${g.rowHeight}px in TV mode, ${off.rowHeight}px in a window`,
+      `${name}: TV mode renders exactly the type a browser window does`,
+      Math.abs(onCells.fonts.name - offCells.fonts.name) < 0.05 &&
+        Math.abs(onCells.fonts.meta - offCells.fonts.meta) < 0.05,
+      `name ${onCells.fonts.name}px in TV mode against ${offCells.fonts.name}px in a window, ` +
+        `metadata ${onCells.fonts.meta}px against ${offCells.fonts.meta}px`,
+    );
+    /*
+     * And the row, compared only where comparing it means something: where the
+     * window board ALSO scrolls, neither is stretching and TV mode must not be
+     * the shorter of the two. Where the window has slack, the floor the density
+     * guarantees is what TV mode is held to instead.
+     */
+    const windowStretches = off.maxScroll <= 1;
+    check(
+      windowStretches
+        ? `${name}: the rows still stand at the floor the density guarantees`
+        : `${name}: the rows are no shorter than outside TV mode`,
+      windowStretches
+        ? g.rowHeight >= g.minRowHeight - 0.5
+        : g.rowHeight >= off.rowHeight - 0.5,
+      `${g.rowHeight}px in TV mode, ${off.rowHeight}px in a window` +
+        (windowStretches
+          ? ` — the window has ${off.maxScroll}px to scroll, so it is stretching its rows ` +
+            `into space TV mode gave to the safe area; floor ${g.minRowHeight}px`
+          : ""),
     );
     check(
       `${name}: outside TV mode there is no trailing space at all`,
@@ -488,7 +611,7 @@ async function checkEachViewport(browser) {
     checkActiveRoundIsInTheBand(g, name);
 
     /* 3 — following, to both ends of the board and back to the middle. */
-    for (const round of [1, 8, 16]) {
+    for (const round of FOLLOW_ROUNDS) {
       const at = await walkCursorTo(page, round);
       await page.waitForTimeout(600);
       const step = await geometry(page);
@@ -520,11 +643,11 @@ async function checkEachViewport(browser) {
         : "no rows found",
     );
 
-    await walkCursorTo(page, 16);
+    await walkCursorTo(page, LAST_ROUND);
     await page.waitForTimeout(600);
     const bottom = await geometry(page);
     check(
-      `${name}: round 16 clamps to maximum scroll`,
+      `${name}: round ${LAST_ROUND} clamps to maximum scroll`,
       Math.abs(bottom.scrollTop - bottom.maxScroll) <= 1,
       `scrollTop ${bottom.scrollTop} of ${bottom.maxScroll}`,
     );
@@ -533,7 +656,7 @@ async function checkEachViewport(browser) {
       bottom.lastRow != null &&
         bottom.innerHeight - bottom.lastRow.bottom <= bottom.padBottom + 2,
       bottom.lastRow
-        ? `${Math.round(bottom.innerHeight - bottom.lastRow.bottom)}px below round 16, ` +
+        ? `${Math.round(bottom.innerHeight - bottom.lastRow.bottom)}px below round ${LAST_ROUND}, ` +
           `spacer ${bottom.padBottom}px`
         : "no rows found",
     );
@@ -548,7 +671,17 @@ async function checkSuspendAndResume(browser) {
   section("A manual scroll suspends following, and it comes back on its own");
   const { context, page } = await tvPage(browser, PROJECTOR);
 
-  await walkCursorTo(page, 10);
+  /*
+   * Deep enough that the board has scrolled to get there, but never past the
+   * end of the board — `Math.min` is what keeps this honest on a board shorter
+   * than the ten rounds this was written against. The cursor is walked back UP
+   * to round 2, and the distance between the two is what the claim below is
+   * worth, so it is computed rather than spelled out.
+   */
+  const suspendFrom = Math.min(10, LAST_ROUND);
+  const suspendTo = 2;
+
+  await walkCursorTo(page, suspendFrom);
   await page.waitForTimeout(600);
   const before = await geometry(page);
 
@@ -590,12 +723,12 @@ async function checkSuspendAndResume(browser) {
    * re-aiming, so the clamp belongs in the expectation rather than in the
    * failure column.
    */
-  await walkCursorTo(page, 2);
+  await walkCursorTo(page, suspendTo);
   await page.waitForTimeout(600);
   const moved = await geometry(page);
   const pinned = Math.min(scrolled.scrollTop, moved.maxScroll);
   check(
-    "walking the cursor eight rounds does not scroll while suspended",
+    `walking the cursor ${suspendFrom - suspendTo} rounds does not scroll while suspended`,
     Math.abs(moved.scrollTop - pinned) <= 1,
     `${scrolled.scrollTop} → ${moved.scrollTop}, cursor on round ${moved.activeRound}` +
       ` (maximum scroll ${scrolled.maxScroll} → ${moved.maxScroll})`,
@@ -627,7 +760,7 @@ async function checkTheSafeArea(browser) {
   const { context, page } = await tvPage(browser, PROJECTOR);
   const mod = process.platform === "darwin" ? "Meta" : "Control";
 
-  await walkCursorTo(page, 9);
+  await walkCursorTo(page, MID_ROUND);
   await page.waitForTimeout(600);
   const start = await geometry(page);
 
@@ -715,13 +848,13 @@ async function checkTheSafeArea(browser) {
   await context.close();
 }
 
-// --- Fit mode: all sixteen rounds, inside the band --------------------------
+// --- Fit mode: every round on the board, inside the band --------------------
 
 /**
  * The other half of the toggle, at all three viewports.
  *
  * The arcminutes are REPORTED rather than asserted against the floor. Fitting
- * sixteen rounds into 72% of 1080p takes the name well under the 16′ that
+ * the whole board into 72% of 1080p takes the name well under the 16′ that
  * Scroll is built around, and that is the trade Fit exists to offer — it is for
  * standing up and looking at the whole draft, not for reading from the table.
  * Printing the number is what makes it a choice rather than a surprise.
@@ -749,8 +882,8 @@ async function checkFitMode(browser) {
       `scrollHeight ${g.scrollHeight}, clientHeight ${g.clientHeight}`,
     );
     check(
-      `${name}: all sixteen rounds are drawn`,
-      g.rounds === 16,
+      `${name}: all ${DRAFT.rounds} rounds are drawn`,
+      g.rounds === DRAFT.rounds,
       `${g.rounds} rounds`,
     );
     check(
@@ -761,7 +894,7 @@ async function checkFitMode(browser) {
         g.lastRow.bottom <= g.bandBottom + 1,
       g.lastRow
         ? `round 1 top ${g.firstRow.top}px under a header ending at ${g.headerBottom}px, ` +
-          `round 16 bottom ${g.lastRow.bottom}px, band bottom ${g.bandBottom}px of ${g.innerHeight}`
+          `round ${LAST_ROUND} bottom ${g.lastRow.bottom}px, band bottom ${g.bandBottom}px of ${g.innerHeight}`
         : "no rows",
     );
     check(
@@ -803,12 +936,12 @@ async function checkFitMode(browser) {
           `${Math.round(tighter.safe.bottom * 100)}%`,
       );
       check(
-        `${name}: …and all sixteen rounds are inside the NEW band`,
+        `${name}: …and all ${DRAFT.rounds} rounds are inside the NEW band`,
         tighter.lastRow != null &&
           tighter.lastRow.bottom <= tighter.bandBottom + 1 &&
           tighter.scrollHeight <= tighter.clientHeight + 1,
         tighter.lastRow
-          ? `round 16 bottom ${tighter.lastRow.bottom}px, band bottom ${tighter.bandBottom}px`
+          ? `round ${LAST_ROUND} bottom ${tighter.lastRow.bottom}px, band bottom ${tighter.bandBottom}px`
           : "no rows",
       );
       checkTheCellsSurvive(tightM, `${name} at a tightened band`);
@@ -831,7 +964,7 @@ async function checkFitMode(browser) {
       const reloaded = await geometry(page);
       check(
         "the Fit choice survives a reload",
-        reloaded.rounds === 16 && reloaded.maxScroll <= 1,
+        reloaded.rounds === DRAFT.rounds && reloaded.maxScroll <= 1,
         `${reloaded.maxScroll}px of scroll after reload`,
       );
       const stored = await page.evaluate(
@@ -906,9 +1039,9 @@ async function checkFitMode(browser) {
  *
  * The old floor of 0.9 was derived from the arcminute model and therefore
  * assumed the model is right about a room nobody has measured with a projector
- * running in it. The bar now is that ⌘⇧− reaches ALL SIXTEEN ROUNDS in Scroll —
- * "I prefer to see as much of the board as possible" — and that the readout
- * tells him what he traded to get there.
+ * running in it. The bar now is that ⌘⇧− reaches EVERY ROUND ON THE BOARD in
+ * Scroll — "I prefer to see as much of the board as possible" — and that the
+ * readout tells him what he traded to get there.
  */
 async function checkTheDensityRange(browser) {
   section("The density range, and the readout");
@@ -950,22 +1083,23 @@ async function checkTheDensityRange(browser) {
   const dense = await geometry(page);
   const denseRead = await readout();
   /*
-   * THE GEOMETRY, NOT A COUNT DERIVED FROM IT. "All sixteen rounds are on
-   * screen" means round 16's bottom edge is inside the band with nothing left
-   * to scroll, and that is asserted directly — a rounds figure computed out
-   * here could agree with the readout because both are wrong the same way.
+   * THE GEOMETRY, NOT A COUNT DERIVED FROM IT. "Every round is on screen" means
+   * the last round's bottom edge is inside the band with nothing left to
+   * scroll, and that is asserted directly — a rounds figure computed out here
+   * could agree with the readout because both are wrong the same way.
    * `roundsInBand` is then checked against it, which is what makes the number
    * the room reads trustworthy rather than merely present.
    */
   check(
-    "⌘⇧− reaches all sixteen rounds inside the band, in Scroll mode",
+    `⌘⇧− reaches all ${DRAFT.rounds} rounds inside the band, in Scroll mode`,
     dense.maxScroll <= 1 && dense.lastRow.bottom <= dense.bandBottom + 1,
-    `round 16 bottom ${dense.lastRow.bottom}px of a ${dense.bandBottom}px band, ` +
+    `round ${LAST_ROUND} bottom ${dense.lastRow.bottom}px of a ${dense.bandBottom}px band, ` +
       `${dense.maxScroll}px left to scroll, ${dense.pitch}px a round`,
   );
   check(
-    "…and the readout on screen says sixteen, which is what he reads",
-    roundsInBand(dense) === 16 && / 16 ROUNDS/.test(denseRead?.text ?? ""),
+    `…and the readout on screen says ${DRAFT.rounds}, which is what he reads`,
+    roundsInBand(dense) === DRAFT.rounds &&
+      new RegExp(`\\s${DRAFT.rounds} ROUNDS`).test(denseRead?.text ?? ""),
     `${roundsInBand(dense)} by measurement — ${denseRead?.text ?? "no readout"}`,
   );
   check(
@@ -1071,9 +1205,9 @@ async function checkZoom(browser) {
         check(
           `${label}: still fits the band with nothing to scroll`,
           g.scrollHeight <= g.clientHeight + 1 &&
-            g.rounds === 16 &&
+            g.rounds === DRAFT.rounds &&
             g.lastRow.bottom <= g.bandBottom + 1,
-          `${g.maxScroll}px of scroll, round 16 bottom ${g.lastRow.bottom}px of a ` +
+          `${g.maxScroll}px of scroll, round ${LAST_ROUND} bottom ${g.lastRow.bottom}px of a ` +
             `${g.bandBottom}px band`,
         );
       } else {
@@ -1088,7 +1222,7 @@ async function checkZoom(browser) {
         nameDevicePx: Math.round(m.fonts.name * zoom * 100) / 100,
         nameCssPx: m.fonts.name,
         railDevicePx: Math.round(g.railPx * zoom * 100) / 100,
-        rounds: mode === "fit" ? 16 : roundsInBand(g),
+        rounds: mode === "fit" ? DRAFT.rounds : roundsInBand(g),
       });
 
       await context.close();
