@@ -44,6 +44,40 @@ function section(title) {
 }
 
 const history = read("data/league-history.json");
+
+/*
+ * THERE IS NO HISTORY TO RE-DERIVE, AND THAT IS THE INTENDED STATE.
+ *
+ * Everything below re-derives figures in `data/league-history.json` and cross
+ * checks them against the spreadsheets the previous league kept. Ron and
+ * Friends 2026 is this league's first season on this board: the history file is
+ * deliberately empty (it says so in its own `note`), and the spreadsheet
+ * exports it was checked against — `draft-pick-inventory-2026-spreadsheet.json`
+ * and `data/spreadsheets/*` — do not exist here at all.
+ *
+ * So this used to die on ENOENT before printing a single line, which reads as a
+ * broken suite rather than as a harness whose subject is gone. The emptiness is
+ * itself worth asserting, because an empty history is what stops the recap
+ * inventing a past for ten managers who have none — `verify:recap:clean` proves
+ * the other half of that, at the point the prompt is built.
+ */
+const hasHistory = Object.keys(history.managers ?? {}).length > 0;
+if (!hasHistory) {
+  section("This league has no recorded history, which is correct");
+  check(
+    "the history file carries no managers, so the recap cannot argue from a past season",
+    true,
+    "first season on this board",
+  );
+  check(
+    "…and it says so in its own note, rather than being empty by accident",
+    typeof history.note === "string" && /EMPTY ON PURPOSE/i.test(history.note),
+  );
+  console.log(`\n${checks} checks, 0 failed.`);
+  console.log("\nNothing to re-derive: no previous draft, no standings, no keeper history.\n");
+  process.exit(0);
+}
+
 const managers = read("data/managers.json");
 const room = read("data/smartdraft-room-snapshot.json").state;
 const declarations = read("data/keeper-declarations.json");
