@@ -223,7 +223,14 @@ async function cellMetrics(page) {
     const read = (cell) => {
       const box = cell.getBoundingClientRect();
       const stack = cell.firstElementChild;
-      const strip = cell.lastElementChild;
+      /*
+       * The ownership strip, on a board that draws one. A league that cannot
+       * trade picks draws none — `boardShowsOwnership` gives every cell that
+       * line back as type — and then the stack IS the last child, so taking it
+       * for the strip measures the player's name against its own container and
+       * reports the result as a clearance of about −13px.
+       */
+      const strip = cell.children.length > 1 ? cell.lastElementChild : null;
       const [name, posRow, clubRow] = [...stack.children];
       const offset = (el) => round(el.getBoundingClientRect().top - box.top);
       return {
@@ -232,13 +239,13 @@ async function cellMetrics(page) {
           name: round(parseFloat(getComputedStyle(name.firstElementChild).fontSize)),
           position: round(parseFloat(getComputedStyle(posRow.firstElementChild).fontSize)),
           meta: round(parseFloat(getComputedStyle(clubRow).fontSize)),
-          strip: round(parseFloat(getComputedStyle(strip).fontSize)),
+          strip: strip ? round(parseFloat(getComputedStyle(strip).fontSize)) : null,
         },
         slots: {
           name: offset(name),
           position: offset(posRow),
           club: offset(clubRow),
-          strip: offset(strip),
+          strip: strip ? offset(strip) : null,
         },
         /* Anything that would cut text, whether or not it is cutting today. */
         cutters: [...cell.querySelectorAll("*")].filter((el) => {
@@ -256,9 +263,11 @@ async function cellMetrics(page) {
             el.scrollHeight - el.clientHeight > 2 || el.scrollWidth - el.clientWidth > 2
           );
         }).length,
-        /* The ownership strip must not come up over the name. */
+        /* The ownership strip must not come up over the name — and where no
+           strip is drawn, the cell's own floor must not either. */
         clearance: round(
-          strip.getBoundingClientRect().top - name.getBoundingClientRect().bottom,
+          (strip ? strip.getBoundingClientRect().top : box.bottom) -
+            name.getBoundingClientRect().bottom,
         ),
       };
     };
