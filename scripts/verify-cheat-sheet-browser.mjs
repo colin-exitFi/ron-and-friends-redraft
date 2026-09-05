@@ -547,6 +547,11 @@ const run = async () => {
        * because a `pointer-events: auto` overlay across the right edge would
        * swallow every swipe that started there.
        */
+      // At the left, where there IS something off-screen, the cue is drawn.
+      await sheet.evaluate((el) => {
+        el.scrollLeft = 0;
+      });
+      await page.waitForTimeout(250);
       const cue = await page.locator("[data-scroll-cue]").evaluate((el) => ({
         events: getComputedStyle(el).pointerEvents,
         image: getComputedStyle(el).backgroundImage,
@@ -554,18 +559,130 @@ const run = async () => {
       }));
       check(
         "the right edge fades, so the row reads as continuing off-screen",
-        cue.width >= 16 && cue.image.includes("gradient"),
+        cue.width > 0 && cue.width <= 24 && cue.image.includes("gradient"),
         `${Math.round(cue.width)}px, ${cue.image.slice(0, 40)}`,
+      );
+      check(
+        "…and it is narrow enough to feather an edge rather than wash a column",
+        cue.width <= 24,
+        `${Math.round(cue.width)}px`,
       );
       check(
         "…and the cue does not swallow the swipe it invites",
         cue.events === "none",
         cue.events,
       );
+
+      /*
+       * ========================================================================
+       * AND IT IS GONE AT THE RIGHT-HAND END, WHERE IT WAS HIDING THE BYE WEEK
+       * ========================================================================
+       * The fade used to be drawn unconditionally, which put a translucent wash
+       * over the last column — the bye week, which is the rightmost column and
+       * one people read at the table. The commissioner's report was that he "can't
+       * see their bye week because you're trying to show people they can scroll".
+       *
+       * An affordance pointing at content it obscures is worse than no affordance,
+       * so this asserts the cue is ABSENT once there is nothing further to reveal,
+       * and separately that a real bye value is sitting there unobstructed —
+       * `elementFromPoint` at the centre of the cell has to hit the cell itself
+       * and not an overlay.
+       */
+      await sheet.evaluate((el) => {
+        el.scrollLeft = el.scrollWidth;
+      });
+      await page.waitForTimeout(300);
+      check(
+        "the fade is gone at the right-hand end, where nothing is left to reveal",
+        (await page.locator("[data-scroll-cue]").count()) === 0,
+        "it is still drawn over the last column",
+      );
+
+      const bye = await page.evaluate(() => {
+        const box = document
+          .querySelector("[data-sheet-scroll]")
+          .getBoundingClientRect();
+        const head =
+          document.querySelector("thead").getBoundingClientRect().bottom;
+        for (const tr of document.querySelectorAll("[data-player-id]")) {
+          const cells = tr.querySelectorAll(":scope > td");
+          const cell = cells[cells.length - 1];
+          const text = cell.textContent.trim();
+          if (!/^\d+$/.test(text)) continue;
+          const r = cell.getBoundingClientRect();
+          /*
+           * A cell that is genuinely on screen: inside the scroll box, clear of
+           * its sticky header, and inside the window. `elementFromPoint` is in
+           * viewport coordinates and returns null outside it, which would read as
+           * "covered by nothing" and pass for the wrong reason.
+           */
+          const onScreen =
+            r.top >= Math.max(box.top, head, 0) &&
+            r.bottom <= Math.min(box.bottom, window.innerHeight) &&
+            r.width > 0;
+          if (!onScreen) continue;
+          const x = Math.round(r.left + r.width / 2);
+          const y = Math.round(r.top + r.height / 2);
+          const onTop = document.elementFromPoint(x, y);
+          return {
+            text,
+            covered: onTop !== cell && !cell.contains(onTop),
+            what: onTop
+              ? `<${onTop.tagName.toLowerCase()}>${onTop.dataset?.scrollCue != null ? " — the scroll cue" : ""}`
+              : "nothing",
+          };
+        }
+        return null;
+      });
+      check(
+        `the bye week (“${bye?.text}”) is not sitting under an overlay`,
+        bye != null && !bye.covered,
+        `the point at its centre hits ${bye?.what}`,
+      );
+
       check(
         "no instructional copy was left across the top of the table",
         (await page.locator("text=/Scroll the table sideways/").count()) === 0 &&
           (await page.locator("text=/stay put/").count()) === 0,
+      );
+
+      /*
+       * ========================================================================
+       * THE TIMESTAMP IS IN THE LEAGUE'S TIMEZONE, NOT THE SERVER'S
+       * ========================================================================
+       * This page renders on a server running in UTC, and the provenance line was
+       * printing the raw UTC clock — a 2:20 PM export shown to the league as
+       * "7:20 pm". Checked against the instant itself rather than against a
+       * pattern, because "some time is printed" is exactly what passed while the
+       * page was five hours out.
+       */
+      const stamp = await page.locator("[data-rankings-updated]").first();
+      const iso = await stamp.getAttribute("data-rankings-updated");
+      const shown = (await stamp.innerText()).trim();
+      const expected = `${new Date(iso).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "America/Chicago",
+      })} Central`;
+      console.log(`  · ${iso} → “${shown}”`);
+      check(
+        `the rankings timestamp reads in Central time (“${expected}”)`,
+        shown === expected,
+        `the page says “${shown}”`,
+      );
+      check(
+        "…and is not the server's UTC clock",
+        shown !==
+          `${new Date(iso).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZone: "UTC",
+          })} Central`,
+        "it is printing UTC with a Central label, which is worse than no label",
       );
 
       // Sorting from a stat heading, which is what a spreadsheet does.

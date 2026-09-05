@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -107,6 +107,7 @@ export function CheatSheet({
   liveEnabled,
   meta,
   rankingsUpdated,
+  rankingsUpdatedIso,
 }: {
   rows: CheatSheetRow[];
   initialDrafted: DraftedBy;
@@ -129,6 +130,8 @@ export function CheatSheet({
    * it is the page telling a confident lie about its own freshness.
    */
   rankingsUpdated: string | null;
+  /** The same instant as an ISO string, for the harness to check against. */
+  rankingsUpdatedIso: string | null;
 }) {
   const [drafted, setDrafted] = useState<DraftedBy>(initialDrafted);
   const [q, setQ] = useState("");
@@ -174,10 +177,52 @@ export function CheatSheet({
 
   const status = useDraftLiveSync({ enabled: liveEnabled, onChanged: refresh });
 
+  /*
+   * ============================================================================
+   * WHETHER THERE IS ANYTHING FURTHER RIGHT TO REVEAL
+   * ============================================================================
+   * The edge fade was unconditional, and it was sitting on top of the bye week —
+   * the last column, and one people read at the table. An affordance that hides
+   * the content it is pointing at is worse than no affordance, so the fade is
+   * now only drawn while there is genuinely something off-screen: never at the
+   * right-hand end of the travel, and never on a screen wide enough to show
+   * every column at once, which is the commissioner's desktop.
+   *
+   * Measured from the element rather than guessed from the viewport, because the
+   * table's width depends on which columns exist and the filters change how much
+   * is in it. Re-measured on scroll, on resize, and whenever the row count
+   * changes.
+   */
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const [moreToTheRight, setMoreToTheRight] = useState(false);
+  const measure = useCallback(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    /*
+     * Two pixels of slack. Column widths are fractional at most viewport sizes,
+     * so `scrollLeft` at the end of the travel lands a fraction short of
+     * `scrollWidth - clientWidth` and an exact comparison would leave the fade
+     * up over the bye week forever — the precise bug being fixed.
+     */
+    setMoreToTheRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 2);
+  }, []);
+
   const visible = useMemo(
     () => applyCheatSheet(rows, drafted, { q, position, availability, sort }),
     [rows, drafted, q, position, availability, sort],
   );
+
+  useEffect(() => {
+    measure();
+    const el = sheetRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure, visible.length]);
 
   const draftedCount = Object.keys(drafted).length;
 
@@ -383,7 +428,16 @@ export function CheatSheet({
             <span className="text-foreground font-medium">
               FantasyPros&apos; expert consensus
             </span>{" "}
-            rankings{rankingsUpdated ? <>, updated {rankingsUpdated}</> : null}.{" "}
+            rankings
+            {rankingsUpdated ? (
+              <>
+                , updated{" "}
+                <span data-rankings-updated={rankingsUpdatedIso ?? ""}>
+                  {rankingsUpdated}
+                </span>
+              </>
+            ) : null}
+            .{" "}
             {/*
               The explicit `{" "}` is not decoration. JSX drops whitespace that
               contains a newline, so a space sitting between `</span>` and a line
@@ -429,6 +483,7 @@ export function CheatSheet({
       */}
       <div className="border-border bg-card/40 relative overflow-hidden rounded-xl border">
         <div
+          ref={sheetRef}
           data-sheet-scroll
           className="max-h-[calc(100vh-380px)] overflow-auto max-md:max-h-[68dvh]"
         >
@@ -538,13 +593,21 @@ export function CheatSheet({
           is all the invitation this needs — there was a sentence here telling
           people to scroll and what stayed pinned, and the commissioner asked for
           it off: "you don't need to call out rank, name, and position stay put".
-          Outside the scroll container so it stays put, and `pointer-events-none`
-          so it does not eat the drag it exists to invite.
+
+          CONDITIONAL, AND NARROW, BECAUSE IT WAS COVERING THE BYE WEEK. Drawn
+          only while `moreToTheRight`, so it is gone the moment the last column is
+          fully on screen and absent entirely on a screen that fits the whole
+          table. Narrowed to 1.25rem and started at 80% so that even mid-scroll
+          it feathers the sliver of a half-visible column rather than washing over
+          a legible figure. `pointer-events-none` so it does not eat the drag it
+          exists to invite.
         */}
-        <div
-          data-scroll-cue
-          className="from-card pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l to-transparent"
-        />
+        {moreToTheRight && (
+          <div
+            data-scroll-cue
+            className="from-card/80 pointer-events-none absolute inset-y-0 right-0 w-5 bg-gradient-to-l to-transparent"
+          />
+        )}
       </div>
 
       <div className="text-muted-foreground grid max-w-prose gap-1.5 text-xs">

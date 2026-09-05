@@ -13,6 +13,9 @@ import { LEAGUE, SCORING_FORMAT } from "@/lib/league-config";
 export const metadata = { title: `Cheat Sheet · ${LEAGUE.name}` };
 export const dynamic = "force-dynamic";
 
+/** Where the league is. Every timestamp this page prints is in this zone. */
+const LEAGUE_TIMEZONE = "America/Chicago";
+
 /**
  * The research page: the player pool, priced in this league's points, that
  * keeps itself current with the board being run in the room.
@@ -90,14 +93,35 @@ export default async function PlayersPage() {
   const adpIsHalf = adpScope?.toUpperCase() === "HALF";
   const fetchedAt = new Date(getPoolFetchedAt());
 
+  /*
+   * EVERY TIMESTAMP ON THIS PAGE IS STATED IN THE LEAGUE'S OWN TIMEZONE, AND
+   * SAYS SO.
+   *
+   * This page renders on the server, and the deployment's server runs in UTC.
+   * Without an explicit `timeZone` the formatter used the runtime's zone and
+   * printed a 2:20 PM export as "7:20 pm" — a literal UTC clock reading offered
+   * to ten managers in Missouri as the freshness of their cheat sheet. It was
+   * not wrong by a rounding error, it was wrong by five hours, in the direction
+   * that makes an hour-old export look like it was pulled after dinner.
+   *
+   * Formatting still happens on the server, deliberately: doing it in the
+   * browser would resolve in the viewer's zone, which is right for nine of them
+   * and would also rewrite the text after hydration. Pinning the zone gets the
+   * correct reading AND a stable one.
+   *
+   * The label is the word "Central" rather than `timeZoneName: "short"`, which
+   * emits "CDT" in September. That is technically exact and reads as a typo to
+   * anybody who calls it CST all year.
+   */
   const when = (iso: string | null) =>
     iso
-      ? new Date(iso).toLocaleString(undefined, {
+      ? `${new Date(iso).toLocaleString("en-US", {
           month: "short",
           day: "numeric",
           hour: "numeric",
           minute: "2-digit",
-        })
+          timeZone: LEAGUE_TIMEZONE,
+        })} Central`
       : "an unknown time";
 
   /*
@@ -298,11 +322,12 @@ export default async function PlayersPage() {
                 )}{" "}
                 Below FantasyPros&apos; ranked depth the tail falls back to the Smart
                 Draft snapshot at {pool.scoringFormat ?? "unrecorded"} scope, pulled{" "}
-                {fetchedAt.toLocaleString(undefined, {
+                {fetchedAt.toLocaleString("en-US", {
                   dateStyle: "medium",
                   timeStyle: "short",
-                })}
-                .
+                  timeZone: LEAGUE_TIMEZONE,
+                })}{" "}
+                Central.
               </p>
             </div>
         </details>
@@ -333,6 +358,13 @@ export default async function PlayersPage() {
            * no provenance line.
            */
           rankingsUpdated={meta.board ? when(meta.board.exportedAt) : null}
+          /*
+           * The same instant, unformatted, for `verify:cheat-sheet:browser` to
+           * check the rendered text against. Without it the harness can only
+           * assert that SOME time is printed, which is exactly what passed while
+           * the page was five hours out.
+           */
+          rankingsUpdatedIso={meta.board?.exportedAt ?? null}
         />
       </PageBody>
     </>
