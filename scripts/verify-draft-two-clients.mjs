@@ -1,10 +1,13 @@
 /**
  * Two boards, two browsers, one draft.
  *
- *   BASE=https://ultimate-keeper-league.vercel.app npm run verify:draft:remote
+ *   BASE=https://ron-and-friends-redraft.vercel.app npm run verify:draft:remote
  *
  * That deployed URL is the one the league actually drafts on, so it is the one
- * worth proving. A local production build works too:
+ * worth proving. It is NOT `ultimate-keeper-league.vercel.app`, which this line
+ * named until the fork: that deployment is still up and still answers, so
+ * pointing this at it proves sync on a board nobody is using. A local
+ * production build works too:
  *
  *   BASE=http://127.0.0.1:3131 npm run verify:draft:remote
  *

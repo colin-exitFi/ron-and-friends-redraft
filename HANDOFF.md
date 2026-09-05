@@ -3,6 +3,12 @@
 Read this first. It carries over the context from the chat where this project was
 created, which lived in a different Cursor workspace and is not visible here.
 
+**This is history, not current fact.** The app was repointed at Ron & Friends'
+2026 redraft: Sleeper rather than ESPN, no keepers, a different GitHub repo and a
+different deployment. Where this file and the README disagree, the README is
+right. Kept because the reasoning below still explains why things are shaped the
+way they are.
+
 ## What this is
 
 A retrofit of the "Ron & Friends" fantasy football app (a separate, live league
@@ -57,10 +63,12 @@ Ranked priorities, per the commissioner:
 - Secrets handling: the commissioner prefers to paste the Supabase service-role key and
   the ESPN cookies into a local env file himself rather than into chat. Create the env
   file with clearly labeled empty placeholders and ask him to fill it in.
-- Vercel: the project exists and is live at `https://ultimate-keeper-league.vercel.app`.
-  It auto-deploys from `main`, the same way the source project does, so **a push is a
-  production release.**
-- GitHub: this repo is `colin-exitFi/ultimate-keeper-league`, private. The `gh` CLI has
+- Vercel: **now `https://ron-and-friends-redraft.vercel.app`.** It auto-deploys from
+  `main`, the same way the source project does, so **a push is a production release.**
+  `ultimate-keeper-league.vercel.app` — the project this repo was forked from — is
+  still up and still serves a working `/draft`, so a stale bookmark reaches a board
+  that is not the one the room is drafting on.
+- GitHub: **now `colin-exitFi/ron-and-friends-redraft`**, private. The `gh` CLI has
   two accounts on this machine and the active one must stay `colin-exitFi`, or pushes
   will fail with a misleading "Repository not found" error.
 

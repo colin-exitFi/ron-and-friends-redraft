@@ -3,6 +3,16 @@
 The draft board for a 10-team Sleeper redraft league. Sleeper runs the season;
 this app runs the offline draft, in the room, on draft night.
 
+**Live at <https://ron-and-friends-redraft.vercel.app>.** That is the link to
+send to the room. Two other deployments are still up, both serving a working
+`/draft`, and neither is this app — a stale bookmark or a guess at the name
+lands on a board nobody is drafting on:
+
+| | |
+|---|---|
+| `ron-and-friends-fantasy.vercel.app` | the league's other, season-long app |
+| `ultimate-keeper-league.vercel.app` | the keeper league this repo was forked from |
+
 **Sleeper is read-only here.** Its API has no endpoint that records a pick, so
 it cannot be a draft backend. The split is deliberate and it is the whole
 architecture:
@@ -28,10 +38,10 @@ instance — `.env.local` is gitignored and no key belongs in a tracked file.
 **There are two separate draft stores, and you have to pick one.** Run locally
 and picks are written to `data/draft-state-2026.json`, atomically, with a
 timestamped copy in `data/draft-backups/` — no internet required at all. Run on
-the production URL and picks go to Postgres instead, which is the only way two
-devices see one shared draft. The board's footer tells you which store is live.
-Entering picks in both leaves you with two half-drafts, so choose one and stay
-on it.
+`ron-and-friends-redraft.vercel.app` and picks go to Postgres instead, which is
+the only way two devices see one shared draft. The board's footer tells you
+which store is live. Entering picks in both leaves you with two half-drafts, so
+choose one and stay on it.
 
 ## The league
 
