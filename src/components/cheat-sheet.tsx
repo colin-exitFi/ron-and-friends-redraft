@@ -378,6 +378,10 @@ function PlayerRow({
   const gap = valueGap(row);
   return (
     <tr
+      // Named the way the board names its cells, so a verification script can
+      // point at one player rather than at "the third row".
+      data-player-id={row.id}
+      data-taken={taken ? "true" : "false"}
       className={cn(
         "border-border/50 hover:bg-accent/40 border-b transition-colors last:border-0",
         taken && "opacity-55",

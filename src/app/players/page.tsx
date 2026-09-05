@@ -100,48 +100,92 @@ export default async function PlayersPage() {
         description={`Every draftable player, scored in this league's own rules — ${SCORING_FORMAT}, ${meta.passTd}-point passing touchdowns — next to the market's ADP. Drafted players drop out as the picks happen. No kickers: the position is not used in this league.`}
       />
       <PageBody>
+        {/*
+          WHERE EACH COLUMN CAME FROM, SAID SEPARATELY FOR EACH COLUMN.
+          These two numbers have completely different pedigrees and only one of
+          them is right for this league, so a single paragraph covering both is
+          the one thing this block must not be. The ADP is somebody else's
+          consensus at somebody else's scoring and it is a week old; the Proj is
+          computed here, today, from this league's own rules. A manager who
+          takes the wrong one on trust is exactly the person this page was
+          built to reassure.
+        */}
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="text-muted-foreground flex max-w-prose items-start gap-2 text-xs">
-            {degraded ? (
-              <TriangleAlert className="text-warning mt-0.5 h-3.5 w-3.5 shrink-0" />
-            ) : (
-              <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
-            )}
-            <span>
-              {liveLabel}{" "}
-              {meta.projectionsProblem ? (
-                <span className="text-warning">{meta.projectionsProblem}</span>
+          <div className="grid max-w-prose gap-2 text-xs">
+            <p
+              className={cn(
+                "flex items-start gap-2",
+                scopeMatchesLeague ? "text-muted-foreground" : "text-warning",
+              )}
+            >
+              {scopeMatchesLeague && !degraded ? (
+                <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
               ) : (
-                <>
-                  Projections are{" "}
-                  <span className="text-foreground font-medium">projected</span>, not
-                  actual — {meta.projectedCount.toLocaleString()} players from
-                  FantasyPros&apos; {meta.projectionSeason} stat lines pulled{" "}
-                  {when(meta.projectionsPulledAt)}, rescored here on this league&apos;s
-                  rules rather than taken from anyone else&apos;s points column.
-                  {meta.vendorScoredCount > 0 && (
-                    <>
-                      {" "}
-                      {meta.vendorScoredCount} of them carry FantasyPros&apos; own total
-                      because no stat line came back — team defences, mostly, which no
-                      feed breaks down.
-                    </>
-                  )}
-                </>
-              )}{" "}
-              <span className={cn(!scopeMatchesLeague && "text-destructive font-medium")}>
-                {scopeMatchesLeague
-                  ? `Pool ADP at ${poolScope} scope`
-                  : `ADP scope ${poolScope ?? "unrecorded"} — re-pull at ${SCORING_FORMAT}`}
-                , as of{" "}
+                <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              )}
+              <span>
+                <span className="font-medium">ADP</span> — {liveLabel}
+                {!scopeMatchesLeague && (
+                  <>
+                    {" "}
+                    <span className="font-semibold">
+                      It is {poolScope ?? "of unrecorded"} scoring, and this league is{" "}
+                      {SCORING_FORMAT}.
+                    </span>{" "}
+                    So the ADP column understates tight ends and quarterbacks here.
+                    That is not a defect to work around — it is the market price,
+                    and the Proj column is what this league thinks. Run{" "}
+                    <code className="bg-secondary rounded px-1 py-0.5 font-mono">
+                      npm run auth:fantasypros
+                    </code>{" "}
+                    then{" "}
+                    <code className="bg-secondary rounded px-1 py-0.5 font-mono">
+                      npm run pull:fantasypros
+                    </code>{" "}
+                    to re-scope it.
+                  </>
+                )}{" "}
+                Pool as of{" "}
                 {fetchedAt.toLocaleString(undefined, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
                 .
               </span>
-            </span>
-          </p>
+            </p>
+
+            <p className="text-muted-foreground flex items-start gap-2">
+              {meta.projectionsProblem ? (
+                <TriangleAlert className="text-warning mt-0.5 h-3.5 w-3.5 shrink-0" />
+              ) : (
+                <Radio className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
+              )}
+              {meta.projectionsProblem ? (
+                <span className="text-warning">{meta.projectionsProblem}</span>
+              ) : (
+                <span>
+                  <span className="font-medium">Proj</span> —{" "}
+                  <span className="text-foreground font-medium">projected</span>, not
+                  actual, and computed in{" "}
+                  <span className="text-foreground">{SCORING_FORMAT}</span>.{" "}
+                  {meta.projectedCount.toLocaleString()} players&apos; raw{" "}
+                  {meta.projectionSeason} stat lines from FantasyPros, pulled{" "}
+                  {when(meta.projectionsPulledAt)} and scored here with this
+                  league&apos;s own rules — nobody else&apos;s points column is used.
+                  Unlike the ADP, this one is correctly scoped whatever FantasyPros
+                  is doing.
+                  {meta.vendorScoredCount > 0 && (
+                    <>
+                      {" "}
+                      {meta.vendorScoredCount} rows carry FantasyPros&apos; own total
+                      because no stat line came back — team defences, mostly, which no
+                      feed breaks into the parts this league scores.
+                    </>
+                  )}
+                </span>
+              )}
+            </p>
+          </div>
           <FantasyProsRefresh />
         </div>
 
