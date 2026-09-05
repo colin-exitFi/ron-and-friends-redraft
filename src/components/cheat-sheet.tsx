@@ -10,7 +10,6 @@ import { positionStyle } from "@/lib/positions";
 import { DRAFTABLE_POSITIONS } from "@/lib/board-types";
 import {
   applyCheatSheet,
-  draftedFromView,
   valueGap,
   type Availability,
   type CheatSheetMeta,
@@ -18,7 +17,6 @@ import {
   type DraftedBy,
   type SortKey,
 } from "@/lib/cheat-sheet-view";
-import type { DraftRoomView } from "@/lib/draft-types";
 
 /**
  * The live cheat sheet.
@@ -83,12 +81,13 @@ export function CheatSheet({
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
 
   /**
-   * Re-read the board.
+   * Re-read who is off the board.
    *
-   * The payload is deliberately ignored beyond the drafted set: the row data —
-   * projections, ADP, bye weeks — was computed on the server and does not move
-   * during a draft, so a pick costs one small state update rather than a
-   * re-render of everything.
+   * Only the drafted set is fetched, from an endpoint that returns only that:
+   * the row data — projections, ADP, bye weeks — was computed on the server and
+   * does not move during a draft, so a pick costs one small state update rather
+   * than a re-render of everything. See `/api/players/drafted` for why it is
+   * not the board's own 75KB room view.
    *
    * A failed fetch is swallowed on purpose. This fires on a websocket event or
    * a poll tick, both of which will come round again, and a toast every time a
@@ -98,12 +97,11 @@ export function CheatSheet({
   const refresh = useCallback(() => {
     void (async () => {
       try {
-        const res = await fetch("/api/draft/state", { cache: "no-store" });
+        const res = await fetch("/api/players/drafted", { cache: "no-store" });
         if (!res.ok) return;
-        const body: unknown = await res.json();
-        const view = (body as { ok?: boolean; view?: DraftRoomView })?.view;
-        if (!view?.slots) return;
-        setDrafted(draftedFromView(view));
+        const body = (await res.json()) as { ok?: boolean; drafted?: DraftedBy };
+        if (!body?.ok || !body.drafted) return;
+        setDrafted(body.drafted);
         setSyncedAt(new Date());
       } catch {
         // See above — the next tick tries again.
