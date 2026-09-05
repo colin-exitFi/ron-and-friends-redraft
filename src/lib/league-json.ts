@@ -121,10 +121,10 @@ type RawManager = {
   shortName: string;
   fullName: string;
   franchiseName: string;
-  smartDraftTeamId: string;
-  draftSlot2026: number;
+  /** Sleeper's user id — the stable, opaque handle for a franchise. */
+  sleeperUserId: string;
+  draftSlot: number;
   franchiseAbbrev: string;
-  espnTeamId: number | null;
 };
 
 type RawManagers = { managers: RawManager[] };
@@ -321,13 +321,15 @@ function readFranchises(): Franchise[] {
   const franchises = managers.map((m) => {
     const configured = franchiseByShortName(m.shortName);
     return {
-      id: m.smartDraftTeamId,
+      id: m.sleeperUserId,
       shortName: m.shortName,
       franchiseName: m.franchiseName || configured?.franchiseName || m.shortName,
       abbrev: m.franchiseAbbrev || configured?.abbrev || m.shortName.slice(0, 4).toUpperCase(),
       manager: m.fullName || configured?.manager || m.shortName,
-      draftSlot: m.draftSlot2026 ?? null,
-      espnTeamId: m.espnTeamId ?? null,
+      draftSlot: m.draftSlot ?? null,
+      // The league is on Sleeper and has no ESPN identity. The field is kept so
+      // the view type and the database reader stay unchanged; it is always null.
+      espnTeamId: null,
     };
   });
   assertShortNamesAreUnique(franchises);

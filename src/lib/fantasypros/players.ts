@@ -1,7 +1,7 @@
 import "server-only";
 
 import { withFantasyPros, type FantasyProsClient } from "@/lib/fantasypros/client";
-import { SCORING_FORMAT } from "@/lib/league-config";
+import { ADP_SCORING_SCOPE } from "@/lib/league-config";
 
 /**
  * The draft-relevant slice of FantasyPros: who is being drafted, where, and
@@ -17,22 +17,31 @@ import { SCORING_FORMAT } from "@/lib/league-config";
  * So they are fetched together and joined on name, and the join failures are
  * counted rather than swallowed. See `docs/FANTASYPROS-MCP.md`.
  *
- * SCORING BASIS. Both calls are made at `PPR`, which is this league's format
- * (`SCORING_FORMAT`). It is not the default for either tool — `get_adp`
- * defaults to `STD` and `get_ecr` to `HALF` — and a half-PPR pull would look
- * identical here while quietly undervaluing every high-volume receiver, which
- * is the same trap `scripts/smartdraft-players.mjs` documents. The basis is
- * recorded in the snapshot so a mis-scoped pull is visible in the file rather
- * than only in the numbers.
+ * SCORING BASIS. Both calls are made at `HALF`, which is this league's format
+ * (`ADP_SCORING_SCOPE`). `get_adp` defaults to `STD` and `get_ecr` to `HALF`,
+ * so the ADP call in particular has to say so — a standard-scoring pull would
+ * look identical here while quietly undervaluing every high-volume receiver.
+ * The basis is recorded in the snapshot so a mis-scoped pull is visible in the
+ * file rather than only in the numbers.
  *
- * THE ONE THING NO FEED PRICES IN, and it is not fixable here: this league pays
- * six points for a passing touchdown rather than four. FantasyPros has no
- * scoring option for that, so quarterbacks are systematically cheap on this
- * ADP exactly as they were on the previous one. Unchanged, not newly wrong.
+ * TWO THINGS NO FEED PRICES IN, neither fixable here:
+ *
+ *   The TIGHT END PREMIUM. Tight ends catch at a full point in this league and
+ *   at half everywhere else, so every TE on this board is cheaper than he
+ *   should be. FantasyPros has no TE-premium scope.
+ *
+ *   The SIX-POINT PASSING TOUCHDOWN, against a market that assumes four. So
+ *   quarterbacks read cheap too.
+ *
+ * Both are documented against `SCORING_FORMAT` in `league-config.ts`.
  */
 
-/** FantasyPros' scoring keys. `PPR` is the one this league drafts on. */
-const FP_SCORING = SCORING_FORMAT === "PPR" ? "PPR" : "HALF";
+/**
+ * FantasyPros' scoring key. `HALF` is the one this league drafts on — see
+ * `ADP_SCORING_SCOPE`, which is the single place the scope is decided so this
+ * cannot drift from `SCORING_FORMAT`.
+ */
+const FP_SCORING = ADP_SCORING_SCOPE;
 
 /** Redraft ADP. The other variants — dynasty, rookie, best_ball — are not this league. */
 const ADP_TYPE = "standard";
