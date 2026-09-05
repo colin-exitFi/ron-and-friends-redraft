@@ -213,14 +213,10 @@ export function gradeBand(letter: GradeLetter): "A" | "B" | "C" | "D" | "F" {
  * definitions — "keeper prices well under what redrafting would have cost", "a
  * keeper slot passed on a player who then went several rounds earlier". In a
  * redraft those are not lenient descriptions, they are conditions no franchise
- * can meet or fail, and a band that cannot be met quietly widens the one next
- * to it. The redraft wordings say the same thing about the one decision that
- * does exist here: what a pick cost against where the board had the player.
- *
- * The F band's last clause survives both ways round because it is the rule
- * rather than the flavour — the grade is the play and never the hand. What
- * differs is what the hand IS: an inherited roster in a keeper league, and in a
- * redraft the seat the lottery gave him.
+ * can meet or fail, and a band a man cannot be measured against is a band that
+ * quietly widens the one next to it. The redraft wordings say the same thing
+ * about the one decision that does exist here: what a pick cost against where
+ * the board had the player.
  */
 export const GRADE_BANDS: { band: "A" | "B" | "C" | "D" | "F"; means: string }[] = [
   {
@@ -288,10 +284,27 @@ export const GRADE_BANDS: { band: "A" | "B" | "C" | "D" | "F"; means: string }[]
  *
  * The commissioner is already complaining that this page renders prose about an
  * unfinished board. A "Draft grade" printed against a board with zero picks in
- * it would be the same fault with a letter on top: nineteen keepers are in and
- * nobody has drafted, so the only decisions on the table are the declarations.
- * Grading them is honest as long as it says that is what it is doing, which is
- * what `subjectLabel` is for and what `validateGrades` enforces.
+ * it would be the same fault with a letter on top.
+ *
+ * ============================================================================
+ * THE ZERO-PICK CASE WAS CALLED `keeper-slate`, AND IN A REDRAFT IT IS NOTHING
+ * ============================================================================
+ *
+ * That name was right for the league this app was forked from: nineteen
+ * keepers were in before anybody drafted, so a zero-pick board still carried
+ * ten finished decisions and grading them was honest. Ron and Friends has no
+ * keepers, so a zero-pick board carries NO DECISIONS AT ALL. Everything left is
+ * the draft slot, which is a lottery result, and the franchise name, which is a
+ * joke — and a letter assigned on those is not a lenient grade, it is a grade
+ * of the draw. That is the roster ranking this module's header refuses to be,
+ * with the one honest input removed.
+ *
+ * So the member is renamed for the board state rather than for one league's
+ * format — `no-picks` is true whichever way the keeper switch is set — and
+ * whether it can be graded is decided by `buildCoverage` off what is actually
+ * on the board. With keepers declared it grades them exactly as before; with
+ * none it refuses, and the refusal travels through `sufficientToGrade` to the
+ * route, which then never asks for letters at all.
  *
  * DUPLICATED FROM `recapStage` ON PURPOSE, AND NARROWLY. `@/lib/recap-prompt`
  * already classifies the board into predraft/midraft/postdraft, and this module
@@ -302,38 +315,48 @@ export const GRADE_BANDS: { band: "A" | "B" | "C" | "D" | "F"; means: string }[]
  * is the same way this codebase keeps the spread rule and the prompt from
  * drifting apart.
  */
-export type GradeSubject = "keeper-slate" | "partial-draft" | "draft";
+export type GradeSubject = "no-picks" | "partial-draft" | "draft";
 
 export function gradeSubject(dossier: {
   picksEntered: number;
   boardComplete: boolean;
 }): GradeSubject {
-  if (dossier.picksEntered === 0) return "keeper-slate";
+  if (dossier.picksEntered === 0) return "no-picks";
   return dossier.boardComplete ? "draft" : "partial-draft";
 }
 
 /**
- * What the card must call the grade. Not decoration — a keeper-slate grade
- * printed as "Draft grade" is a false claim about a draft that has not
- * happened, and it is checked.
+ * What the card must call the grade. Not decoration — a zero-pick grade printed
+ * as "Draft grade" is a false claim about a draft that has not happened, and it
+ * is checked.
+ *
+ * The zero-pick label follows the keeper switch because the two states are
+ * genuinely different things and not two wordings of one thing: with keepers
+ * there is a slate to grade and the card says so, and without them no letter is
+ * ever issued, so the string exists to be honest in a payload rather than to be
+ * printed beside ten grades.
  */
 export const SUBJECT_LABEL: Record<GradeSubject, string> = {
-  "keeper-slate": "Keeper slate grade",
+  "no-picks": FEATURES.keepers ? "Keeper slate grade" : "Not graded — no picks yet",
   "partial-draft": "Partial draft grade",
   draft: "Draft grade",
 };
 
 /** One sentence a card or a blurb can print about what the letter covers. */
 export const SUBJECT_NOTE: Record<GradeSubject, string> = {
-  "keeper-slate":
-    "No picks have been made. This grades the keeper declarations alone — who was " +
-    "kept, at what price, and who was passed on — and it is not a draft grade.",
+  "no-picks": FEATURES.keepers
+    ? "No picks have been made. This grades the keeper declarations alone — who was " +
+      "kept, at what price, and who was passed on — and it is not a draft grade."
+    : "No picks have been made and this league keeps nobody, so not one decision has " +
+      "been taken yet. There is nothing to grade and no letter is issued.",
   "partial-draft":
     "The draft is not finished. This grades the picks made so far and says so; it " +
     "will change when the board does.",
-  draft:
-    "The board is complete. This grades the decisions made on it — the picks, the " +
-    "keeper prices and what the capital was turned into.",
+  draft: FEATURES.keepers
+    ? "The board is complete. This grades the decisions made on it — the picks, the " +
+      "keeper prices and what the capital was turned into."
+    : "The board is complete. This grades the decisions made on it — what each pick " +
+      "cost against where the board had the player, and what the draft slot became.",
 };
 
 // ── The evidence ────────────────────────────────────────────────────────────
@@ -1514,24 +1537,50 @@ function buildCoverage({
   const lineup = dossier.franchises.some((f) => f.starters.length > 0);
   const historyPresent = Object.values(history).some((notes) => notes.length > 0);
 
+  /*
+   * WHETHER ANYBODY KEPT ANYONE, WHICH IS NOT THE SAME QUESTION AS `counterfactual`.
+   *
+   * `counterfactual` asks whether every keeper is priced, and an empty list
+   * satisfies it vacuously — which is how a redraft board with no keepers and no
+   * picks was reporting itself gradable. The zero-pick branch needs the prior
+   * question: is there a declaration here at all?
+   */
+  const keepersDeclared = keepers.length > 0;
+
   const missing: string[] = [];
-  if (!anyScored && subject !== "keeper-slate") {
+  if (!anyScored && subject !== "no-picks") {
     missing.push("board-relative expectation — no pick has an expected slot to be measured against");
+  }
+  if (subject === "no-picks" && !keepersDeclared) {
+    missing.push(
+      "any decision at all — nobody has picked and this league keeps nobody, so the " +
+        "only things on this board are the draft order and the franchise names",
+    );
   }
   if (!standings) missing.push("season projections — no snapshot on this checkout");
   else if (!simulated) missing.push("the simulation — no schedule, so no wins or playoff odds");
-  if (!counterfactual) missing.push("the keeper counterfactual — at least one keeper is unpriced");
-  if (!options) missing.push("the keeper sheet — passes cannot be priced");
+  /*
+   * THE KEEPER GAPS ARE ONLY GAPS IN A KEEPER LEAGUE. Reported unconditionally
+   * they told a redraft board it was missing a counterfactual, a keeper sheet
+   * and a table of keeper prices — three things it is not supposed to have. A
+   * coverage list that names inapplicable inputs as absent is worse than one
+   * that omits them, because `missing` is what the ungradable flag prints as
+   * its reason.
+   */
+  if (FEATURES.keepers) {
+    if (!counterfactual) missing.push("the keeper counterfactual — at least one keeper is unpriced");
+    if (!options) missing.push("the keeper sheet — passes cannot be priced");
+    if (!positionalNorms?.keeperPrices.length) {
+      missing.push(
+        "the positional price record — no keeper price can be judged against what the " +
+          "position actually costs in this league",
+      );
+    }
+  }
   if (!lineup) {
     missing.push(
       "the lineup solve — no roster was fitted to the starting slots, so nothing can " +
         "be said about capital converted into starters or about holes",
-    );
-  }
-  if (!positionalNorms?.keeperPrices.length) {
-    missing.push(
-      "the positional price record — no keeper price can be judged against what the " +
-        "position actually costs in this league",
     );
   }
   if (!historyPresent) missing.push("league history — no confidence-marked notes were supplied");
@@ -1545,13 +1594,19 @@ function buildCoverage({
    * letter assigned on those alone would be the roster ranking this module
    * spends its header refusing to be.
    *
-   * A keeper-slate grade is the exception and needs the opposite thing: no picks
-   * exist to score, and what it grades is prices, which need the keeper
-   * counterfactual instead. Projections and history are enriching, never
-   * required — the page is explicitly built to work without either.
+   * THE ZERO-PICK BRANCH NEEDS A DECISION TO EXIST BEFORE IT NEEDS IT PRICED,
+   * and that is the bug this replaced. It used to accept the keeper
+   * counterfactual on its own, which an empty keeper list satisfies for free —
+   * so a redraft board before the draft reported itself gradable and would have
+   * put ten letters on the seats people drew in a lottery. Now it wants the
+   * declarations to be there AND priced, which is the same rule as before in a
+   * keeper season and a refusal in a redraft.
+   *
+   * Projections and history stay enriching and never required — the page is
+   * explicitly built to work without either.
    */
   const sufficientToGrade =
-    subject === "keeper-slate" ? counterfactual : anyScored && counterfactual;
+    subject === "no-picks" ? keepersDeclared && counterfactual : anyScored && counterfactual;
 
   return {
     boardExpectation: anyScored ? "present" : "absent",
@@ -1593,13 +1648,20 @@ export function gradeRubric(subject: GradeSubject = "draft"): string {
   const bands = GRADE_BANDS.map((b) => `  ${b.band} range — ${b.means}`).join("\n\n");
 
   const subjectPara =
-    subject === "keeper-slate"
-      ? `NO PICKS HAVE BEEN MADE, SO YOU ARE NOT GRADING A DRAFT. Call it what the ` +
-        `payload calls it: "${SUBJECT_LABEL[subject]}". What is on the table is the ` +
-        `declarations — who was kept, what the price was against what redrafting him ` +
-        `would have cost, who was passed on and what that pass cost. Grade those and ` +
-        `nothing else. Do not grade picks that do not exist, and do not grade the ` +
-        `roster: every roster on the board right now is keepers and empty slots.`
+    subject === "no-picks"
+      ? FEATURES.keepers
+        ? `NO PICKS HAVE BEEN MADE, SO YOU ARE NOT GRADING A DRAFT. Call it what the ` +
+          `payload calls it: "${SUBJECT_LABEL[subject]}". What is on the table is the ` +
+          `declarations — who was kept, what the price was against what redrafting him ` +
+          `would have cost, who was passed on and what that pass cost. Grade those and ` +
+          `nothing else. Do not grade picks that do not exist, and do not grade the ` +
+          `roster: every roster on the board right now is keepers and empty slots.`
+        : `NO PICKS HAVE BEEN MADE AND THIS LEAGUE KEEPS NOBODY, SO THERE IS NOTHING ` +
+          `TO GRADE. Not one decision has been taken by anybody. The only things on ` +
+          `this board are the draft order, which was drawn, and the franchise names. ` +
+          `**DO NOT ASSIGN A LETTER TO ANYONE.** A grade here would be a grade of the ` +
+          `lottery, and \`coverage.sufficientToGrade\` is false so any letter you do ` +
+          `return is dropped before it reaches the page.`
       : subject === "partial-draft"
         ? `THE BOARD IS NOT FINISHED. Call it what the payload calls it: ` +
           `"${SUBJECT_LABEL[subject]}". Grade the picks that have actually been made ` +

@@ -260,18 +260,67 @@ check(
  * narrate empty arrays — which is the fault the commissioner is already
  * complaining about on this page.
  */
-const preDraftRubric = gradeRubric("keeper-slate");
+const preDraftRubric = gradeRubric("no-picks");
 check(
   "the pre-draft rubric refuses to call itself a draft grade",
-  preDraftRubric.includes(SUBJECT_LABEL["keeper-slate"]) &&
-    /NO PICKS HAVE BEEN MADE/i.test(preDraftRubric) &&
-    /Do not grade picks that do not exist/i.test(preDraftRubric),
+  /NO PICKS HAVE BEEN MADE/i.test(preDraftRubric) &&
+    (FEATURES.keepers
+      ? preDraftRubric.includes(SUBJECT_LABEL["no-picks"]) &&
+        /Do not grade picks that do not exist/i.test(preDraftRubric)
+      : /THERE IS NOTHING\s+TO GRADE/i.test(preDraftRubric) &&
+        /DO NOT ASSIGN A LETTER TO ANYONE/.test(preDraftRubric)),
 );
 check(
   "…and the finished-board rubric does not claim the board is unfinished",
   !/NO PICKS HAVE BEEN MADE/i.test(GRADE_RUBRIC) &&
-    !GRADE_RUBRIC.includes(SUBJECT_LABEL["keeper-slate"]),
+    !GRADE_RUBRIC.includes(SUBJECT_LABEL["no-picks"]),
 );
+
+/*
+ * ============================================================================
+ * EVERYTHING BELOW THIS LINE IS THE PREVIOUS LEAGUE'S HARNESS
+ * ============================================================================
+ *
+ * The same guard, and for the same reason, as the one in `verify-recap.mts`.
+ * Sections 2 onward assert against a keeper league with eleven years of
+ * spreadsheets behind it: keeper counterfactuals and combined surpluses,
+ * positional prices computed off `data/spreadsheets/`, eight historical drafts
+ * replayed pick by pick, and named facts about managers who are not in this
+ * room. Ron and Friends has none of it — the keeper files are empty, the
+ * spreadsheet directory does not exist here, and `FEATURES.keepers` is false.
+ *
+ * SO IT DID NOT GO STALE, IT INVERTED, AND IT WAS ALREADY DOING SO. Before this
+ * guard the script printed ten failures and then died on a TypeError, reading
+ * `.message` off a flag that could not fire because the fixture it was built
+ * from resolves to an empty board without the sheets. A verify script that
+ * crashes is worse than one that refuses: it is the exact thing that teaches a
+ * room to wave a red check through as "oh, that one's known", which is the
+ * reasoning already written into its twin.
+ *
+ * SECTION 1 RUNS FIRST AND IS KEPT, because the rubric is pure text with no
+ * data behind it, and it is where the zero-pick branch is asserted to say the
+ * right thing for whichever format the league is in. What covers the grading
+ * path for THIS league is `verify:recap:clean`, which checks the subject, the
+ * label, the refusal to grade an undecided board and the bands.
+ *
+ * Turning `FEATURES.keepers` on for 2027 runs everything below again.
+ */
+if (!FEATURES.keepers) {
+  section("Not applicable below here — 2026 is a pure redraft");
+  console.log(
+    "  Sections 2+ grade a KEEPER league: keeper counterfactuals, positional\n" +
+      "  prices off this league's own sheets, eight replayed historical drafts,\n" +
+      "  and named facts about managers from the league this app was forked from.\n\n" +
+      "  None of that data exists on this checkout, so every assertion below\n" +
+      "  would fail on the LEAGUE rather than on a bug — and two of them crash.\n\n" +
+      "  What covers the grade path for this league instead, and does pass:\n" +
+      "    npm run verify:recap:clean    the subject, the label, the refusal to\n" +
+      "                                  grade an undecided board, and the bands\n\n" +
+      "  Turning FEATURES.keepers on for 2027 runs everything below again.",
+  );
+  console.log(`\n${failures} failed of the checks that do apply.\n`);
+  process.exit(failures ? 1 : 0);
+}
 
 // ============================================================================
 section("2. The live board — a whole mock draft, every figure recomputed");
@@ -323,7 +372,7 @@ const stage = recapStage(dossier);
 check(
   `the grade's subject agrees with the prompt's stage ("${live.subject}" vs "${stage}")`,
   (live.subject === "draft" && stage === "postdraft") ||
-    (live.subject === "keeper-slate" && stage === "predraft") ||
+    (live.subject === "no-picks" && stage === "predraft") ||
     (live.subject === "partial-draft" && stage === "midraft"),
 );
 check(
@@ -849,13 +898,29 @@ function bareBoard(overrides: Partial<RecapDossier> = {}): RecapDossier {
 const preDraft = bareBoard({ picksEntered: 0, boardComplete: false, keepersOutOfPool: 19 });
 const preDraftInput = buildGradeInput({ dossier: preDraft, history, positionalNorms });
 check(
-  `a board with no picks is a keeper slate, not a draft ("${preDraftInput.subject}")`,
-  preDraftInput.subject === "keeper-slate" &&
-    preDraftInput.subjectLabel === "Keeper slate grade",
+  `a board with no picks is never a draft ("${preDraftInput.subject}")`,
+  preDraftInput.subject === "no-picks" &&
+    preDraftInput.subjectLabel === SUBJECT_LABEL["no-picks"],
 );
 check(
   "…and its note says in terms that it is not a draft grade",
-  /not a draft grade/i.test(preDraftInput.subjectNote),
+  FEATURES.keepers
+    ? /not a draft grade/i.test(preDraftInput.subjectNote)
+    : /nothing to grade and no letter is issued/i.test(preDraftInput.subjectNote),
+);
+/*
+ * AND IN A REDRAFT IT IS NOT GRADED AT ALL. `bareBoard` declares no keepers, so
+ * with the keeper switch off there is not one decision on this board — the seat
+ * in the order was drawn and nothing else has happened. The coverage block has
+ * to refuse, because `sufficientToGrade` is what the route reads before it
+ * spends money asking for letters.
+ */
+check(
+  FEATURES.keepers
+    ? "…and with keepers declared it is gradable on the declarations"
+    : "…and with no keepers it is NOT gradable, because nobody has decided anything",
+  preDraftInput.coverage.sufficientToGrade === FEATURES.keepers,
+  preDraftInput.coverage.missing.join("; "),
 );
 check(
   "…and it does not claim ten franchises captured zero value as a verdict",
@@ -863,7 +928,7 @@ check(
 );
 check(
   `…and it agrees with the prompt's own pre-draft stage`,
-  gradeSubject(preDraft) === "keeper-slate" && recapStage(preDraft) === "predraft",
+  gradeSubject(preDraft) === "no-picks" && recapStage(preDraft) === "predraft",
 );
 
 // --- A franchise with no picks while others have some -----------------------

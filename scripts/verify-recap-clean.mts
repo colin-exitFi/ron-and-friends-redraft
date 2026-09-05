@@ -33,11 +33,37 @@
  * Usage: npm run verify:recap:clean
  */
 
-import { recapSystemPrompt } from "@/lib/recap-prompt";
+import { GRADE_SUBJECT_BY_STAGE, recapSystemPrompt } from "@/lib/recap-prompt";
+import {
+  GRADE_BANDS,
+  SUBJECT_LABEL,
+  SUBJECT_NOTE,
+  buildGradeInput,
+  gradeRubric,
+  gradeSubject,
+} from "@/lib/recap-grade";
 import { loreBlock, ASSIGNED_SAVAGE } from "@/lib/league-lore";
 import { positionalNormsBlock } from "@/lib/positional-norms";
 import { readGradeHistory } from "@/lib/recap-grade-source";
 import { CURRENT_SEASON, FEATURES, FRANCHISES, LEAGUE } from "@/lib/league-config";
+import { fixtureDossier, fixtureFranchise } from "./recap-history-drafts.mts";
+
+/**
+ * The board this league is in the minute before kickoff: ten franchises, no
+ * picks, nobody kept. Built from the shared fixture rather than from disk so
+ * this script stays pure — it asserts what the code does with that board, not
+ * what happens to be committed.
+ */
+function preDraftDossier() {
+  return fixtureDossier({
+    picksEntered: 0,
+    boardComplete: false,
+    keepersOutOfPool: 0,
+    franchises: FRANCHISES.map((f, i) =>
+      fixtureFranchise({ teamId: `t${i + 1}`, teamName: f.shortName, draftSlot: i + 1 }),
+    ),
+  });
+}
 
 let checks = 0;
 const failures: string[] = [];
@@ -346,6 +372,88 @@ check(
   "…and the grievance is weighted to Chris rather than split with Ryan",
   /HE IS THE SECOND VOICE ON BOTH/.test(lore) && /do not split them evenly/.test(lore),
 );
+
+section("10. Nothing is graded before anybody has decided anything");
+/*
+ * THE LAST PLACE THE APP CLAIMED THIS WAS A KEEPER LEAGUE, AND IT SHIPPED A
+ * LETTER RATHER THAN A SENTENCE.
+ *
+ * `gradeSubject()` called a zero-pick board a `keeper-slate` and the card
+ * printed "Keeper slate grade". That was right for the league this app was
+ * forked from — nineteen keepers were in before anybody drafted, so a zero-pick
+ * board still held ten finished decisions. Here it held none, and the coverage
+ * gate waved it through: `sufficientToGrade` asked only whether every keeper
+ * was priced, which an EMPTY keeper list satisfies for free. So a pre-draft
+ * redraft board reported itself gradable, and the route would have paid for ten
+ * letters assigned to ten men on the strength of the seat each one drew in a
+ * lottery.
+ *
+ * A grade of the draw is worse than a wrong grade. It is the roster ranking
+ * `@/lib/recap-grade` spends its header refusing to be, with the one honest
+ * input — what a man did with his pick — removed entirely.
+ *
+ * The refusal is asserted here rather than in `verify:recap:grade`, because
+ * that harness is the previous league's from its second section down and now
+ * says so. This is the check that runs.
+ */
+{
+  const zeroPickBoard = { picksEntered: 0, boardComplete: false };
+  check(
+    "a board with no picks is called what it is, and not a keeper slate",
+    gradeSubject(zeroPickBoard) === "no-picks",
+    gradeSubject(zeroPickBoard),
+  );
+  check(
+    "the prompt's pre-draft stage and the grade's subject still agree",
+    GRADE_SUBJECT_BY_STAGE.predraft === gradeSubject(zeroPickBoard),
+  );
+
+  if (!FEATURES.keepers) {
+    check(
+      "no card can print the words 'Keeper slate grade'",
+      !Object.values(SUBJECT_LABEL).some((l) => /keeper/i.test(l)),
+      Object.values(SUBJECT_LABEL).join(" | "),
+    );
+    check(
+      "…and the zero-pick note says outright that no letter is issued",
+      /nothing to grade and no letter is issued/i.test(SUBJECT_NOTE["no-picks"]),
+    );
+    /*
+     * The gate itself, on the board the app is actually in before kickoff: ten
+     * franchises, no picks, no keepers. `sufficientToGrade` false is what stops
+     * the route asking the model for letters at all.
+     */
+    const coverage = buildGradeInput({ dossier: preDraftDossier() }).coverage;
+    check(
+      "a pre-draft redraft board reports itself UNGRADABLE",
+      coverage.sufficientToGrade === false,
+      `missing: ${coverage.missing.join("; ")}`,
+    );
+    check(
+      "…and says why in English, naming the absence of any decision",
+      coverage.missing.some((m) => /any decision at all/i.test(m)),
+      coverage.missing.join("; "),
+    );
+    check(
+      "…and does not report keeper inputs as missing, because they are not expected",
+      !coverage.missing.some((m) => /keeper/i.test(m)),
+      coverage.missing.filter((m) => /keeper/i.test(m)).join("; "),
+    );
+    check(
+      "the rubric for that board orders no letter at all",
+      /DO NOT ASSIGN A LETTER TO ANYONE/.test(gradeRubric("no-picks")),
+    );
+    check(
+      "no grade band defines itself by a keeper price",
+      !GRADE_BANDS.some((b) => /keeper/i.test(b.means)),
+      GRADE_BANDS.filter((b) => /keeper/i.test(b.means)).map((b) => b.band).join(", "),
+    );
+    check(
+      "…and the F band still says the hand is not the play",
+      /the grade is the play/i.test(GRADE_BANDS.find((b) => b.band === "F")!.means),
+    );
+  }
+}
 
 console.log(`\n  ${checks} checks, ${failures.length} failed.\n`);
 if (failures.length) {

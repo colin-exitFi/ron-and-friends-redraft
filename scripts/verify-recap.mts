@@ -1576,7 +1576,7 @@ for (const s of ["predraft", "midraft", "postdraft"] as const) {
     `${s}: the rubric is rendered for a ${subject}`,
     s === "postdraft"
       ? graded.includes("The board is complete. Grade the whole night.") &&
-          !graded.includes(SUBJECT_LABEL["keeper-slate"]) &&
+          !graded.includes(SUBJECT_LABEL["no-picks"]) &&
           !graded.includes(SUBJECT_LABEL["partial-draft"])
       : graded.includes(SUBJECT_LABEL[subject]) &&
           !graded.includes("The board is complete. Grade the whole night."),

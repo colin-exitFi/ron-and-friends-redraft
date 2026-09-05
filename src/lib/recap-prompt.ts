@@ -363,7 +363,7 @@ export const NOBODY_ESCAPES_MARKER = "Nobody gets out clean";
  * disagree on a board.
  */
 export const GRADE_SUBJECT_BY_STAGE: Record<RecapStage, GradeSubject> = {
-  predraft: "keeper-slate",
+  predraft: "no-picks",
   midraft: "partial-draft",
   postdraft: "draft",
 };
