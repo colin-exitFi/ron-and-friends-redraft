@@ -23,32 +23,60 @@ See `DESIGN-BRIEF.md` for what the design was asked to solve.
 
 ## Logo assets
 
-| File                         | Size     | Use                     |
-| ---------------------------- | -------- | ----------------------- |
-| `public/brand/crest-v2.png`     | 1024²    | Dashboard hero          |
-| `public/brand/crest-v2-512.png` | 512²     | Spare (OG image, print) |
-| `public/brand/crest-v2-256.png` | 256²     | Spare                   |
-| `src/app/icon.png`           | 512²     | App Router icon         |
-| `src/app/apple-icon.png`     | 180²     | iOS home screen         |
-| `src/app/favicon.ico`        | 16/32/48 | Browser tab             |
+| File                            | Size     | Use                                    |
+| ------------------------------- | -------- | -------------------------------------- |
+| `public/brand/crest-v2.png`     | 928×1024 | Dashboard hero (and the print/TV master) |
+| `public/brand/crest-v2-512.png` | 464×512  | Spare (OG image, print)                |
+| `public/brand/crest-v2-256.png` | 232×256  | Sidebar, mobile header, board chrome   |
+| `src/app/icon.png`              | 512²     | App Router icon                        |
+| `src/app/apple-icon.png`        | 180²     | iOS home screen                        |
+| `src/app/favicon.ico`           | 16/32/48 | Browser tab                            |
 
-All are transparent-background. The supplied artwork sits on a black matte and
-the leather jacket inside the crest is _also_ black, so the matte was removed by
-flood-filling near-black inward from the image border rather than by keying on
-colour — a global "remove black" would have eaten the jacket. The alpha edge is
-feathered slightly so the crest's rim does not fringe on light surfaces.
+**The crest is portrait, not square: 1190×1322 as supplied, ~0.906:1.** The
+`public/brand/` exports keep that ratio and are sized by their _long_ edge, so
+`-512` means 512 tall. The three app icons are square because their consumers
+assume square, and the crest is centred inside with transparent slack.
+
+Every render site puts the crest in a square box with `object-contain`, which
+letterboxes rather than distorts. **The boxes are square on purpose** — the
+masthead title, the sidebar wordmark and the two board bars are all positioned
+off that width, and narrowing the box to the artwork would move them. Where the
+size comes from the `width`/`height` props alone rather than a CSS box (the
+sidebar and mobile header), the props carry the true ratio so nothing is
+stretched.
+
+The supplied artwork already has a clean alpha channel — it needed only a trim
+to its opaque bounding box, so the black-matte flood fill described for the
+previous crest no longer applies.
 
 ### The small-size problem
 
-The crest is a detailed circular badge and does not resolve much detail below
-roughly 36px, but the design uses it directly in the sidebar at 36px next to the
-wordmark, and it reads acceptably there as a colour-and-silhouette mark. The
-monogram tile (`BrandMark`) that previously stood in for it is gone; the crest is
-now used in the sidebar (36px), the mobile header (28px), the dashboard masthead
-(116–176px) and the app icons.
+The crest is a detailed shield — a doghouse, a violin and bow, stars, a football
+and two lines of type — and below roughly 32px it stops resolving detail and
+reads only as silhouette and colour. It is used in the sidebar (36px), the mobile
+header (28px), the live and final board bars (~26–34px on a 1080p TV), the
+dashboard masthead (146–224px) and the app icons. At the small sizes it reads as
+a dark shield with a cyan rim, which is enough to be recognisable.
 
-If it ever needs to go smaller than 28px, reintroduce a simplified mark rather
+**`favicon.ico` is cropped, the others are not.** The favicon frames come from a
+square crop off the top of the artwork, dropping the thin point below the
+football; that buys about 10% of apparent size at 16px, where a portrait crest
+letterboxed into a square tile is otherwise noticeably smaller than the tile. At
+48px the wordmark is readable, at 32px the doghouse and the wordmark band are
+discernible, and at 16px it is silhouette only.
+
+If anything needs to go smaller than 16px, reintroduce a simplified mark rather
 than scaling the crest further.
+
+### One note on the palette sections below
+
+The token commentary further down this file, and in `src/app/globals.css`,
+describes the crest as orange and navy and calls it the one asset sitting outside
+the zinc-and-cyan skin. That was true of the previous crest. **This one was drawn
+to the existing palette** — near-black charcoal with electric cyan — so the
+tension those notes describe is gone. The tokens themselves were deliberately
+left alone: they are the record of where the skin came from, and nothing about
+the swap requires them to move.
 
 ## Type
 
