@@ -422,7 +422,29 @@ export function getPlayerPool(): PoolPlayer[] {
   return poolCache.players;
 }
 
-/** ISO timestamp of the player snapshot, for "as of" copy in the UI. */
+/**
+ * ISO timestamp of the SMART DRAFT BASE SNAPSHOT, and of nothing else.
+ *
+ * NOT THE POOL'S FRESHNESS, WHICH IS WHAT THE OLD ONE-LINE DESCRIPTION READ AS
+ * — it said "the player snapshot, for 'as of' copy in the UI", and a reader
+ * checking whether tonight's cheat sheet was current took it at its word and
+ * reported the page as ten days stale. It is not, and `/players` uses this
+ * correctly: the only place it prints is the sentence about the TAIL, the part
+ * of the pool that FantasyPros does not rank, where the base snapshot's date is
+ * the true one.
+ *
+ * The distinction is the whole point of `buildPool`. The base file is pulled
+ * every few weeks and covers everybody; the FantasyPros overlay is pulled on
+ * draft day and covers the few hundred players anyone will actually take. Every
+ * one of the top fifty by ADP comes from the overlay, so **the base date is the
+ * wrong number to print next to the ADP a manager is reading** — it understates
+ * the freshness of the only rows that matter by however long ago the last base
+ * pull was.
+ *
+ * If you want the date to put beside the numbers in play, that is
+ * `getPoolProvenance().fantasyPros?.fetchedAt`. Reach for this one only when
+ * you are specifically naming the base layer.
+ */
 export function getPoolFetchedAt(): string {
   poolCache ??= buildPool();
   return poolCache.fetchedAt;
