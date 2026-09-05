@@ -25,6 +25,7 @@
     "verify:mock": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-mock-isolation.mts",
     "verify:mock:browser": "node scripts/verify-mock-browser.mjs",
     "verify:draft:realtime": "node --env-file=.env.local scripts/verify-draft-realtime.mjs",
+    "verify:draft:poll": "node scripts/verify-draft-poll.mjs",
     "verify:draft:remote": "node --env-file=.env.local scripts/verify-draft-two-clients.mjs",
     "verify:draft:read-paths": "node --env-file=.env.local scripts/verify-draft-read-paths.mjs",
     "pull:players": "node scripts/smartdraft-players.mjs",

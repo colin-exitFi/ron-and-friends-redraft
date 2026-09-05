@@ -29,6 +29,7 @@ import { PickList } from "@/components/pick-list";
 import { RosterWall } from "@/components/roster-wall";
 import { BoardReadout, TvSafeAreaOverlay } from "@/components/tv-safe-area-overlay";
 import { useDraftLiveSync, type LiveStatus } from "@/components/use-draft-live-sync";
+import { POLL_SECONDS } from "@/lib/poll-interval.mjs";
 import {
   BoardGrid,
   DeletePickWarning,
@@ -1281,8 +1282,15 @@ function LiveDot({
     status === "live"
       ? ["bg-success", "live"]
       : status === "polling"
-        ? // Named for what the room can act on, not for the websocket being down.
-          ["bg-warning", "syncing slowly"]
+        ? /*
+           * Named for what the room can act on, not for the websocket being
+           * down — and it names the INTERVAL rather than calling itself "slowly".
+           * It said the latter while polling every ten seconds, which was true
+           * and was also the reason the commissioner asked for this to be more
+           * real-time. Ten seconds behind deserves the word. Three does not, and
+           * a board that undersells itself gets distrusted for the wrong reason.
+           */
+          ["bg-warning", `syncing every ${POLL_SECONDS}s`]
         : ["bg-muted-foreground/40", "connecting"];
 
   return (

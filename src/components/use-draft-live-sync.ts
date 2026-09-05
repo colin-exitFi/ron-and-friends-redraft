@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { DB_SCHEMA } from "@/lib/db-schema.mjs";
+import { POLL_MS } from "@/lib/poll-interval.mjs";
 
 export type LiveStatus = "off" | "connecting" | "live" | "polling";
 
@@ -39,12 +40,16 @@ export type LiveStatus = "off" | "connecting" | "live" | "polling";
  * and the failure it is protecting against is the one where nobody notices.
  *
  * Polling stops the moment the channel is live again, so the normal case pays
- * nothing. The poll hits `/api/draft/state` on this machine, so it costs
- * nothing off-box either.
+ * nothing. The poll hits this deployment's own API, so it costs nothing off-box
+ * either.
  *
- * A dropped channel is retried a few times, slowly, before polling becomes the
- * arrangement for the night — see `RESUBSCRIBE_MS`. Venue wifi drops once and
- * comes back; the old behaviour read the first drop as a verdict.
+ * There are three ways a pick gets here, in order of how quickly it arrives and
+ * of how much has to be working for it to: the channel delivers an event; the
+ * poll asks anyway, every `POLL_MS`; and coming back to the page asks at once,
+ * because neither of the first two survives a phone being locked. A dropped
+ * channel is rebuilt on a backoff for as long as the page is open — see
+ * `RESUBSCRIBE_BACKOFF_MS`, which used to give up after three tries and leave
+ * the poll carrying the rest of the evening.
  *
  * ============================================================================
  * WHY THE SUPABASE CLIENT IS IMPORTED LAZILY
@@ -62,34 +67,41 @@ export type LiveStatus = "off" | "connecting" | "live" | "polling";
  * — see the import-graph check there, which is what stops this coming back.
  */
 /**
- * How long to leave a dropped channel alone before building a new one, and how
- * many times to bother.
+ * How long to leave a dropped channel alone before building a new one.
  *
- * Fifteen seconds is chosen to be longer than a wifi hiccup and short enough
- * that a manager who looks up at the dot twice sees it go green — and it is far
- * enough apart that three attempts is not a retry loop on a screen whose job is
- * to not be busy. Three, because a network that has refused four times across
- * three quarters of a minute is not coming back on its own, and every attempt
- * after that is noise.
+ * ============================================================================
+ * IT NEVER STOPS TRYING, AND IT USED TO
+ * ============================================================================
+ * This was three attempts fifteen seconds apart, and then the socket was
+ * written off for the rest of the evening. The reasoning was that a network
+ * refusing four times across three quarters of a minute is not coming back —
+ * which is true of a network and is not true of this. A phone that has been in
+ * a pocket, a venue access point that reboots, a Realtime server that was
+ * briefly unhappy: all of those come back, and all of them landed a board on
+ * the poll below for the remaining three hours.
+ *
+ * The commissioner watched it happen and asked for exactly this: "I need that
+ * to be more real-time." Polling is a floor, not a destination. A live socket
+ * is the difference between a pick appearing when it is called and a pick
+ * appearing on the next tick, so it is worth one handshake a minute forever.
+ *
+ * Backoff, so a genuinely dead network is not hammered: the first retry is fast
+ * enough to cover a hiccup, and it settles at a minute apart. The budget resets
+ * on every successful subscribe.
  */
-const RESUBSCRIBE_MS = 15_000;
-const RESUBSCRIBE_TRIES = 3;
+const RESUBSCRIBE_BACKOFF_MS = [5_000, 15_000, 30_000, 60_000];
 
 /**
- * The poll interval once the socket has been given up on for good.
- *
- * Faster than the normal fallback, because at that point it is the ONLY thing
- * carrying remote picks for the rest of the night, and ten seconds behind on a
- * board the room is reading out loud is the failure nobody notices. It is a
- * request to this machine, so the only cost is one more of those.
+ * Two wake-ups from the same return to the page — `visibilitychange` and
+ * `focus` both fire — are one event as far as this is concerned.
  */
-const ABANDONED_POLL_MS = 4_000;
+const WAKE_COALESCE_MS = 500;
 
 export function useDraftLiveSync({
   enabled,
   onChanged,
   debounceMs = 300,
-  pollMs = 10_000,
+  pollMs = POLL_MS,
 }: {
   /** False on the file store, where no other device can see these picks. */
   enabled: boolean;
@@ -105,16 +117,17 @@ export function useDraftLiveSync({
    */
   const [socketStatus, setSocketStatus] = useState<Exclude<LiveStatus, "off">>("connecting");
   const status: LiveStatus = enabled ? socketStatus : "off";
+
   /**
-   * The socket is not coming back. Kept separately from the status because it
-   * changes nothing the room is shown — "syncing slowly" is still exactly what
-   * is happening — and only tells the poll below to run harder.
-   *
-   * Never cleared. `enabled` is a fact about which store this board is talking
-   * to and does not move while the draft is running, so the only thing that
-   * would reset this is a remount, which brings a fresh state anyway.
+   * The same status, readable from an event handler that is not re-registered
+   * on every render. Used only to decide whether a wake-up should rebuild the
+   * channel — a live socket must not be torn down just because somebody
+   * unlocked their phone.
    */
-  const [socketGone, setSocketGone] = useState(false);
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
 
   /*
    * The callback closes over board state and so changes identity on every
@@ -127,6 +140,12 @@ export function useDraftLiveSync({
     changed.current = onChanged;
   }, [onChanged]);
 
+  /**
+   * Set by the subscription effect below, so the wake-up effect can reach the
+   * channel without owning it or re-running when it changes.
+   */
+  const reconnectNow = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -135,6 +154,16 @@ export function useDraftLiveSync({
     let retry: ReturnType<typeof setTimeout> | null = null;
     let teardown: (() => void) | null = null;
     let attempts = 0;
+    /**
+     * Which connection attempt is the live one.
+     *
+     * `connect` is async — it fetches the Supabase chunk before it has a channel
+     * — so a wake-up can start a second attempt while the first is still inside
+     * that await. Without a token to check on the way out, both would install
+     * themselves and the first one's channel would be leaked, subscribed, with
+     * nothing holding a reference able to close it.
+     */
+    let generation = 0;
 
     /** Close whatever channel is open. Never throws, safe to call twice. */
     const drop = () => {
@@ -153,46 +182,74 @@ export function useDraftLiveSync({
      *
      * The channel is torn down rather than left to reconnect on the Supabase
      * client's own schedule, which on a dead network is a retry loop running
-     * behind a screen whose entire job is to not be busy. But a torn-down
-     * channel used to be the end of it, and the effect only re-runs when the
-     * store changes — so ONE hiccup on the venue's wifi left every remote board
-     * up to ten seconds behind for the rest of the night. Instead a new channel
-     * is built a few times, slowly, and polling covers the gaps; only after
-     * that is the socket written off, and then the poll runs harder.
+     * behind a screen whose entire job is to not be busy. A new one is built on
+     * the backoff above, indefinitely, while the poll below covers the gap.
      */
     const lost = () => {
       if (disposed) return;
+      // Nothing from the attempt that just died counts for anything, including
+      // a late SUBSCRIBED arriving after the channel was torn down.
+      generation++;
       drop();
       setSocketStatus("polling");
+      const wait =
+        RESUBSCRIBE_BACKOFF_MS[Math.min(attempts, RESUBSCRIBE_BACKOFF_MS.length - 1)];
       attempts++;
-      if (attempts >= RESUBSCRIBE_TRIES) {
-        setSocketGone(true);
-        return;
+      retry = setTimeout(connect, wait);
+    };
+
+    /**
+     * Stop waiting out the backoff and try the socket right now.
+     *
+     * For the one case where the backoff's assumption is wrong. It is spacing
+     * attempts out because the last few failed, and a phone coming out of a
+     * pocket is not the same network conditions that produced those failures —
+     * it is the moment most likely to succeed, and the moment somebody is
+     * looking at the screen.
+     */
+    reconnectNow.current = () => {
+      if (disposed) return;
+      if (retry) {
+        clearTimeout(retry);
+        retry = null;
       }
-      retry = setTimeout(connect, RESUBSCRIBE_MS);
+      attempts = 0;
+      drop();
+      setSocketStatus("connecting");
+      connect();
     };
 
     function connect() {
+      const mine = ++generation;
+      /** Superseded, either by a wake-up or by this attempt's own failure. */
+      const stale = () => disposed || mine !== generation;
+
       void (async () => {
-        /** This attempt is still the current one. */
-        let current = true;
-
-        let createClient: typeof import("@/lib/supabase/client").createClient;
+        /*
+         * ONE CATCH AROUND THE WHOLE ATTEMPT, AND EVERY FAILURE IS A DROP.
+         *
+         * The failure this covers is a fetch of the Supabase chunk on a dead
+         * network, which is what the retry above exists for. But `createClient`
+         * reads the public env and throws if it is not there, and that used to
+         * sit outside the catch: a deployment missing `NEXT_PUBLIC_SUPABASE_URL`
+         * would take the rejection nowhere, leave the dot on "connecting" for
+         * the rest of the night, and never retry — the board claiming it is
+         * still trying while nothing is. Anything that goes wrong in here means
+         * the same thing to the room, so it takes the same path.
+         */
         try {
-          ({ createClient } = await import("@/lib/supabase/client"));
+          const { createClient } = await import("@/lib/supabase/client");
+          if (stale()) return;
+          await subscribe(createClient());
         } catch {
-          // The chunk could not be fetched — which is exactly what a dead
-          // network looks like, and no number of retries fetches a chunk the
-          // browser has decided it cannot have. Poll and never mention it again.
-          if (!disposed) {
-            setSocketStatus("polling");
-            setSocketGone(true);
-          }
-          return;
+          if (!stale()) lost();
         }
-        if (disposed) return;
+      })();
 
-        const supabase = createClient();
+      /** Open a channel on a client that exists, and report what it does. */
+      async function subscribe(
+        supabase: ReturnType<typeof import("@/lib/supabase/client").createClient>,
+      ) {
         const channel = supabase.channel("draft-live-state");
 
         channel.on(
@@ -223,36 +280,45 @@ export function useDraftLiveSync({
           },
         );
 
+        // A wake-up landed while the chunk was loading, so this attempt's
+        // channel is already obsolete. Close it here rather than installing it,
+        // or it stays open with nothing able to reach it.
+        if (stale()) {
+          void supabase.removeChannel(channel);
+          return;
+        }
+
         teardown = () => {
           void supabase.removeChannel(channel);
         };
 
         channel.subscribe((state) => {
-          if (disposed || !current) return;
+          if (stale()) return;
           if (state === "SUBSCRIBED") {
-            // A channel that came back spends the retry budget again if it
-            // drops later in the evening, rather than being one drop from
-            // permanent polling for the rest of the night.
+            // A channel that came back spends the backoff budget again if it
+            // drops later in the evening, rather than every later drop being
+            // treated as a continuation of the first one.
             attempts = 0;
             setSocketStatus("live");
             return;
           }
           if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") {
-            // One attempt reports several of these on the way down. Only the
-            // first counts, or a single drop would burn the whole budget.
-            current = false;
+            // One attempt reports several of these on the way down. `lost()`
+            // bumps the generation, so only the first gets through here — or a
+            // single drop would burn the whole backoff.
             lost();
           }
         });
 
         if (disposed) drop();
-      })();
+      }
     }
 
     connect();
 
     return () => {
       disposed = true;
+      reconnectNow.current = null;
       if (debounce) clearTimeout(debounce);
       if (retry) clearTimeout(retry);
       drop();
@@ -262,13 +328,53 @@ export function useDraftLiveSync({
   /* Only runs while the socket is down. See the note above. */
   useEffect(() => {
     if (!enabled || status === "live" || status === "off") return;
-    // Faster once the socket has been written off, because from then on this is
-    // the only thing bringing remote picks in. `Math.min`, so a caller that
-    // deliberately asked for a tighter poll still gets it.
-    const every = socketGone ? Math.min(pollMs, ABANDONED_POLL_MS) : pollMs;
-    const timer = setInterval(() => changed.current(), every);
+    const timer = setInterval(() => changed.current(), pollMs);
     return () => clearInterval(timer);
-  }, [enabled, status, pollMs, socketGone]);
+  }, [enabled, status, pollMs]);
+
+  /*
+   * ============================================================================
+   * COMING BACK TO THE PAGE COUNTS AS A TICK
+   * ============================================================================
+   * Neither mechanism above survives a phone going in a pocket, and this is a
+   * page built to be read on phones during a three-hour draft.
+   *
+   * A backgrounded tab has its timers throttled to roughly one a minute by
+   * every mobile browser, and its websockets are liable to be suspended
+   * outright — so the interval that reads "every three seconds" here is
+   * "whenever the browser feels like it" there. The manager then unlocks his
+   * phone, looks at the cheat sheet, and reads a pool that is a minute stale
+   * while every indicator on it claims to be current. That is the failure this
+   * whole hook exists to prevent, wearing a green dot.
+   *
+   * So returning to the page re-asks immediately, and revives the socket if it
+   * is not carrying events. Same for the browser reporting the network back:
+   * `online` is the one moment we know more than the backoff does.
+   */
+  useEffect(() => {
+    if (!enabled) return;
+
+    let last = 0;
+    const wake = () => {
+      if (document.visibilityState !== "visible") return;
+      // `visibilitychange` and `focus` both fire on one return to the page.
+      const now = Date.now();
+      if (now - last < WAKE_COALESCE_MS) return;
+      last = now;
+
+      changed.current();
+      if (statusRef.current !== "live") reconnectNow.current?.();
+    };
+
+    document.addEventListener("visibilitychange", wake);
+    window.addEventListener("focus", wake);
+    window.addEventListener("online", wake);
+    return () => {
+      document.removeEventListener("visibilitychange", wake);
+      window.removeEventListener("focus", wake);
+      window.removeEventListener("online", wake);
+    };
+  }, [enabled]);
 
   return status;
 }
