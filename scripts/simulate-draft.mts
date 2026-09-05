@@ -59,7 +59,7 @@ import {
 } from "@/lib/draft-search";
 import { draftStore } from "@/lib/draft-store";
 import { getBoard, getPlayerPool } from "@/lib/smartdraft";
-import { DRAFT, LEAGUE, ROSTER, STARTING_LINEUP, TOTAL_PICKS } from "@/lib/league-config";
+import { DRAFT, FEATURES, LEAGUE, ROSTER, STARTING_LINEUP, TOTAL_PICKS } from "@/lib/league-config";
 import type { DraftRoomView, DraftStateFile } from "@/lib/draft-types";
 import type { PoolPlayer } from "@/lib/board-types";
 
@@ -215,9 +215,13 @@ async function simulate(): Promise<number> {
    */
   const KEEPERS = board.keeperCount;
   check(
-    `${KEEPERS} keepers pre-placed, one per keeper slot`,
-    KEEPERS > 0 &&
-      KEEPERS < TOTAL_PICKS &&
+    FEATURES.keepers
+      ? `${KEEPERS} keepers pre-placed, one per keeper slot`
+      : "no keepers on the board — this is a redraft",
+    // A redraft must have NONE; a keeper season must have a sane number. Both
+    // are read off the board rather than pinned, because a pinned count fails
+    // the day somebody declares, which is noise rather than a finding.
+    (FEATURES.keepers ? KEEPERS > 0 && KEEPERS < TOTAL_PICKS : KEEPERS === 0) &&
       board.slots.filter((s) => s.isKeeper).length === KEEPERS,
     `keeperCount ${KEEPERS}, keeper slots ${board.slots.filter((s) => s.isKeeper).length}`,
   );
@@ -225,9 +229,21 @@ async function simulate(): Promise<number> {
     "every keeper slot actually holds a player",
     board.slots.filter((s) => s.isKeeper).every((s) => s.player != null),
   );
-  check("29 traded picks", board.tradedCount === 29, `got ${board.tradedCount}`);
+  /*
+   * Derived from the league's own rule rather than from a literal. Ron and
+   * Friends forbids pick trading outright (proposal §6), so the honest
+   * assertion is "none", and it becomes "some, and consistent" the day a
+   * league that permits trading uses this board.
+   */
   check(
-    "every slot's overall pick is unique and covers 1…160",
+    FEATURES.tradedPicks
+      ? `${board.tradedCount} traded picks`
+      : "no traded picks — this league does not trade them",
+    FEATURES.tradedPicks ? board.tradedCount > 0 : board.tradedCount === 0,
+    `got ${board.tradedCount}`,
+  );
+  check(
+    `every slot's overall pick is unique and covers 1…${TOTAL_PICKS}`,
     new Set(board.slots.map((s) => s.overallPick)).size === TOTAL_PICKS &&
       Math.min(...board.slots.map((s) => s.overallPick)) === 1 &&
       Math.max(...board.slots.map((s) => s.overallPick)) === TOTAL_PICKS,
@@ -366,7 +382,14 @@ async function simulate(): Promise<number> {
   );
 
   section("6. Traded picks went to the right franchise");
-  check("29 traded slots to verify", tradedSlots.length === 29, `got ${tradedSlots.length}`);
+  check(
+    FEATURES.tradedPicks
+      ? `${tradedSlots.length} traded slots to verify`
+      : "no traded slots to verify — picks are not tradable in this league",
+    tradedSlots.length === board.tradedCount &&
+      (FEATURES.tradedPicks ? tradedSlots.length > 0 : tradedSlots.length === 0),
+    `got ${tradedSlots.length}`,
+  );
   const tradedWrong: string[] = [];
   for (const slot of tradedSlots) {
     const filled = view.slots.find((s) => s.id === slot.id)!;
@@ -382,7 +405,11 @@ async function simulate(): Promise<number> {
       }
     }
   }
-  check("all 29 landed with the acquiring franchise, not the original", tradedWrong.length === 0, tradedWrong.join("; "));
+  check(
+    `all ${tradedSlots.length} landed with the acquiring franchise, not the original`,
+    tradedWrong.length === 0,
+    tradedWrong.join("; "),
+  );
   check(
     "every entered pick anywhere on the board matches its slot's current owner",
     state.picks.every(
@@ -462,28 +489,54 @@ async function simulate(): Promise<number> {
   );
 
   section("9. Warnings can be overridden; physical impossibilities cannot");
-  const keeperSlot = board.slots.find((s) => s.isKeeper)!;
-  const takenPlayerId = keeperSlot.player!.id;
-  const takenPlayer = pool.find((p) => p.id === takenPlayerId);
+  /*
+   * A KEEPER SLOT IS NOT GUARANTEED TO EXIST, and on a redraft board none does.
+   * The two rules that need one are exercised only when the board has one; the
+   * rules that do not — a cell that already holds a player, and a player who is
+   * already on the board — are exercised either way, and the duplicate-player
+   * warning is covered below by an already-PICKED player rather than by a kept
+   * one. So a redraft loses no coverage of anything a redraft can hit.
+   */
+  const keeperSlot = board.slots.find((s) => s.isKeeper) ?? null;
+
+  /*
+   * The player used to exercise the duplicate-player warning and the override
+   * that follows it. A KEPT player where the board has keepers; the player just
+   * entered out of order where it does not. The rule under test is "this player
+   * is already on the board somewhere", and both satisfy it identically — so
+   * the override path below is covered on a redraft as well.
+   */
+  const duplicateSource = keeperSlot?.player ?? someone;
+  const takenPlayerId = duplicateSource.id;
   const duplicateInput = {
     slotId: firstOpen.id,
     playerId: takenPlayerId,
-    playerName: takenPlayer?.name ?? keeperSlot.player!.name,
-    position: keeperSlot.player!.position,
-    nflTeam: keeperSlot.player!.nflTeam,
-    byeWeek: keeperSlot.player!.byeWeek,
+    playerName: pool.find((p) => p.id === takenPlayerId)?.name ?? duplicateSource.name,
+    position: duplicateSource.position,
+    nflTeam: duplicateSource.nflTeam,
+    byeWeek: duplicateSource.byeWeek,
   };
 
-  expectRejected("drafting into a keeper slot", false, () =>
-    applyPick(board, ooo, {
-      slotId: keeperSlot.id,
-      playerId: someone.id,
-      playerName: someone.name,
-      position: someone.position,
-      nflTeam: someone.nflTeam,
-      byeWeek: someone.byeWeek,
-    }),
-  );
+  if (keeperSlot) {
+    expectRejected("drafting into a keeper slot", false, () =>
+      applyPick(board, ooo, {
+        slotId: keeperSlot.id,
+        playerId: someone.id,
+        playerName: someone.name,
+        position: someone.position,
+        nflTeam: someone.nflTeam,
+        byeWeek: someone.byeWeek,
+      }),
+    );
+    expectRejected("drafting a player a keeper already holds", true, () =>
+      applyPick(board, ooo, duplicateInput),
+    );
+  } else {
+    console.log(
+      "  · no keeper slot on this board (redraft) — the two keeper-only rules are not exercised",
+    );
+  }
+
   expectRejected("drafting into a slot that already has a player", false, () => {
     const other = pool.find((p) => p.id !== someone.id && p.id !== takenPlayerId)!;
     return applyPick(board, ooo, {
@@ -495,9 +548,6 @@ async function simulate(): Promise<number> {
       byeWeek: other.byeWeek,
     });
   });
-  expectRejected("drafting a player a keeper already holds", true, () =>
-    applyPick(board, ooo, duplicateInput),
-  );
   expectRejected("drafting a player already picked", true, () =>
     applyPick(board, ooo, {
       slotId: firstOpen.id,
@@ -909,7 +959,9 @@ async function simulate(): Promise<number> {
     "a drafted player is still findable, but ranked below undrafted matches",
     (() => {
       const drafted = new Set([takenPlayerId]);
-      const results = searchPlayers(index, keeperSlot.player!.name, { limit: 5, drafted });
+      // Whoever is already on the board — a keeper where there are keepers,
+      // otherwise the player entered out of order in section 8.
+      const results = searchPlayers(index, duplicateSource.name, { limit: 5, drafted });
       const hit = results.find((r) => r.item.id === takenPlayerId);
       return !!hit && hit.drafted === true;
     })(),

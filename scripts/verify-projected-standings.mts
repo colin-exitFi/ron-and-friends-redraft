@@ -140,21 +140,35 @@ if (live.state === "unreadable") {
 section("2. Six-point passing touchdowns, applied rather than assumed");
 
 check("league config pays 6 for a passing TD", SCORING_SPEC.passTd === 6, `got ${SCORING_SPEC.passTd}`);
-check("league config is full PPR", SCORING_SPEC.ppr === 1);
+check(
+  "league config is half PPR",
+  SCORING_SPEC.ppr === 0.5,
+  `got ${SCORING_SPEC.ppr}`,
+);
 
 {
-  // 4,500 passing yards and 30 passing TDs: 180 points of touchdowns here,
-  // 120 anywhere that assumes four. The 60-point gap is the whole argument for
-  // storing stat lines instead of vendor totals.
+  /*
+   * 4,500 passing yards and 30 passing TDs. The gap this asserts is the one
+   * caused by the TOUCHDOWN value alone — 30 × 6 against 30 × 4 — so the
+   * comparison holds the yardage basis constant and reads it from the config
+   * rather than restating it. Written as a literal it silently became a test
+   * of the yardage rate as well the moment this league turned out to pay a
+   * point per 20 yards instead of per 25.
+   */
   const line = { passYards: 4500, passTd: 30, interceptions: 10 };
   const here = pointsFromStats(line);
-  const atFour = 4500 / 25 + 30 * 4 + 10 * -2;
+  const atFour =
+    4500 / SCORING_SPEC.passYardsPerPoint + 30 * 4 + 10 * SCORING_SPEC.interceptionThrown;
+  const expectedGap = 30 * (SCORING_SPEC.passTd - 4);
   check(
-    "a 30-TD quarterback is scored 60 points higher than at 4 points a TD",
-    Math.abs(here - atFour - 60) < 1e-9,
+    `a 30-TD quarterback is scored ${expectedGap} points higher than at 4 points a TD`,
+    Math.abs(here - atFour - expectedGap) < 1e-9,
     `${here.toFixed(1)} vs ${atFour.toFixed(1)}`,
   );
-  check("…and receptions are worth a point each", pointsFromStats({ receptions: 100 }) === 100);
+  check(
+    `…and 100 receptions are worth ${100 * SCORING_SPEC.ppr}`,
+    pointsFromStats({ receptions: 100 }) === 100 * SCORING_SPEC.ppr,
+  );
 }
 
 // --- 3. Projections: real snapshot, or a labelled fixture -------------------

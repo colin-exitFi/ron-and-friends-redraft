@@ -146,30 +146,47 @@ try {
   await page.waitForTimeout(800);
 
   let view = await boardState();
+  /*
+   * THE BOARD'S SHAPE IS ASKED OF THE BOARD, not written down here. The league
+   * this harness was built for drafted 10 x 16; this one drafts 10 x 14, and a
+   * harness that pins either number fails on the league rather than on a bug.
+   * `rounds`, `teamCount` and `totalPicks` all come off the same view the room
+   * is looking at, so they cannot disagree with what is on screen.
+   */
+  const ROUNDS = view.rounds;
+  const SLOTS = view.totalPicks;
   const keeperBaseline = view.keeperCount;
-  check("all 160 slots exist", view.slots.length === 160, `${view.slots.length}`);
+
+  check(`all ${SLOTS} slots exist`, view.slots.length === SLOTS, `${view.slots.length}`);
+  check(
+    `the board is ${view.teamCount} teams x ${ROUNDS} rounds`,
+    view.teamCount * ROUNDS === SLOTS,
+    `${view.teamCount} x ${ROUNDS} != ${SLOTS}`,
+  );
   check("nothing has been entered yet", view.picksMade === 0);
   check(
-    `every keeper is already placed (${keeperBaseline})`,
-    view.filled === keeperBaseline && keeperBaseline > 0,
-    `filled ${view.filled}`,
+    keeperBaseline > 0
+      ? `every keeper is already placed (${keeperBaseline})`
+      : "the board opens completely empty — this is a redraft",
+    view.filled === keeperBaseline,
+    `filled ${view.filled}, keepers ${keeperBaseline}`,
   );
 
   let cells = await readCells(page);
-  check("the board draws a cell for all 160 slots", cells.length === 160, `${cells.length}`);
+  check(`the board draws a cell for all ${SLOTS} slots`, cells.length === SLOTS, `${cells.length}`);
   const rounds = new Set(view.slots.map((s) => s.round));
-  check("all sixteen rounds are present in the data", rounds.size === 16, `${rounds.size}`);
+  check(`all ${ROUNDS} rounds are present in the data`, rounds.size === ROUNDS, `${rounds.size}`);
   /*
    * Drawn, not merely present: a virtualised grid that renders eight rounds and
    * pages the rest is the failure this is aimed at, and the room stands up to
-   * read round 16 rather than scrolling to it.
+   * read the last round rather than scrolling to it.
    */
   const drawnRounds = new Set(
     cells.map((c) => Number(c.title.match(/^(\d+)\./)?.[1])).filter(Boolean),
   );
   check(
-    "…and all sixteen are actually drawn, none paged away",
-    drawnRounds.size === 16,
+    `…and all ${ROUNDS} are actually drawn, none paged away`,
+    drawnRounds.size === ROUNDS,
     `rounds drawn: ${[...drawnRounds].sort((a, b) => a - b).join(",")}`,
   );
 
@@ -183,7 +200,20 @@ try {
    * match the franchise the server says holds the pick".
    */
   const traded = view.slots.filter((s) => s.traded);
-  check(`the board is carrying traded picks (${traded.length})`, traded.length > 0);
+  /*
+   * Ron and Friends forbids pick trading outright, so the interesting assertion
+   * here has INVERTED: what matters is not that traded cells read correctly but
+   * that no cell claims to have been traded at all. The positive checks below
+   * still run for a league that trades picks; the negative one runs either way
+   * and is the one that has teeth tonight.
+   */
+  check(
+    traded.length > 0
+      ? `the board is carrying traded picks (${traded.length})`
+      : "no slot has changed hands — picks are not tradable in this league",
+    traded.length === view.tradedCount,
+    `traded ${traded.length}, tradedCount ${view.tradedCount}`,
+  );
 
   const byId = new Map(cells.map((c) => [c.slotId, c]));
   const wrongOwner = [];
@@ -230,7 +260,20 @@ try {
 
   section("3. Keepers are placed, and never on the clock");
   const keepers = view.slots.filter((s) => s.fill === "keeper");
-  check(`${keepers.length} keeper slots are filled with a player`, keepers.every((s) => s.player));
+  /*
+   * On a redraft this is the check that the keeper wipe actually took: an
+   * empty `data/keeper-*.json` set means the overlay places nobody, so a single
+   * keeper cell here would mean the previous league's data is still leaking on
+   * to the board. `every` is vacuously true at zero, so the count is asserted
+   * explicitly rather than relied on.
+   */
+  check(
+    keepers.length > 0
+      ? `${keepers.length} keeper slots are filled with a player`
+      : "no cell is a keeper — every one of the board's slots is open to be drafted",
+    keepers.length === view.keeperCount && keepers.every((s) => s.player),
+    `keepers ${keepers.length}, keeperCount ${view.keeperCount}`,
+  );
   check("no keeper slot is on the clock", keepers.every((s) => !s.onTheClock));
   const keeperCells = keepers.map((s) => byId.get(s.id)).filter(Boolean);
   check(
