@@ -58,6 +58,7 @@
     "verify:recap:clean": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-clean.mts",
     "verify:recap:browser": "node scripts/verify-recap-browser.mjs",
     "audit:recap:layout": "node scripts/audit-recap-layout.mjs",
+    "audit:nav:pane": "node scripts/audit-nav-pane.mjs",
     "verify:recap:spread": "node --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-spread.mts",
     "verify:recap:grade": "node --env-file-if-exists=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-grade.mts",
     "verify:recap:db": "RECAP_STORE=database node --env-file=.env.local --experimental-strip-types --no-warnings --import ./scripts/draft-loader.mjs scripts/verify-recap-db.mts",

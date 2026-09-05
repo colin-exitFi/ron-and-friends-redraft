@@ -367,11 +367,21 @@ function SidebarFooter({ collapsible }: { collapsible?: boolean }) {
           {SEASON_NOTE}
         </span>
       </span>
+      {/*
+       * The 13px glyph is the design's, and on a mouse 13px is a fine target.
+       * In the mobile drawer it was a 13px target for a thumb — the smallest
+       * thing in the pane by a factor of three. The hit area is grown with a
+       * pseudo-element rather than by padding the link, so the glyph does not
+       * move: the drawer is supposed to be pixel-identical to the expanded
+       * rail, and `touch:` only matches a coarse pointer, so the rail on the
+       * commissioner's desk is untouched either way.
+       */}
       <Link
         href="/scoring"
         aria-label="Scoring and league settings"
         className={cn(
-          "text-sidebar-foreground/70 hover:text-foreground mr-4 transition-colors",
+          "text-sidebar-foreground/70 hover:text-foreground relative mr-4 transition-colors",
+          "touch:after:absolute touch:after:-inset-4 touch:after:content-['']",
           collapsible && REVEAL,
         )}
       >
@@ -471,9 +481,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open navigation</span>
             </SheetTrigger>
+            {/*
+             * `data-[side=left]:w-[232px]`, not `w-[232px]`. The primitive sets
+             * its own `data-[side=left]:w-3/4`, and a variant-prefixed utility
+             * carries an extra attribute selector — so it outranks an
+             * unprefixed width on specificity, and tailwind-merge cannot drop
+             * one for the other because they are different keys. The plain
+             * override was therefore dead: the drawer opened at three quarters
+             * of the viewport — 292px on a 390 phone, 384px by the tablet
+             * breakpoint — holding a nav list laid out for the 232px rail, so a
+             * third of the pane was empty air to the right of every label.
+             * Matching the width the rail expands to is the point: this drawer
+             * is meant to BE the expanded rail, on a device that cannot hover.
+             *
+             * `gap-0` for the same reason in reverse — the primitive's `gap-4`
+             * did apply, and it opened a 16px trench above the footer's rule
+             * that the rail does not have.
+             */}
             <SheetContent
               side="left"
-              className="bg-sidebar flex max-h-[100dvh] w-[232px] flex-col p-0"
+              className={cn(
+                "bg-sidebar flex max-h-[100dvh] flex-col gap-0 p-0",
+                "data-[side=left]:w-[232px]",
+                /*
+                 * The primitive's close button is `size-7`. This pane only ever
+                 * renders for a coarse pointer, where 28px is under the 44px a
+                 * thumb can reliably land on. Scoped here rather than changed
+                 * in `sheet.tsx`, which the draft board's roster pane also uses.
+                 */
+                "touch:[&_[data-slot=sheet-close]]:size-11",
+              )}
             >
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation</SheetTitle>
@@ -485,11 +522,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarFooter />
             </SheetContent>
           </Sheet>
+          {/*
+           * `loading="eager"`, not `priority`. This crest is above the fold on
+           * every narrow load, so lazy was wrong — but `priority` emits a
+           * preload link with no media condition, and the rail's copy of this
+           * same crest already carries one. Marking both would preload two
+           * renditions on every load and use one. See the reasoning on the
+           * dashboard's crest for the same trade.
+           */}
           <Image
             src="/brand/crest-v2-256.png"
             alt=""
             width={26}
             height={28}
+            loading="eager"
             className="shrink-0 rounded-[3px] object-contain"
           />
           <span className="font-display text-foreground text-[11px] font-bold uppercase tracking-[0.14em]">
