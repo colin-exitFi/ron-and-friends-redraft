@@ -29,6 +29,7 @@ import {
   type DraftedBy,
 } from "@/lib/cheat-sheet-view";
 import { pointsFromStats, receptionValue } from "@/lib/projections";
+import { pointsFromSleeperSeason } from "@/lib/sleeper-season";
 import { SCORING_SPEC } from "@/lib/league-config";
 import type { DraftRoomView, LiveSlot } from "@/lib/draft-types";
 
@@ -268,6 +269,350 @@ check(
     console.log(
       `  · ${r.name} (${r.position}) — ADP ${r.adp}, ${r.position}${r.positionRank} by market, ` +
         `${r.position}${r.pointsPositionRank} by our scoring`,
+    );
+  }
+}
+
+// --- 2c. Last season, scored in this league's rules -------------------------
+
+section("2c. Last season's actual points are THIS league's points");
+
+/*
+ * ============================================================================
+ * WHY THIS IS ASSERTED AGAINST HAND ARITHMETIC AND NOT AGAINST THE CODE
+ * ============================================================================
+ * A wrong points total here is the most expensive kind of bug this page can
+ * have, because it is INVISIBLE: the column would still be full of plausible
+ * three-figure numbers, ten people would read them off a television, and
+ * nothing on screen would say the tight end premium had been dropped or a
+ * bonus double-counted.
+ *
+ * So the three lines below were computed BY HAND from Sleeper's raw 2025 stat
+ * lines before the scorer was pointed at them, and the expected totals are
+ * written out term by term. If `SCORING_SPEC` is re-pointed these fail, which
+ * is correct — they are a check on the arithmetic, not on the configuration.
+ */
+{
+  const te = pointsFromSleeperSeason(
+    { rec: 126, rec_yd: 1239, rec_td: 11, bonus_rec_yd_100: 3, gp: 17 },
+    "TE",
+  );
+  /*
+   * Trey McBride, 2025. 126 catches at a FULL POINT (the premium) = 126, plus
+   * 123.9 receiving, plus 66 for eleven scores, plus three 100-yard games.
+   */
+  const teExpected = 126 * 1.0 + 1239 / 10 + 11 * 6 + 3 * 1;
+  check(
+    `Trey McBride's 2025 scores ${teExpected.toFixed(1)} by hand`,
+    Math.abs(te - teExpected) < 1e-9,
+    `got ${te.toFixed(1)}, expected ${teExpected.toFixed(1)}`,
+  );
+  /*
+   * THE ENTIRE ARGUMENT FOR COMPUTING THIS OURSELVES, ASSERTED. The same season
+   * at half a point a catch — which is what every public surface shows — is 63
+   * points lighter. That is most of a round, it lands on exactly the position
+   * this league has deliberately repriced, and it is the number a manager
+   * cannot get anywhere else.
+   */
+  const asWr = pointsFromSleeperSeason(
+    { rec: 126, rec_yd: 1239, rec_td: 11, bonus_rec_yd_100: 3, gp: 17 },
+    "WR",
+  );
+  check(
+    "…and is 63 points more than the public half-PPR figure for the same season",
+    Math.abs(te - asWr - 126 * SCORING_SPEC.recTePremium) < 1e-9,
+    `${te.toFixed(1)} vs ${asWr.toFixed(1)}`,
+  );
+
+  /*
+   * Bijan Robinson, 2025 — the high-volume back, which is the line that
+   * exercises everything at once: two rushing scores' worth of two-pointers,
+   * six explosive plays, both fumble charges and two different yardage bonuses.
+   */
+  const rb = pointsFromSleeperSeason(
+    {
+      rush_yd: 1478, rush_td: 7, rush_2pt: 1, rush_40p: 2,
+      rec: 79, rec_yd: 820, rec_td: 4, rec_40p: 4,
+      fum: 4, fum_lost: 3,
+      bonus_rush_yd_100: 5, bonus_rec_yd_100: 2, gp: 17,
+    },
+    "RB",
+  );
+  const rbExpected =
+    1478 / 10 + 7 * 6 + 1 * 2 + 2 * 1 + // rushing, a 2pt, two 40-yard runs
+    79 * 0.5 + 820 / 10 + 4 * 6 + 4 * 1 + // receiving at the BASE rate, four 40s
+    4 * -1 + 3 * -1 + // four fumbles, three of them lost
+    5 * 1 + 2 * 1; // five 100-yard rushing games, two receiving
+  check(
+    `Bijan Robinson's 2025 scores ${rbExpected.toFixed(1)} by hand`,
+    Math.abs(rb - rbExpected) < 1e-9,
+    `got ${rb.toFixed(1)}, expected ${rbExpected.toFixed(1)}`,
+  );
+
+  /*
+   * Matthew Stafford, 2025 — the quarterback, where the six-point passing
+   * touchdown is worth 92 points over the market's four and where a pick-six
+   * has to be charged twice.
+   */
+  const qb = pointsFromSleeperSeason(
+    {
+      pass_yd: 4707, pass_td: 46, pass_int: 8, pass_int_td: 2, pass_cmp_40p: 8,
+      rush_yd: 1, fum: 7, fum_lost: 3,
+      bonus_pass_yd_300: 3, bonus_pass_yd_400: 1, gp: 17,
+    },
+    "QB",
+  );
+  const qbExpected =
+    4707 / 20 + 46 * 6 + 8 * -2 + 2 * -4 + 8 * 1 + // passing, incl. two pick-sixes
+    1 / 10 + 7 * -1 + 3 * -1 + // a yard on the ground, seven fumbles
+    3 * 1 + 1 * 1; // three 300-yard games and a 400
+  check(
+    `Matthew Stafford's 2025 scores ${qbExpected.toFixed(1)} by hand`,
+    Math.abs(qb - qbExpected) < 1e-9,
+    `got ${qb.toFixed(1)}, expected ${qbExpected.toFixed(1)}`,
+  );
+
+  /*
+   * A pick-six is charged TWICE — once as an interception and once as the
+   * increment. Asserted on its own because it is the one term in the scorer
+   * whose omission would look like nothing at all.
+   */
+  const clean = pointsFromSleeperSeason({ pass_int: 1, gp: 1 }, "QB");
+  const pickSix = pointsFromSleeperSeason({ pass_int: 1, pass_int_td: 1, gp: 1 }, "QB");
+  check(
+    `a pick-six costs ${-SCORING_SPEC.pickSixAdditional} more than an ordinary interception`,
+    Math.abs(pickSix - clean - SCORING_SPEC.pickSixAdditional) < 1e-9,
+    `${pickSix} vs ${clean}`,
+  );
+
+  /*
+   * NEVER THROWS ON A MISSING STAT. A rookie's line is `{}` and must score a
+   * clean zero rather than a NaN, which would render as "NaN" in front of the
+   * room and would poison every sort it touched.
+   */
+  const rookie = pointsFromSleeperSeason({}, "WR");
+  check("an empty stat line scores 0 rather than NaN", rookie === 0, `${rookie}`);
+  check(
+    "an unknown position falls back to the base reception rate",
+    pointsFromSleeperSeason({ rec: 10 }, null) === 10 * SCORING_SPEC.ppr,
+  );
+}
+
+if (meta.lastSeason) {
+  console.log(
+    `  · ${meta.lastSeason.season} actuals pulled ${meta.lastSeason.pulledAt}, ` +
+      `${meta.lastSeason.scoredCount} rows carry one`,
+  );
+  check(
+    "enough of the draftable board carries a last-season line to be worth a column",
+    meta.lastSeason.scoredCount > 250,
+    `${meta.lastSeason.scoredCount}`,
+  );
+  check(
+    "the top 100 of the board is mostly covered — these are the picks that matter",
+    (() => {
+      const top = rows.filter((r) => r.leagueRank != null && r.leagueRank <= 100);
+      const withPrior = top.filter((r) => r.lastSeasonPoints != null).length;
+      return withPrior >= top.length * 0.7;
+    })(),
+    (() => {
+      const top = rows.filter((r) => r.leagueRank != null && r.leagueRank <= 100);
+      return `${top.filter((r) => r.lastSeasonPoints != null).length} of ${top.length}`;
+    })(),
+  );
+
+  /*
+   * A ROOKIE MUST BE BLANK, NOT ZERO. The two look identical in a table cell
+   * and mean opposite things — "he busted" against "he was not in the league" —
+   * so the puller drops anyone who never took the field rather than writing a
+   * zero, and this asserts that nothing slipped through.
+   */
+  check(
+    "nobody carries a last-season line of exactly zero — a blank is not a bad season",
+    rows.every((r) => r.lastSeasonPoints !== 0),
+    `${rows.filter((r) => r.lastSeasonPoints === 0).length} zeroes`,
+  );
+  check(
+    "every last-season line has games behind it, so the per-game figure is real",
+    rows.every(
+      (r) =>
+        r.lastSeasonPoints == null ||
+        (r.lastSeasonGames != null && r.lastSeasonGames > 0),
+    ),
+  );
+  /*
+   * EIGHTEEN, NOT SEVENTEEN, AND THAT IS NOT A BUG. This started as a `<= 17`
+   * check and Rashid Shaheed failed it at 18. He was traded mid-season between
+   * teams whose bye weeks fell either side of the move, so he really did dress
+   * for eighteen games in a seventeen-game season. The bound is kept — a
+   * nineteen would mean two players' seasons had been merged by the name join —
+   * and it is set where the schedule actually allows rather than where it looks
+   * tidy.
+   */
+  check(
+    "no player is credited with more than 18 games — the traded-player ceiling",
+    rows.every((r) => (r.lastSeasonGames ?? 0) <= 18),
+    rows
+      .filter((r) => (r.lastSeasonGames ?? 0) > 18)
+      .map((r) => `${r.name} ${r.lastSeasonGames}`)
+      .join(", "),
+  );
+  check(
+    "the per-game figure really is the total over the games, to a rounding tenth",
+    rows.every((r) => {
+      if (r.lastSeasonPoints == null || !r.lastSeasonGames || r.lastSeasonPerGame == null)
+        return true;
+      return Math.abs(r.lastSeasonPerGame - r.lastSeasonPoints / r.lastSeasonGames) < 0.11;
+    }),
+  );
+
+  /*
+   * TEAM DEFENCES ARE DELIBERATELY ABSENT. This league's D/ST scoring is
+   * dominated by a per-game points-allowed band, and a season total cannot say
+   * which bands a unit earned. If one ever appears here it means somebody
+   * scored a defence off `pts_allow`, which would be a confidently wrong number
+   * in front of ten people.
+   */
+  check(
+    "no team defence carries a last-season figure — it cannot be computed honestly",
+    rows.filter((r) => r.position === "DST").every((r) => r.lastSeasonPoints == null),
+    `${rows.filter((r) => r.position === "DST" && r.lastSeasonPoints != null).length} scored`,
+  );
+
+  {
+    // Sorting on last season uses PER GAME, so a part-season star outranks a
+    // healthy plodder who out-totalled him.
+    const byLast = applyCheatSheet(rows, {}, {
+      q: "",
+      position: "",
+      availability: "all",
+      sort: "lastSeason",
+    });
+    const scored = byLast.filter((r) => r.lastSeasonPerGame != null);
+    check(
+      "sorting by last season is descending on points per game",
+      scored.every(
+        (r, i, a) => i === 0 || (a[i - 1].lastSeasonPerGame ?? 0) >= (r.lastSeasonPerGame ?? 0),
+      ),
+    );
+    check(
+      "players with no last season sort to the bottom rather than reading as zero",
+      byLast.findIndex((r) => r.lastSeasonPerGame == null) === -1 ||
+        byLast.findIndex((r) => r.lastSeasonPerGame == null) >= scored.length,
+    );
+    console.log(
+      `  · best ${meta.lastSeason.season} per game: ${scored
+        .slice(0, 5)
+        .map((r) => `${r.name} (${r.position}, ${r.lastSeasonPerGame}/g)`)
+        .join(", ")}`,
+    );
+  }
+
+  {
+    /*
+     * THE TIGHT END PREMIUM, VISIBLE IN THE ACTUALS AND NOT ONLY IN THE UNIT
+     * TEST ABOVE. A tight end's league-scored 2025 must exceed what the same
+     * season would have paid a receiver, by exactly his reception count times
+     * the premium. Checked on the real committed file rather than on a literal,
+     * so a puller that forgot to pass the position would fail here.
+     */
+    const tes = rows.filter((r) => r.position === "TE" && r.lastSeasonPoints != null);
+    check(
+      "tight ends carry a last-season line",
+      tes.length > 10,
+      `${tes.length}`,
+    );
+    const best = tes.reduce((a, b) =>
+      (a.lastSeasonPoints ?? 0) > (b.lastSeasonPoints ?? 0) ? a : b,
+    );
+    console.log(
+      `  · best ${meta.lastSeason.season} tight end: ${best.name}, ` +
+        `${best.lastSeasonPoints} (${best.lastSeasonPerGame}/g in ${best.lastSeasonGames})`,
+    );
+    check(
+      "the premium lifts the best tight end's actual season above 250",
+      (best.lastSeasonPoints ?? 0) > 250,
+      `${best.lastSeasonPoints}`,
+    );
+  }
+
+  {
+    // Quarterbacks top the actuals, for the same reason they top the
+    // projections: six points a passing touchdown. If they ever stopped doing
+    // so, the scorer has quietly reverted to somebody else's scoring.
+    const top = [...rows]
+      .filter((r) => r.lastSeasonPoints != null)
+      .sort((a, b) => (b.lastSeasonPoints ?? 0) - (a.lastSeasonPoints ?? 0))
+      .slice(0, 5);
+    check(
+      "the highest actual scorers are quarterbacks — the six-point passing TD",
+      top.every((r) => r.position === "QB"),
+      top.map((r) => `${r.name} ${r.position} ${r.lastSeasonPoints}`).join(", "),
+    );
+    console.log(
+      `  · top ${meta.lastSeason.season} totals: ${top
+        .map((r) => `${r.name} (${r.position}, ${r.lastSeasonPoints})`)
+        .join(", ")}`,
+    );
+  }
+} else {
+  console.log(`  · no last-season snapshot — ${meta.lastSeasonProblem}`);
+  check(
+    "a missing snapshot is reported rather than silently empty",
+    meta.lastSeasonProblem != null,
+  );
+}
+
+// --- 2d. The status flags ---------------------------------------------------
+
+section("2d. Injury flags are flags, not decoration");
+
+check(
+  "“Active” is never surfaced as a status — a badge on every row is a badge on none",
+  rows.every((r) => r.injuryStatus == null || r.injuryStatus.toUpperCase() !== "ACTIVE"),
+  rows.filter((r) => r.injuryStatus?.toUpperCase() === "ACTIVE").length + " found",
+);
+check(
+  "a status is a short label rather than a sentence, so it fits beside a name",
+  rows.every((r) => r.injuryStatus == null || r.injuryStatus.length <= 14),
+  rows.find((r) => (r.injuryStatus?.length ?? 0) > 14)?.injuryStatus ?? "",
+);
+{
+  const flagged = rows.filter((r) => r.injuryStatus != null);
+  console.log(`  · ${flagged.length} players carry a designation`);
+  check(
+    "the flags are a minority of the board — otherwise they are noise",
+    flagged.length < rows.length / 4,
+    `${flagged.length} of ${rows.length}`,
+  );
+  for (const r of flagged.filter((r) => (r.leagueRank ?? 999) <= 60)) {
+    console.log(`  · ${r.name} (${r.position}, Rk ${r.leagueRank}) — ${r.injuryStatus}`);
+  }
+}
+
+// --- 2e. The value signal already on disk -----------------------------------
+
+section("2e. FantasyPros' ECR-versus-ADP, which was in the file and unrendered");
+
+{
+  const withDelta = rows.filter((r) => r.ecrVsAdp != null);
+  check(
+    "the export's ECR-versus-ADP reached the row",
+    withDelta.length > 200,
+    `${withDelta.length}`,
+  );
+  const values = withDelta.filter((r) => Math.abs(r.ecrVsAdp ?? 0) >= 10);
+  check(
+    "some players are ranked a full round away from where they are drafted",
+    values.length > 5,
+    `${values.length}`,
+  );
+  for (const r of values
+    .filter((r) => (r.ecrVsAdp ?? 0) > 0 && r.adp != null && r.adp < 150)
+    .sort((a, b) => (b.ecrVsAdp ?? 0) - (a.ecrVsAdp ?? 0))
+    .slice(0, 5)) {
+    console.log(
+      `  · ${r.name} (${r.position}) — ADP ${r.adp}, experts have him ${r.ecrVsAdp} places earlier`,
     );
   }
 }

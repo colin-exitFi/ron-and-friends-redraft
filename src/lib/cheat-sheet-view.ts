@@ -51,6 +51,34 @@ export type CheatSheetRow = {
   basis: CheatSheetBasis | null;
   /** Rank within position by projected points — this league's own rank. */
   pointsPositionRank: number | null;
+  /**
+   * LAST SEASON'S ACTUAL POINTS, in this league's scoring. Null for a rookie,
+   * for a team defence, and for anyone who did not take the field.
+   *
+   * A DIFFERENT KIND OF NUMBER FROM `points`, AND THE UI MUST NOT BLUR THEM.
+   * `points` is a projection — somebody's opinion about a season that has not
+   * happened. This is a fact about one that did, re-scored under the rules this
+   * league actually plays, which is the version no public cheat sheet shows:
+   * Trey McBride's 126 catches are worth 126 points here and 63 anywhere else.
+   */
+  lastSeasonPoints: number | null;
+  /**
+   * Last season's points per game.
+   *
+   * Carried alongside the total because the total quietly punishes a missed
+   * month, and the two answer different questions. Brock Bowers played twelve
+   * games; his season total says he was ordinary and his average says he was
+   * not, and a manager deciding in ninety seconds needs to see both at once.
+   */
+  lastSeasonPerGame: number | null;
+  lastSeasonGames: number | null;
+  /** Pre-formatted stat line — "126 rec, 1,239 yd, 11 TD". */
+  lastSeasonLine: string | null;
+  /**
+   * Sleeper's CURRENT injury designation — `Out`, `IR`, `Questionable`, `Sus`.
+   * Null for anybody healthy, which is nearly everyone.
+   */
+  injuryStatus: string | null;
 };
 
 /** Everything the page needs to be honest about where the numbers came from. */
@@ -84,6 +112,19 @@ export type CheatSheetMeta = {
   } | null;
   /** Why there is no league-scoped board, when there isn't one. */
   boardProblem: string | null;
+  /**
+   * Last season's actuals, re-scored in this league's rules. Null when the
+   * snapshot is missing, in which case the 2025 column simply is not drawn.
+   */
+  lastSeason: {
+    /** The season the numbers are the actuals FOR — 2025, not the current one. */
+    season: number;
+    pulledAt: string;
+    /** How many rows on the sheet carry a 2025 line. */
+    scoredCount: number;
+  } | null;
+  /** Why there are no last-season numbers, when there are none. */
+  lastSeasonProblem: string | null;
 };
 
 /** Who has a player, and at which pick. Keyed by Smart Draft player id. */
@@ -114,7 +155,7 @@ export function draftedFromView(view: DraftRoomView): DraftedBy {
 }
 
 /** Sort keys the header offers. */
-export type SortKey = "rank" | "adp" | "points" | "position" | "name";
+export type SortKey = "rank" | "adp" | "points" | "lastSeason" | "position" | "name";
 export type Availability = "available" | "all" | "drafted";
 
 export type CheatSheetQuery = {
@@ -188,6 +229,22 @@ export function applyCheatSheet(
     // Unprojected players go to the bottom rather than reading as zero.
     sorted.sort(
       (a, b) => (b.points ?? -Infinity) - (a.points ?? -Infinity) || byAdp(a, b),
+    );
+  } else if (sort === "lastSeason") {
+    /*
+     * Sorts on POINTS PER GAME, not on the season total, and that is the whole
+     * reason the sort is worth offering. A total ranks a healthy plodder above
+     * a star who missed five games, which is the exact mistake a manager makes
+     * unaided; the per-game figure is the one that answers "who was actually
+     * good last year". The total is still on the row and still rendered.
+     *
+     * Rookies and defences have no 2025 season and sort to the bottom rather
+     * than reading as zero — a blank is not a bad season.
+     */
+    sorted.sort(
+      (a, b) =>
+        (b.lastSeasonPerGame ?? -Infinity) - (a.lastSeasonPerGame ?? -Infinity) ||
+        byAdp(a, b),
     );
   } else if (sort === "position") {
     sorted.sort((a, b) => {

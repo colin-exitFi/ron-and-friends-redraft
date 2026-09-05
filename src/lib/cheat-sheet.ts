@@ -3,6 +3,7 @@ import "server-only";
 import { getPlayerPool } from "@/lib/smartdraft";
 import { readProjections } from "@/lib/projections-store";
 import { readCheatSheetExport } from "@/lib/cheatsheet-export";
+import { readLastSeason } from "@/lib/last-season-store";
 import { joinKey } from "@/lib/fantasypros/players";
 import { SCORING_FORMAT, SCORING_SPEC } from "@/lib/league-config";
 import type { CheatSheetMeta, CheatSheetRow } from "@/lib/cheat-sheet-view";
@@ -55,6 +56,43 @@ export type CheatSheet = {
 };
 
 /**
+ * Designations that mean HE CANNOT PLAY. Everything else is discarded.
+ *
+ * ============================================================================
+ * WHY `QUESTIONABLE` IS NOT ON THIS LIST
+ * ============================================================================
+ * A status is worth a badge only if it can stop somebody wasting a pick. Read
+ * in early September, both feeds carry `Questionable` on around eighty-five of
+ * the six hundred players this league can draft — Ja'Marr Chase at overall rank
+ * 3, Puka Nacua at 4, Christian McCaffrey at 7. That is preseason paperwork
+ * rather than a game-day report and nearly all of them will play in week one.
+ *
+ * Showing it would be wrong twice: an amber badge on a fifth of the board is
+ * noise, which teaches the room to ignore the badge that also means "this man
+ * is on injured reserve" — and it would cast doubt over the first three names a
+ * manager reads. `ACTIVE` is dropped for the same reason in reverse.
+ *
+ * Matched case-insensitively because the two feeds disagree about it: the
+ * projections snapshot shouts `OUT` and Sleeper's map writes `Out`.
+ */
+const BLOCKING_DESIGNATIONS = new Set([
+  "OUT",
+  "IR",
+  "PUP",
+  "NFI",
+  "SUS",
+  "SUSPENDED",
+  "DOUBTFUL",
+]);
+
+/** A designation worth a badge, or null. Normalised, never throws. */
+function blockingStatus(status: string | null | undefined): string | null {
+  if (!status) return null;
+  const trimmed = status.trim();
+  return BLOCKING_DESIGNATIONS.has(trimmed.toUpperCase()) ? trimmed : null;
+}
+
+/**
  * Build the sheet.
  *
  * `liveAdp` is the FantasyPros live consensus keyed by `joinKey(name, pos)` —
@@ -76,6 +114,14 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
   const index = projections.state === "ok" ? projections.index : null;
   const exported = readCheatSheetExport();
   const board = exported.state === "ok" ? exported.byPlayerId : null;
+  /*
+   * Last season's actuals, scored in this league's rules. Joined on
+   * name-and-position because Sleeper carries no Smart Draft id — the same
+   * bridge the live ADP overlay two lines below already crosses, and the
+   * matching itself was done once by the puller rather than here.
+   */
+  const lastSeason = readLastSeason();
+  const finished = lastSeason.state === "ok" ? lastSeason.byJoinKey : null;
 
   const rows: CheatSheetRow[] = [];
   for (const p of getPlayerPool()) {
@@ -83,8 +129,17 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
 
     const projection = index?.byPlayerId.get(p.id) ?? null;
     const ranked = board?.get(p.id) ?? null;
-    const adp = liveAdp?.get(joinKey(p.name, p.position)) ?? p.adp;
+    const key = joinKey(p.name, p.position);
+    const adp = liveAdp?.get(key) ?? p.adp;
     if (adp == null && projection == null && ranked?.leagueRank == null) continue;
+
+    /*
+     * A miss here is a NORMAL, EXPECTED outcome and never an error: a rookie
+     * has no 2025 season, and a team defence deliberately has none because this
+     * league's points-allowed ladder is a per-game band that no season total
+     * recovers. Both render blank, which is the honest answer.
+     */
+    const prior = finished?.get(key) ?? null;
 
     rows.push({
       id: p.id,
@@ -102,6 +157,20 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
       points: projection ? Math.round(projection.points * 10) / 10 : null,
       basis: projection?.basis ?? null,
       pointsPositionRank: null,
+      lastSeasonPoints: prior?.points ?? null,
+      lastSeasonPerGame: prior?.perGame ?? null,
+      lastSeasonGames: prior?.games ?? null,
+      lastSeasonLine: prior?.line ?? null,
+      /*
+       * The projections feed's status wins where it has one — it is pulled for
+       * this season and is what the rest of the app reads. Sleeper's is the
+       * fallback, and it covers the players the projections snapshot does not.
+       *
+       * Filtered to the designations that actually cost a pick — see
+       * `BLOCKING_DESIGNATIONS`, which is where the reasoning lives.
+       */
+      injuryStatus:
+        blockingStatus(projection?.injuryStatus) ?? blockingStatus(prior?.injuryStatus),
     });
   }
 
@@ -167,6 +236,20 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
               rankedCount: rows.filter((r) => r.leagueRank != null).length,
             }
           : null,
+      lastSeason:
+        lastSeason.state === "ok"
+          ? {
+              season: lastSeason.snapshot.provenance.season,
+              pulledAt: lastSeason.snapshot.provenance.pulledAt,
+              scoredCount: rows.filter((r) => r.lastSeasonPoints != null).length,
+            }
+          : null,
+      lastSeasonProblem:
+        lastSeason.state === "missing"
+          ? "No last-season snapshot — run `npm run pull:last-season`."
+          : lastSeason.state === "unreadable"
+            ? `Last season's numbers could not be read: ${lastSeason.reason}`
+            : null,
       boardProblem:
         exported.state === "missing"
           ? "No league-scoped FantasyPros export — run `npm run pull:cheatsheet`. Ordering falls back to market ADP, which underprices tight ends and quarterbacks here."

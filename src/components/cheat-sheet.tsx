@@ -287,12 +287,24 @@ export function CheatSheet({
                   onSort={setSort}
                   className="w-20 text-right max-md:w-14 max-md:px-1.5"
                 />
+                {/* Last season, next to the projection on purpose: the whole
+                    point is reading a forecast against what actually happened.
+                    Hidden on a phone, where it folds under the name instead. */}
+                {meta.lastSeason && (
+                  <SortHeader
+                    label={`${meta.lastSeason.season}`}
+                    value="lastSeason"
+                    sort={sort}
+                    onSort={setSort}
+                    className="w-20 text-right max-md:hidden"
+                  />
+                )}
                 <SortHeader
                   label="ADP"
                   value="adp"
                   sort={sort}
                   onSort={setSort}
-                  className="w-16 text-right max-md:hidden"
+                  className="w-20 text-right max-md:hidden"
                 />
                 <th className="w-12 px-3 py-2.5 text-right font-medium max-md:hidden">
                   Tier
@@ -306,7 +318,7 @@ export function CheatSheet({
             <tbody>
               {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-muted-foreground py-12 text-center">
+                  <td colSpan={9} className="text-muted-foreground py-12 text-center">
                     {availability === "available" && draftedCount > 0
                       ? "Nobody left matching that. Try “All”."
                       : "No players match your search."}
@@ -314,7 +326,12 @@ export function CheatSheet({
                 </tr>
               ) : (
                 visible.map((p) => (
-                  <PlayerRow key={p.id} row={p} taken={drafted[p.id] ?? null} />
+                  <PlayerRow
+                    key={p.id}
+                    row={p}
+                    taken={drafted[p.id] ?? null}
+                    showLastSeason={meta.lastSeason != null}
+                  />
                 ))
               )}
             </tbody>
@@ -346,11 +363,29 @@ export function CheatSheet({
           score the most. The badge next to each figure is his rank within his own
           position.
         </p>
+        {meta.lastSeason && (
+          <p>
+            <span className="text-foreground font-medium">{meta.lastSeason.season}</span>{" "}
+            is what he <span className="text-foreground">actually scored</span> last
+            season — Sleeper&apos;s real stat lines, re-scored here under these same
+            league rules, with the season total on top and points per game under it.
+            This is the one number nobody else can show you: at a full point per tight
+            end catch, Trey McBride&apos;s 126 receptions were worth{" "}
+            {meta.tePremiumReception * 126} points here against 63 anywhere else, which
+            moves him past receivers every public list puts above him. A dash means no
+            {" "}{meta.lastSeason.season} season at all — a rookie, or a defence, whose
+            points-allowed scoring is a per-game band a season total cannot recover. An
+            amber games count flags somebody who missed time.
+          </p>
+        )}
         <p>
           <span className="text-foreground font-medium">ADP</span> is the market&apos;s
           average draft position on ordinary scoring, kept precisely because it
           disagrees — the gap between it and Rk is where this league values a player
-          differently from the room.{" "}
+          differently from the room. The small figure beneath it is FantasyPros&apos;
+          expert consensus against that ADP: green means the experts rank him that many
+          places ahead of where he is being drafted, so he tends to last longer than he
+          should.{" "}
           {meta.board?.tierScope === "generic" && (
             <>
               <span className="text-foreground font-medium">Tier</span> is FantasyPros&apos;
@@ -411,9 +446,12 @@ function SortHeader({
 function PlayerRow({
   row,
   taken,
+  showLastSeason,
 }: {
   row: CheatSheetRow;
   taken: { by: string; label: string } | null;
+  /** False when there is no snapshot, so the column is not drawn at all. */
+  showLastSeason: boolean;
 }) {
   const gap = valueGap(row);
   return (
@@ -435,11 +473,26 @@ function PlayerRow({
       <td className="px-3 py-2 font-medium max-md:px-2">
         <span
           className={cn(
-            "block max-md:truncate max-md:text-[13px]",
+            "flex items-center gap-1.5 max-md:text-[13px]",
             taken && "text-muted-foreground line-through decoration-2",
           )}
         >
-          {row.name}
+          <span className="min-w-0 truncate">{row.name}</span>
+          {/* The injury flag rides ON THE NAME, at every width, and is the only
+              thing added here that a phone does not fold away. It is the one
+              fact on the row that can waste a pick outright, so hiding it below
+              a breakpoint would hide it from exactly the people this page was
+              built for. Only designations that mean he cannot play get this far
+              — `buildCheatSheet` drops the preseason "Questionable" that would
+              otherwise badge a fifth of the board. */}
+          {row.injuryStatus && !taken && (
+            <span
+              className="text-destructive ring-destructive/40 bg-destructive/10 inline-flex shrink-0 items-center rounded px-1 py-px font-sans text-[9px] font-bold uppercase ring-1 no-underline"
+              title={`Listed as ${row.injuryStatus} — he cannot be counted on to play`}
+            >
+              {row.injuryStatus}
+            </span>
+          )}
         </span>
         {/* On a phone the narrow columns fold under the name rather than
             sliding off the side — the pattern this table already used. */}
@@ -456,6 +509,20 @@ function PlayerRow({
           {row.team ?? "FA"}
           {row.bye != null && ` · bye ${row.bye}`}
           {row.adp != null && ` · adp ${row.adp}`}
+          {/* Last season on a phone: THE PER-GAME FIGURE, not the total. There
+              is room for one number and the average is the more honest one —
+              a total ranks a healthy plodder over a star who missed a month,
+              which is the mistake this is meant to prevent. The season total
+              is a column away on a wider screen. */}
+          {row.lastSeasonPerGame != null && (
+            <span>
+              {" · "}
+              <span className="text-foreground/70">
+                {row.lastSeasonPerGame.toFixed(1)}/g
+              </span>
+              {row.lastSeasonGames != null && ` in ${row.lastSeasonGames}`}
+            </span>
+          )}
           {taken && (
             <span className="text-destructive font-sans font-semibold">
               · {taken.label === "kept" ? "kept" : `gone ${taken.label}`} {taken.by}
@@ -502,8 +569,82 @@ function PlayerRow({
           <span className="text-muted-foreground/40">—</span>
         )}
       </td>
+      {/*
+        LAST SEASON, AS IT ACTUALLY HAPPENED, PRICED IN THIS LEAGUE.
+        The season total on top and the per-game average under it, because the
+        two say different things and a manager needs both in one glance: Brock
+        Bowers' 178 looks ordinary until the 14.9 a game next to it says he
+        missed five. A blank is a rookie or a defence and is styled as a dash
+        rather than a zero, since "no season" and "a bad season" must not read
+        the same.
+      */}
+      {showLastSeason && (
+        <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
+          {row.lastSeasonPoints != null ? (
+            <span className="inline-flex flex-col items-end leading-tight">
+              <span className={cn("text-foreground/80", taken && "text-muted-foreground")}>
+                {row.lastSeasonPoints.toFixed(1)}
+              </span>
+              {row.lastSeasonPerGame != null && (
+                <span
+                  className="text-muted-foreground/60 text-[10px]"
+                  title={
+                    row.lastSeasonLine
+                      ? `${row.lastSeasonLine} in ${row.lastSeasonGames} games`
+                      : undefined
+                  }
+                >
+                  {row.lastSeasonPerGame.toFixed(1)}/g
+                  {/* Games played, but only when he missed some. Printing "17"
+                      on four hundred rows adds nothing; printing "12" on the
+                      ones who got hurt is the whole signal. */}
+                  {row.lastSeasonGames != null && row.lastSeasonGames < 16 && (
+                    <span className="text-warning/80 ml-1">
+                      {row.lastSeasonGames}g
+                    </span>
+                  )}
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="text-muted-foreground/40">—</span>
+          )}
+        </td>
+      )}
       <td className="text-muted-foreground/70 px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
-        {row.adp ?? "—"}
+        {row.adp != null ? (
+          <span className="inline-flex flex-col items-end leading-tight">
+            <span>{row.adp}</span>
+            {/*
+              FANTASYPROS' OWN EXPERT-CONSENSUS-VERSUS-ADP, WHICH HAS BEEN
+              SITTING IN THE EXPORT UNRENDERED. Positive means the experts rank
+              him ahead of where he is being drafted — he is available later
+              than he should be. It is a different claim from the `+n` badge in
+              the Proj column, which is THIS LEAGUE's scoring disagreeing with
+              the market, so the two are deliberately not merged.
+
+              Only shown past a full round's worth of places. Below that it is
+              inside the noise of a consensus and would decorate every row.
+            */}
+            {row.ecrVsAdp != null && Math.abs(row.ecrVsAdp) >= 10 && (
+              <span
+                className={cn(
+                  "text-[10px]",
+                  row.ecrVsAdp > 0 ? "text-success/80" : "text-muted-foreground/50",
+                )}
+                title={
+                  row.ecrVsAdp > 0
+                    ? `The experts rank him ${row.ecrVsAdp} places ahead of where he is going — a value`
+                    : `He is going ${Math.abs(row.ecrVsAdp)} places ahead of where the experts rank him — a reach`
+                }
+              >
+                {row.ecrVsAdp > 0 ? `+${row.ecrVsAdp}` : row.ecrVsAdp}
+              </span>
+            )}
+          </span>
+        ) : (
+          "—"
+        )}
       </td>
       <td className="px-3 py-2 text-right font-mono text-xs tabular-nums max-md:hidden">
         {row.tier != null ? (

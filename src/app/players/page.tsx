@@ -223,6 +223,33 @@ export default async function PlayersPage() {
                 )}
               </p>
 
+              {(meta.lastSeason || meta.lastSeasonProblem) && (
+                <p className="text-muted-foreground">
+                  {meta.lastSeason ? (
+                    <>
+                      <span className="text-foreground font-medium">
+                        {meta.lastSeason.season} (what happened)
+                      </span>{" "}
+                      — <span className="text-foreground font-medium">actual</span>, not
+                      projected. Raw {meta.lastSeason.season} stat lines from
+                      Sleeper&apos;s public stats API, pulled{" "}
+                      {when(meta.lastSeason.pulledAt)} and scored here under the same{" "}
+                      {SCORING_FORMAT} rules, covering{" "}
+                      {meta.lastSeason.scoredCount.toLocaleString()} players. Because it
+                      is a finished season rather than a forecast, the yardage and
+                      explosive-play bonuses are applied too — a projection cannot do
+                      that, since it has no way to know how many 100-yard games are
+                      inside a season total. Team defences carry no figure on purpose:
+                      this league&apos;s points-allowed ladder is a per-game band, and
+                      scoring one off a season total would produce a confident wrong
+                      answer.
+                    </>
+                  ) : (
+                    <span className="text-warning">{meta.lastSeasonProblem}</span>
+                  )}
+                </p>
+              )}
+
               <p className="text-muted-foreground">
                 <span className="font-medium">ADP</span> — {liveLabel}
                 {pool.fantasyPros && (
