@@ -926,7 +926,15 @@ function Header({
      * is 915px wide, sits above the breakpoint, and keeps the desktop bar it
      * already renders correctly at 31px.
      */
-    <header className="bg-board-base border-live mx-[0.5vw] mt-[0.5vh] flex shrink-0 items-center gap-[1.2vw] rounded-lg border-[0.08vw] px-[0.7vw] py-[0.55vh] max-md:mx-1 max-md:mt-1 max-md:flex-wrap max-md:gap-0.5 max-md:px-1 max-md:py-1">
+    /*
+     * `mb-[0.5vh]` matches the `mt` above it. Without it the bar's only
+     * separation from the franchise-name row was the board's own 0.25vh of
+     * padding — under 3px at 1080p — so the bar and the manager names read as
+     * one crammed block. Half a vh is 5.4px on the signal, which still leaves
+     * the density floor its eleven rounds; more than that starts spending a
+     * round of board on air.
+     */
+    <header className="bg-board-base border-live mx-[0.5vw] mt-[0.5vh] mb-[0.5vh] flex shrink-0 items-center gap-[1.2vw] rounded-lg border-[0.08vw] px-[0.7vw] py-[0.55vh] max-md:mx-1 max-md:mt-1 max-md:mb-1 max-md:flex-wrap max-md:gap-0.5 max-md:px-1 max-md:py-1">
       <div className="flex min-w-0 shrink-0 items-center gap-[0.8vw] max-md:hidden">
         <Image
           src="/brand/crest-v2-256.png"

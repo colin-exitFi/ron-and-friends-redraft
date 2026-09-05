@@ -734,8 +734,15 @@ const PROJECTOR_GEOMETRY = {
    *
    * The row height and the line offsets below are untouched, which is the part
    * that says the type scale did not move — only the height the pane is handed.
+   *
+   * 5.39px shorter again, and the bar above the board is why a second time. It
+   * had a top margin and no bottom one, so it sat flush on the franchise-name
+   * row with under 3px between them and the two read as one block; it now
+   * carries the matching `mb-[0.5vh]`, which is 5.39px of the projector that
+   * the board and this pane hand over. The row height and line offsets are
+   * again untouched, so the type scale did not move.
    */
-  pane: [240, 1001.92],
+  pane: [240, 996.53],
   row: 45.39,
   /* The last row draws no bottom border, so it is 1px shorter by design. */
   lastRow: 44.39,
