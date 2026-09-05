@@ -218,8 +218,17 @@ export default async function PlayersPage() {
                     at 390px it is harder to read than the paragraph it replaced.
                   */
                   <span className="flex flex-wrap items-center gap-x-1.5">
+                    {/*
+                      SPELLED OUT, NOT "ECR". The three-letter form is the term
+                      of art on FantasyPros' own site and it is not the term of
+                      art in this room. A manager reading his phone has to
+                      already know the abbreviation for it to say anything, and
+                      the one thing this line exists to establish is that the
+                      order is a consensus of experts rather than one site's
+                      opinion. It costs two words.
+                    */}
                     <span className="text-foreground font-medium">
-                      FantasyPros ECR
+                      FantasyPros expert consensus
                     </span>
                     <span className="text-muted-foreground/40" aria-hidden>
                       ·
@@ -240,7 +249,40 @@ export default async function PlayersPage() {
                     <span className="text-muted-foreground/40" aria-hidden>
                       ·
                     </span>
-                    <span className="whitespace-nowrap">{SCORING_FORMAT}</span>
+                    {/*
+                      THE SCORING FACT NAMES THE COLUMN IT APPLIES TO, AND NAMES
+                      BOTH RULES THAT DIFFER.
+
+                      "Half PPR (TE premium)" on its own is the format's name,
+                      not a claim about these numbers, and the six-point passing
+                      touchdown — the rule that moves quarterbacks furthest from
+                      every public board — was left to the disclosure. Both are
+                      the reason `Proj` disagrees with the cheat sheet in
+                      somebody's other tab, and a manager who has to tap to find
+                      that out has already concluded the column is broken. So
+                      the column is named and both rules are on the line.
+
+                      IT STILL DOES NOT CLAIM THE YARDAGE BONUSES. Those are
+                      per-game events and a season projection cannot recover
+                      them, so naming them here would be false about this column
+                      specifically. They ARE applied to the 2025 actuals, and
+                      that column's paragraph in the disclosure says so.
+
+                      The explicit `{" "}` after `Proj` is load-bearing. JSX
+                      drops whitespace that contains a newline, so a space
+                      sitting between `</span>` and a line break disappears —
+                      which is how this page twice shipped reading "Projis
+                      scored to". Prettier re-wraps this line freely, so the
+                      space has to be an expression rather than a character that
+                      happens to be on the right side of a wrap.
+                    */}
+                    <span>
+                      <span className="text-foreground font-medium">Proj</span>{" "}
+                      scored to this league: {SCORING_FORMAT},{" "}
+                      <span className="whitespace-nowrap">
+                        {meta.passTd}-point passing TD
+                      </span>
+                    </span>
                   </span>
                 ) : (
                   <span className="text-warning">

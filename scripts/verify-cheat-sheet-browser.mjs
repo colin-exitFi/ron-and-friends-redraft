@@ -532,8 +532,17 @@ const run = async () => {
        * So the length is asserted, not just the content. Every fact below is
        * worth stating and each one is an invitation to add the sentence that
        * explains it, which is precisely how the paragraph grew the first time.
-       * The budget is what the three facts cost plus room for a longer date —
-       * comfortably under the four lines this wrapped to on a 390px screen.
+       * The budget is what the facts cost plus room for a longer date — well
+       * under the block of text that prompted the complaint.
+       *
+       * THE SCORING FACT NAMES BOTH RULES, and the budget was raised to pay for
+       * it. It read "Half PPR (TE premium)" alone, which is a format's name
+       * rather than a claim about a column, and it left the six-point passing
+       * touchdown to the collapsed disclosure. Those two rules are the whole
+       * reason `Proj` disagrees with the board in a manager's other tab, so
+       * they are what the line has to carry; the commissioner asked for them by
+       * name. The ADP's scoping stays in the disclosure, which is where the
+       * shortening actually bought its room.
        */
       // Scoped by the timestamp it carries rather than by being the first
       // `<summary>`, so it keeps pointing at the provenance if the page ever
@@ -542,23 +551,29 @@ const run = async () => {
       const provenance = (await summary.innerText()).replace(/\s+/g, " ").trim();
       console.log(`  · “${provenance}” (${provenance.length} chars)`);
       check(
-        "the provenance names FantasyPros' consensus ranking",
-        /FantasyPros ECR/.test(provenance),
+        "the provenance names FantasyPros' expert consensus",
+        /FantasyPros expert consensus/.test(provenance),
         provenance,
       );
       check(
-        "…and when it was pulled",
-        /\w+ \d+, \d+:\d\d/.test(provenance),
+        "…and when it was pulled, in Central and not UTC",
+        /\w+ \d+, \d+:\d\d\s*(?:AM|PM) Central/.test(provenance),
         provenance,
       );
       check(
-        "…and that the points are this league's, tight end premium included",
-        /TE premium|tight end/i.test(provenance),
+        "…and that Proj is scored to this league, tight end premium included",
+        /Proj scored to this league/.test(provenance) &&
+          /TE premium|tight end/i.test(provenance),
+        provenance,
+      );
+      check(
+        "…and names the six-point passing touchdown, which no public board prices",
+        /6-point passing TD/.test(provenance),
         provenance,
       );
       check(
         "…in one line and not a paragraph",
-        provenance.length <= 80,
+        provenance.length <= 150,
         `${provenance.length} chars: “${provenance}”`,
       );
       check(
