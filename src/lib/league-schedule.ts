@@ -3,20 +3,31 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { CURRENT_SEASON, LEAGUE } from "@/lib/league-config";
+import { CURRENT_SEASON, FRANCHISES, LEAGUE } from "@/lib/league-config";
 import type { LeagueSchedule, ScheduleGame } from "@/lib/projected-standings";
 
 /**
- * The league's real 2026 regular-season fixtures, read out of the ESPN extract.
+ * The league's regular-season fixtures, when there are any.
  *
  * ============================================================================
- * THIS IS A REAL SCHEDULE, WHICH IS WHY IT IS WORTH READING
+ * RON AND FRIENDS HAS NO SCHEDULE YET, AND THIS RETURNS NULL FOR IT
  * ============================================================================
  *
- * `data/espn/espn-league-2026-raw.json` carries ESPN's own `schedule` array for
- * the season: 70 fixtures across 14 matchup periods, five games a week, all ten
- * franchises playing every week. That is a complete round-robin-plus and it is
- * the schedule the league will actually play.
+ * Read this before assuming the loader is broken. The only extract on disk,
+ * `data/espn/espn-league-2026-raw.json`, belongs to the ESPN league this app
+ * was forked from. This league is on Sleeper and has never been on ESPN, and
+ * Sleeper does not post matchups until the draft is done — so the correct
+ * answer for 2026 is "no schedule", and the simulation block is omitted rather
+ * than computed over somebody else's fixtures. The guard that enforces that is
+ * in `load`.
+ *
+ * Everything below describes what the loader does WHEN a real schedule exists,
+ * which is what it was built for and what it will do again once Sleeper has
+ * fixtures.
+ *
+ * A real extract carries a `schedule` array for the season: 70 fixtures across
+ * 14 matchup periods, five games a week, all ten franchises playing every week.
+ * That is a complete round-robin-plus and it is the schedule the league plays.
  *
  * It matters because it is the only thing that lets the projected standings say
  * anything about WINS. Projected points measure roster strength; they cannot see
@@ -97,6 +108,31 @@ function load(season: number): LeagueSchedule | null {
     }
   }
   if (abbrevById.size !== LEAGUE.teams) return null;
+
+  /*
+   * THE FIXTURES MUST BELONG TO THIS LEAGUE, NOT MERELY BE TEN TEAMS LONG.
+   *
+   * `data/espn/espn-league-2026-raw.json` is the PREVIOUS league's extract.
+   * Ron and Friends has never been on ESPN — it is a Sleeper league, and
+   * Sleeper posts no matchups before a draft, so there is no schedule for 2026
+   * yet and that is the honest answer.
+   *
+   * The count check above passed anyway, because that league also had ten
+   * franchises. So 70 real fixtures loaded between teams that do not exist
+   * here, and the mismatch only showed up later as a join that produced
+   * nothing. Checking the abbreviations against `FRANCHISES` is what makes the
+   * refusal explicit and keeps this loader honest if a Sleeper schedule is
+   * wired in later: an extract naming anybody this league does not have is not
+   * this league's schedule.
+   *
+   * Returning null omits the simulation block. `buildProjectedStandings` still
+   * reports projected POINTS; it just declines to report projected WINS and
+   * playoff odds, which is right, because odds computed over another league's
+   * fixtures would look plausible and mean nothing.
+   */
+  const known = new Set(FRANCHISES.map((f) => f.abbrev.toUpperCase()));
+  const foreign = [...abbrevById.values()].filter((a) => !known.has(a.toUpperCase()));
+  if (foreign.length > 0) return null;
 
   const [firstWeek, lastWeek] = LEAGUE.regularSeasonWeeks;
 

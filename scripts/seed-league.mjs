@@ -1365,11 +1365,42 @@ async function seedGovernance() {
     source_ref: r.source_ref,
   }));
 
-  await step(`upsert ${rows.length} commissioner rulings`, () =>
-    db
-      .from("commissioner_actions")
-      .upsert(rows, { onConflict: "season,source_ref" }),
+  /*
+   * REMOVE SEED-OWNED RULINGS THAT ARE NO LONGER IN `RULINGS`, FIRST.
+   *
+   * An upsert of an empty array is a no-op, so emptying `RULINGS` did not undo
+   * what a previous run had written — four of the source league's rulings (Puka
+   * Nacua, an ESPN draft-order dispute, Colston Loveland, and a Ted Buckman
+   * identity ruling) sat in this league's database and would have rendered on
+   * /governance as its own. Idempotent has to mean converging on the declared
+   * state in both directions, not just adding to it.
+   *
+   * Scoped by `source_ref is not null`, which is the seed's ownership marker:
+   * a ruling entered through the app has none, so this cannot delete one.
+   */
+  const keptRefs = rows.map((r) => r.source_ref).filter(Boolean);
+  await step(
+    keptRefs.length
+      ? `remove seed rulings other than the ${keptRefs.length} declared here`
+      : "remove every seed-owned ruling — this league has recorded none",
+    () => {
+      let q = db
+        .from("commissioner_actions")
+        .delete()
+        .eq("season", SEASON)
+        .not("source_ref", "is", null);
+      if (keptRefs.length) q = q.not("source_ref", "in", `(${keptRefs.join(",")})`);
+      return q;
+    },
   );
+
+  if (rows.length) {
+    await step(`upsert ${rows.length} commissioner rulings`, () =>
+      db
+        .from("commissioner_actions")
+        .upsert(rows, { onConflict: "season,source_ref" }),
+    );
+  }
   record("commissioner_actions", rows.length);
 
   // -------------------------------------------------------------------------

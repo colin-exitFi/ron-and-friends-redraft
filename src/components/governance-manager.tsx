@@ -97,7 +97,7 @@ export function GovernanceManager({
           <Lock className="h-4 w-4 shrink-0" />
           <span>
             <strong>Rules frozen.</strong> The {season} draft has begun — the rules and the
-            ESPN league settings are locked for the season. Amendments resume in the
+            Sleeper league settings are locked for the season. Amendments resume in the
             offseason window.
           </span>
         </div>

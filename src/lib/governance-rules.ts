@@ -11,7 +11,7 @@ export const OFFICER_ROLES: { role: OfficerRole; label: string; responsibilities
     role: "commissioner",
     label: "Commissioner",
     responsibilities:
-      "Core operations, ESPN league settings, draft logistics, coordinates votes, resolves disputes.",
+      "Core operations, Sleeper league settings, draft logistics, coordinates votes, resolves disputes.",
   },
   {
     role: "vice_commissioner",
@@ -68,7 +68,7 @@ export const MOTION_PRESETS: {
   {
     type: "Emergency Platform Fix",
     threshold: "commissioner_ruling",
-    examples: "Clear technical or ESPN implementation problem",
+    examples: "Clear technical or Sleeper implementation problem",
   },
 ];
 
