@@ -274,7 +274,7 @@ function Header({
           Straight to the board CSV rather than to the export page, because the
           board IS the draft result — every pick in order — and "download the
           results" should cost one click, not a hop through a page of choices.
-          The other two sheets (rosters, and the ESPN typing script) still live
+          The other two sheets (rosters, and the lineup typing script) still live
           on the export page behind the printer.
         */}
         <a
@@ -291,7 +291,7 @@ function Header({
         </a>
         <Link
           href="/draft/export"
-          title="Printable sheet, plus the roster and ESPN-entry CSVs"
+          title="Printable sheet, plus the roster and lineup-entry CSVs"
           className="text-muted-foreground hover:text-foreground transition-colors max-md:hidden"
         >
           <Printer className="h-4 w-4" />

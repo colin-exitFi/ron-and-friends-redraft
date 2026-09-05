@@ -22,9 +22,9 @@ export const metadata = { title: `Log a trade · ${LEAGUE.name}` };
 export const dynamic = "force-dynamic";
 
 const DESCRIPTION =
-  "A trade is agreed and approved in ESPN. Record it here and the ledger stays " +
-  "correct, so next year's keeper prices and draft board are right without " +
-  "anyone rebuilding them from a spreadsheet.";
+  "A trade is agreed and approved on Sleeper. Record it here and the ledger " +
+  "stays correct without anyone rebuilding it from a spreadsheet. This league " +
+  "trades players and FAAB only — draft picks are not tradable.";
 
 export default async function LogTradePage() {
   if (!hasDatabase()) {
@@ -48,7 +48,7 @@ export default async function LogTradePage() {
             detail:
               "the new franchise plus the keeper clock reset the league's rules require on a trade",
           },
-          { label: "FAAB dollars", detail: "recorded as a line item; ESPN owns the budget" },
+          { label: "FAAB dollars", detail: "recorded as a line item; Sleeper owns the budget" },
         ]}
         worksToday="The trade tracker at /trades reads the snapshots and shows every pick that has already moved."
       />

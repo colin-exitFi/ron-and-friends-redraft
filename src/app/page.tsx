@@ -230,7 +230,7 @@ function CommandGrid({
     {
       href: "/scoring",
       label: "Scoring",
-      desc: "PPR settings, read from ESPN",
+      desc: "Half PPR with a TE premium, read from Sleeper",
       icon: Gauge,
     },
     {

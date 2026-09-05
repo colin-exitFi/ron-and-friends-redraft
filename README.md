@@ -1,14 +1,16 @@
-# Ultimate Keeper League
+# Ron and Friends
 
-The draft board and league ledger for a 10-team ESPN keeper league. ESPN runs the
-season; this app runs the offline draft in person, and keeps the keeper clocks,
-traded picks and trade history that make next year's board correct.
+The draft board for a 10-team Sleeper redraft league. Sleeper runs the season;
+this app runs the offline draft, in the room, on draft night.
 
-Production: **https://ultimate-keeper-league.vercel.app**
+**Sleeper is read-only here.** Its API has no endpoint that records a pick, so
+it cannot be a draft backend. The split is deliberate and it is the whole
+architecture:
 
-The repo is deployed from `main` by Vercel. There is no separate deploy step —
-**a push to `main` is a production release.** Run the build and the relevant
-`verify:*` scripts before pushing, not after.
+| | |
+|---|---|
+| **Sleeper** | The league's settings, its ten managers, the draft order, the scoring. Pulled with `npm run pull:sleeper`, never written to. |
+| **This app** | The picks. The only thing that writes, and the record of the draft. |
 
 ## Running it locally
 
@@ -18,27 +20,49 @@ npm run dev        # http://localhost:3000
 ```
 
 `/draft` and `/players` read the JSON snapshots in `data/` and need no database
-and no network. `/teams`, `/keepers` and `/trades` prefer Postgres and fall back
-to those same snapshots; `/governance` needs the database.
+and no network. Copy `.env.example` to `.env.local` only for the deployed
+instance — `.env.local` is gitignored and no key belongs in a tracked file.
 
-Copy `.env.example` to `.env.local` and fill it in for anything that talks to
-Supabase. `.env.local` is gitignored and no key belongs in a tracked file.
-
-## The two things to know before running a draft
+## The one thing to know before running a draft
 
 **There are two separate draft stores, and you have to pick one.** Run locally
 and picks are written to `data/draft-state-2026.json`, atomically, with a
 timestamped copy in `data/draft-backups/` — no internet required at all. Run on
 the production URL and picks go to Postgres instead, which is the only way two
 devices see one shared draft. The board's footer tells you which store is live.
-Entering picks in both leaves you with two half-drafts, so choose one and stay on
-it.
+Entering picks in both leaves you with two half-drafts, so choose one and stay
+on it.
 
-**After the draft, the result has to be exported into the database.** Until
-`npm run db:import:draft` has run, `data/draft-state-2026.json` and
-`data/draft-backups/` are the *only* copy of the result — get them off the laptop
-when the draft ends. Next year's keeper pricing has nothing to price against
-until the import lands. `docs/DATABASE.md` has the procedure.
+## The league
+
+Read off Sleeper league `1394372619427381248` and the 2026 Season Proposal,
+which controls where the two disagree. `src/lib/league-config.ts` is the single
+source of truth and every value there is marked with where it came from.
+
+- 10 teams, snake, **14 rounds — 140 picks**, 120-second advisory clock
+- 9 starters (QB, 2 RB, 2 WR, 2 FLEX, TE, DST — **no kicker**), 5 bench, 2 IR
+- **Half PPR with a tight end premium**: a TE catch is a full point
+- 6-point passing touchdowns; yardage and 40-yard explosive bonuses
+- **Redraft.** No keepers in 2026, and **no draft-pick trading at all** — every
+  slot belongs to the franchise it was born to
+
+Two things no public ADP feed prices in, both of which make the board call a
+correct pick a reach: the **tight end premium** and the **6-point passing TD**.
+Tight ends and quarterbacks are both cheaper on the imported rankings than they
+are worth here.
+
+## Regenerating the board
+
+The draft order comes from Sleeper. If it changes, re-pull and re-stamp — never
+hand-edit the snapshot:
+
+```bash
+npm run pull:sleeper     # data/sleeper/*.json
+npm run build:board      # 10 x 14 = 140 open slots, deterministic
+```
+
+`data/managers.json` is the one hand-maintained file: it joins Sleeper's handles
+to real manager names, which the API does not carry.
 
 ## Verifying
 
@@ -49,25 +73,22 @@ npm run lint
 npx tsc --noEmit
 npm run build
 
-npm run verify:board-keepers   # the board carries every reconciled keeper
-npm run verify:keepers         # keeper costs match the live room, both clock conventions
-npm run verify:round1          # first-round picks cannot be kept
-npm run verify:draft           # a complete 160-slot draft through the real engine
-npm run verify:expected        # the keeper-adjusted ADP behind reach/steal verdicts
-
-npm run db:verify              # the pages read correctly, live and offline
+npm run verify:draft           # a complete 140-slot draft through the real engine
+npm run verify:draft:dryrun    # the board renders and takes a pick
+npm run verify:board:fit       # the board is legible at the back of the room
 ```
 
-`npm run db:verify:import` and `npm run db:verify:trades` **fill a board and
-write trades**, so they only ever run against a scratch stack
-(`node scripts/seed-local-stack.mjs up`), never the hosted project.
+## Keepers
+
+Not active. The league runs 2026 as a pure redraft and will vote on a keeper
+framework for 2027, so **the keeper machinery is deliberately kept on disk and
+importable** rather than deleted. It is switched off in the data — the keeper
+declaration files are empty, so the overlay places nothing and all 140 cells are
+open — and `FEATURES.keepers` gates the surfaces.
 
 ## Where things are documented
 
 | | |
 |---|---|
-| `HANDOFF.md` | league facts, how this project came about, working style |
-| `ROADMAP.md` | what gets built after the draft, and why |
 | `docs/DATABASE.md` | schema, seeding, the post-draft import, recovery |
-| `data/DECISIONS.md` | league rulings of record |
 | `DESIGN-BRIEF.md`, `BRANDING.md` | the look |
