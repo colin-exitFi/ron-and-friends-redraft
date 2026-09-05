@@ -25,6 +25,8 @@ import { buildCheatSheet } from "@/lib/cheat-sheet";
 import {
   applyCheatSheet,
   draftedFromView,
+  projectedStatLine,
+  projectionBreakdown,
   valueGap,
   type DraftedBy,
 } from "@/lib/cheat-sheet-view";
@@ -614,6 +616,219 @@ section("2e. FantasyPros' ECR-versus-ADP, which was in the file and unrendered")
     console.log(
       `  · ${r.name} (${r.position}) — ADP ${r.adp}, experts have him ${r.ecrVsAdp} places earlier`,
     );
+  }
+}
+
+// --- 2f. The projection, broken out by category -----------------------------
+
+section("2f. The projected components add up to the projected total");
+
+/*
+ * ============================================================================
+ * THE ONE FAILURE MODE OF THE BREAKDOWN PANEL
+ * ============================================================================
+ * The commissioner asked to see the projection by category — receptions,
+ * receiving yards, touchdowns, rushing, passing. The panel shows each component
+ * with the rate this league pays and the points it contributes.
+ *
+ * If those line items do not sum to the total in the `Proj` column beside them,
+ * a manager doing the arithmetic on his phone finds a contradiction, and he
+ * then has no reason to trust either number. It would be invisible on screen —
+ * every figure would look plausible — so it is asserted here, on every row of
+ * the real committed board rather than on a fixture.
+ *
+ * This is also the reason the components are read from the SAME snapshot that
+ * produced the total rather than from a second projections feed. Sleeper
+ * publishes 2026 component projections too, and they are perfectly good, but
+ * pairing their components with a FantasyPros-derived total would guarantee
+ * exactly this contradiction.
+ */
+{
+  const projected = rows.filter((r) => r.projectedStats != null);
+  check(
+    "the projected components reached the row",
+    projected.length > 300,
+    `${projected.length}`,
+  );
+
+  let mismatched = 0;
+  let worst = { name: "", delta: 0 };
+  for (const row of projected) {
+    const lines = projectionBreakdown(row);
+    const sum = lines.reduce((total, line) => total + line.points, 0);
+    // A tenth of a point of slack: `row.points` is rounded for display.
+    const delta = Math.abs(sum - (row.points ?? 0));
+    if (delta > 0.06) {
+      mismatched++;
+      if (delta > worst.delta) worst = { name: row.name, delta };
+    }
+  }
+  check(
+    `every one of ${projected.length} breakdowns sums to the total beside it`,
+    mismatched === 0,
+    `${mismatched} disagree, worst ${worst.name} by ${worst.delta.toFixed(2)}`,
+  );
+
+  /*
+   * HAND ARITHMETIC, term by term, for the two positions the commissioner
+   * named. Computed from the raw components before the panel was pointed at
+   * them. A tight end exercises the premium; a quarterback exercises the
+   * six-point passing touchdown and the negative interception line.
+   */
+  {
+    // Brock Bowers: 93.95 catches at a FULL POINT, 991.39 yards, 6.81 scores.
+    const bowers = rows.find((r) => r.name === "Brock Bowers");
+    if (bowers) {
+      const expected = 93.95 * 1.0 + 991.39 / 10 + 6.81 * 6 + 0.18 * -2;
+      check(
+        `Brock Bowers projects ${expected.toFixed(1)} by hand`,
+        Math.abs((bowers.points ?? 0) - expected) < 0.06,
+        `page says ${bowers.points}, hand says ${expected.toFixed(2)}`,
+      );
+      /*
+       * AND THE PREMIUM IS WORTH 47 POINTS TO HIM. This is the number that
+       * explains the page: a public half-PPR board pays him 0.5 a catch, so it
+       * is showing a figure 47 points lighter — which is why he sits above
+       * receivers there that he sits below here.
+       */
+      const premium = 93.95 * SCORING_SPEC.recTePremium;
+      // Overrides the SCORED position, not the displayed one — that is the
+      // input the breakdown reads, and this assertion caught the difference.
+      const asWr = projectionBreakdown({
+        ...bowers,
+        projectedStatsPosition: "WR",
+      }).reduce((t, l) => t + l.points, 0);
+      check(
+        `…and the TE premium is ${premium.toFixed(1)} of that, versus a receiver's rate`,
+        Math.abs((bowers.points ?? 0) - asWr - premium) < 0.06,
+        `${bowers.points} vs ${asWr.toFixed(1)}`,
+      );
+    } else {
+      check("Brock Bowers is on the board to check", false);
+    }
+  }
+  {
+    // Josh Allen: 3889.49 passing at a point per 20, 26.85 scores at SIX.
+    const allen = rows.find((r) => r.name === "Josh Allen");
+    if (allen) {
+      const expected =
+        3889.49 / 20 + 26.85 * 6 + 11.64 * -2 + 577.91 / 10 + 11.06 * 6 + 4.1 * -2;
+      check(
+        `Josh Allen projects ${expected.toFixed(1)} by hand`,
+        Math.abs((allen.points ?? 0) - expected) < 0.06,
+        `page says ${allen.points}, hand says ${expected.toFixed(2)}`,
+      );
+      /*
+       * The six-point passing touchdown is worth 54 points over the four-point
+       * board every public ranking is built on — the other half of why this
+       * league's order is not the market's.
+       */
+      const atFour = expected - 26.85 * (SCORING_SPEC.passTd - 4);
+      console.log(
+        `  · at a 4-point passing TD he would project ${atFour.toFixed(1)}, ` +
+          `so this league's rule is worth ${(expected - atFour).toFixed(1)} to him`,
+      );
+    } else {
+      check("Josh Allen is on the board to check", false);
+    }
+  }
+
+  /*
+   * THE PANEL MUST NOT CLAIM LEAGUE SCORING FOR A VENDOR TOTAL. A team defence
+   * carries FantasyPros' own number, and `projectedStats` is null for exactly
+   * those rows so the UI takes its "this is not re-scored here" branch. If a
+   * defence ever grew a breakdown it would be presenting foreign scoring as
+   * this league's.
+   */
+  check(
+    "no vendor-scored row carries a breakdown that would imply league scoring",
+    rows
+      .filter((r) => r.basis === "vendor")
+      .every((r) => r.projectedStats == null && projectionBreakdown(r).length === 0),
+    `${rows.filter((r) => r.basis === "vendor" && r.projectedStats != null).length} do`,
+  );
+  {
+    const dst = rows.filter((r) => r.position === "DST" && r.points != null);
+    console.log(
+      `  · ${dst.length} team defences carry a projected total and no breakdown, by design`,
+    );
+    check(
+      "team defences are projected at all, even without a breakdown",
+      dst.length >= 20,
+      `${dst.length}`,
+    );
+  }
+
+  /*
+   * NOTHING THROWS ON A MISSING STAT, and an empty projection produces no
+   * lines rather than a row of zeroes. A rookie with no projection has to look
+   * intentional.
+   */
+  check(
+    "an unprojected player yields no breakdown rather than throwing",
+    (() => {
+      const bare = rows.find((r) => r.projectedStats == null);
+      if (!bare) return true;
+      return projectionBreakdown(bare).length === 0;
+    })(),
+  );
+  check(
+    "a stat line of all zeroes yields no lines rather than eight empty ones",
+    projectionBreakdown({
+      ...rows[0],
+      position: "WR",
+      projectedStats: { receptions: 0, recYards: 0, recTd: 0 },
+    }).length === 0,
+  );
+
+  /*
+   * THE COLUMNS ARE POSITIONALLY APPROPRIATE — passing yards on a running
+   * back's row are noise, and the headline line is what a manager reads while
+   * scrolling rather than on tap.
+   */
+  {
+    const rb = rows.find((r) => r.position === "RB" && r.projectedStats?.rushYards);
+    const wr = rows.find((r) => r.position === "WR" && r.projectedStats?.receptions);
+    const qb = rows.find((r) => r.position === "QB" && r.projectedStats?.passYards);
+    check(
+      "a running back's headline leads with rushing, not passing",
+      /^[\d,]+ rush yd/.test(projectedStatLine(rb!) ?? ""),
+      projectedStatLine(rb!) ?? "none",
+    );
+    check(
+      "a receiver's headline leads with receptions",
+      /rec$|^[\d.]+ rec /.test(projectedStatLine(wr!) ?? ""),
+      projectedStatLine(wr!) ?? "none",
+    );
+    check(
+      "a quarterback's headline leads with passing",
+      /^[\d,]+ pass yd/.test(projectedStatLine(qb!) ?? ""),
+      projectedStatLine(qb!) ?? "none",
+    );
+    check(
+      "a receiver's breakdown does not open with a passing line",
+      projectionBreakdown(wr!)[0]?.label.startsWith("Rec") === true,
+      projectionBreakdown(wr!)[0]?.label ?? "none",
+    );
+    /*
+     * Keyed on the SCORED position rather than the displayed one, because they
+     * are not always the same player-for-player and the premium follows the
+     * arithmetic. Max Bredeson shows as an RB and was scored as a TE; his
+     * reception line must carry the premium, because his total does.
+     */
+    check(
+      "the premium is flagged exactly when the points were scored at tight end",
+      rows
+        .filter((r) => r.projectedStats?.receptions)
+        .every((r) => {
+          const premium = projectionBreakdown(r).some((l) => l.premium);
+          const scoredAt = (r.projectedStatsPosition ?? r.position).toUpperCase();
+          return premium === (scoredAt === "TE");
+        }),
+    );
+    for (const r of [qb, rb, wr].filter((r) => r != null)) {
+      console.log(`  · ${r!.position} ${r!.name}: ${projectedStatLine(r!)}`);
+    }
   }
 }
 

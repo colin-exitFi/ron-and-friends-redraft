@@ -1,7 +1,15 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDown, Radio, RotateCw, Search, WifiOff } from "lucide-react";
+import {
+  ArrowDown,
+  ChevronDown,
+  Radio,
+  RotateCw,
+  Search,
+  Sigma,
+  WifiOff,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDraftLiveSync } from "@/components/use-draft-live-sync";
@@ -10,6 +18,8 @@ import { positionStyle } from "@/lib/positions";
 import { DRAFTABLE_POSITIONS } from "@/lib/board-types";
 import {
   applyCheatSheet,
+  projectedStatLine,
+  projectionBreakdown,
   valueGap,
   type Availability,
   type CheatSheetMeta,
@@ -86,6 +96,27 @@ export function CheatSheet({
    */
   const [sort, setSort] = useState<SortKey>("rank");
   const [syncedAt, setSyncedAt] = useState<Date | null>(null);
+  /*
+   * Which players have their projection breakdown open.
+   *
+   * A SET, so more than one can be open at once — the question this panel
+   * answers is usually comparative ("is Bowers' catch volume really worth the
+   * reach over McBride"), and a panel that closes the last one every time
+   * forces a manager to hold two numbers in his head under a clock.
+   *
+   * TAP, NOT HOVER. This lives in state and is driven by a real `<button>`
+   * rather than by a `:hover` or a `title`, because the people this page was
+   * built for are on phones and hover does not exist there. A breakdown that
+   * only appears under a mouse pointer would be invisible to every one of them.
+   */
+  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
+  const toggle = useCallback((id: string) => {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }, []);
 
   /**
    * Re-read who is off the board.
@@ -258,6 +289,44 @@ export function CheatSheet({
         </button>
       </div>
 
+      {/*
+        WHY THE PROJECTED POINTS DISAGREE WITH EVERY BOARD THEY HAVE SEEN.
+
+        Placed immediately above the table rather than in the footnotes, because
+        it is not a credit line — it is the explanation for a discrepancy that
+        otherwise reads as a defect. A manager who sees Brock Bowers priced
+        above where every public site has him concludes the app is broken; one
+        sentence turns that into "the tight end premium". Without it the best
+        feature on the page looks like a bug.
+
+        THE CLAIM IS DELIBERATELY NARROW AND CHECKABLE. It says this is scored
+        to THIS LEAGUE'S settings and names the two rules that differ — the
+        tight end premium and the six-point passing touchdown — so a sceptical
+        manager can test it in ten seconds. It does NOT say no other site can do
+        this: Sleeper very likely applies league scoring to its own
+        projections, and one overreaching sentence would discredit the rest.
+
+        IT ALSO DOES NOT CLAIM THE YARDAGE BONUSES. Those are per-game events
+        and `pointsFromStats` cannot recover them from a season projection, so
+        naming them here — tempting, since they are a genuine difference — would
+        be a false claim about this column specifically. They ARE applied to the
+        2025 actuals, and that column's copy says so.
+      */}
+      {meta.projectedCount > 0 && (
+        <p className="text-muted-foreground border-border/60 bg-card/30 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs">
+          <Sigma className="text-primary mt-px h-3.5 w-3.5 shrink-0" />
+          <span>
+            <span className="text-foreground font-medium">Proj</span> is scored to Ron
+            and Friends&apos; own settings — {meta.scoringFormat}, where a tight end
+            catches at {meta.tePremiumReception} and a passing touchdown is worth{" "}
+            {meta.passTd} — so it will disagree with generic cheat sheets, printed
+            rankings and standard half-PPR boards.{" "}
+            <span className="text-foreground/80">Tap a player</span> for the categories
+            behind his number.
+          </span>
+        </p>
+      )}
+
       <div className="border-border bg-card/40 overflow-hidden rounded-xl border">
         <div className="max-h-[calc(100vh-380px)] overflow-auto max-md:max-h-[68dvh]">
           <table className="w-full border-collapse text-sm">
@@ -331,6 +400,10 @@ export function CheatSheet({
                     row={p}
                     taken={drafted[p.id] ?? null}
                     showLastSeason={meta.lastSeason != null}
+                    expanded={open.has(p.id)}
+                    onToggle={toggle}
+                    columns={meta.lastSeason ? 9 : 8}
+                    meta={meta}
                   />
                 ))
               )}
@@ -401,6 +474,148 @@ export function CheatSheet({
   );
 }
 
+/**
+ * One player's 2026 projection, broken out by category with the arithmetic.
+ *
+ * ============================================================================
+ * IT STACKS ON A PHONE RATHER THAN SHRINKING
+ * ============================================================================
+ * The layout is a two-column list — category on the left, points on the right —
+ * with the rate underneath the category rather than in a third column. On a
+ * 390px screen a three-column numeric grid would put four characters per cell
+ * and wrap every label; this reads as a list at any width and is why the
+ * breakdown went behind a tap instead of into the table.
+ *
+ * ============================================================================
+ * WHAT IT REFUSES TO CLAIM
+ * ============================================================================
+ * A team defence carries FantasyPros' own total — `basis` is `"vendor"` — and
+ * this panel says so plainly instead of presenting it as league-scored. Team
+ * defence scoring here is dominated by a per-game points-allowed ladder that no
+ * feed projects, so there is nothing to break out and pretending otherwise
+ * would be inventing precision.
+ *
+ * It also states that the yardage and explosive bonuses are NOT in the figure.
+ * They are real rules of this league and `pointsFromStats` cannot apply them to
+ * a projection — there is no way to know how many 100-yard games are inside a
+ * 1,400-yard season — so the total is a few points light for everybody. Saying
+ * that is cheaper than having a manager find it.
+ */
+function ProjectionPanel({ row, meta }: { row: CheatSheetRow; meta: CheatSheetMeta }) {
+  const lines = projectionBreakdown(row);
+
+  // A vendor total, or nothing at all. Either way there is no breakdown, and
+  // the panel's job becomes saying WHY rather than showing numbers.
+  if (lines.length === 0) {
+    return (
+      <p className="text-muted-foreground max-w-prose text-xs">
+        {row.points == null ? (
+          <>
+            Nobody projects {row.name} this season, so there is no figure to break
+            down. He is on the sheet because he carries an ADP or a league rank.
+          </>
+        ) : (
+          <>
+            <span className="text-foreground font-medium">
+              {row.points.toFixed(1)}
+            </span>{" "}
+            is FantasyPros&apos; own projected total, on their scoring rather than
+            this league&apos;s — the one column on this page that is not re-scored
+            here. Team defence scoring in Ron and Friends is mostly a per-game
+            points-allowed ladder, and no feed projects the bands it reads, so
+            there is nothing to break out and no honest way to re-score it.
+          </>
+        )}
+      </p>
+    );
+  }
+
+  const total = lines.reduce((sum, l) => sum + l.points, 0);
+
+  return (
+    <div className="grid gap-2.5">
+      <div className="text-muted-foreground text-[11px] tracking-wide uppercase">
+        Projected {meta.projectionSeason ?? ""}, scored in {meta.scoringFormat}
+      </div>
+
+      <dl className="grid gap-px sm:max-w-md">
+        {lines.map((line) => (
+          <div
+            key={line.label}
+            className={cn(
+              "flex items-baseline justify-between gap-3 rounded px-2 py-1.5",
+              // The premium line is tinted, because it is the one line that
+              // explains why this league's board disagrees with every other.
+              line.premium ? "bg-primary/10" : "odd:bg-card/40",
+            )}
+          >
+            <dt className="min-w-0 text-xs">
+              <span className="text-foreground/90">{line.display}</span>{" "}
+              <span className="text-muted-foreground">{line.label}</span>
+              <span
+                className={cn(
+                  "mt-px block font-mono text-[10px]",
+                  line.premium ? "text-primary" : "text-muted-foreground/60",
+                )}
+              >
+                {line.rate}
+              </span>
+            </dt>
+            <dd
+              className={cn(
+                "shrink-0 font-mono text-xs tabular-nums",
+                line.points < 0 ? "text-destructive/80" : "text-foreground/80",
+              )}
+            >
+              {line.points > 0 ? "+" : ""}
+              {line.points.toFixed(1)}
+            </dd>
+          </div>
+        ))}
+        <div className="border-border/60 mt-0.5 flex items-baseline justify-between gap-3 border-t px-2 pt-2">
+          <dt className="text-foreground text-xs font-medium">
+            Projected total
+            {row.pointsPositionRank != null && (
+              <span className="text-muted-foreground ml-1.5 font-mono text-[10px]">
+                {row.position}
+                {row.pointsPositionRank} in this league
+              </span>
+            )}
+          </dt>
+          <dd className="text-foreground shrink-0 font-mono text-xs font-medium tabular-nums">
+            {total.toFixed(1)}
+          </dd>
+        </div>
+      </dl>
+
+      {/* The season-over-season contrast, where there is one to draw. */}
+      {row.lastSeasonPoints != null && meta.lastSeason && (
+        <p className="text-muted-foreground max-w-prose text-[11px]">
+          For contrast, he actually scored{" "}
+          <span className="text-foreground/80 font-mono">
+            {row.lastSeasonPoints.toFixed(1)}
+          </span>{" "}
+          in {meta.lastSeason.season}
+          {row.lastSeasonPerGame != null && (
+            <> ({row.lastSeasonPerGame.toFixed(1)} a game)</>
+          )}
+          {row.lastSeasonGames != null && <> across {row.lastSeasonGames} games</>}
+          {row.lastSeasonLine && <> — {row.lastSeasonLine}</>}. That figure does
+          include the yardage and explosive bonuses; the projection above cannot.
+        </p>
+      )}
+
+      <p className="text-muted-foreground/70 max-w-prose text-[11px]">
+        Components are FantasyPros&apos; projected stat lines. The points are
+        computed here under this league&apos;s settings, so they are not
+        FantasyPros&apos; own totals. The yardage and explosive-play bonuses are not
+        included — they are per-game events a season projection cannot break out —
+        so every player is a few points light and the order is unaffected.
+      </p>
+    </div>
+  );
+}
+
 /** A column header that sorts. The active one carries the arrow. */
 function SortHeader({
   label,
@@ -447,14 +662,25 @@ function PlayerRow({
   row,
   taken,
   showLastSeason,
+  expanded,
+  onToggle,
+  columns,
+  meta,
 }: {
   row: CheatSheetRow;
   taken: { by: string; label: string } | null;
   /** False when there is no snapshot, so the column is not drawn at all. */
   showLastSeason: boolean;
+  expanded: boolean;
+  onToggle: (id: string) => void;
+  /** How many cells the breakdown panel has to span. */
+  columns: number;
+  meta: CheatSheetMeta;
 }) {
   const gap = valueGap(row);
+  const statLine = projectedStatLine(row);
   return (
+    <>
     <tr
       // Named the way the board names its cells, so a verification script can
       // point at one player rather than at "the third row".
@@ -471,13 +697,41 @@ function PlayerRow({
         </span>
       </td>
       <td className="px-3 py-2 font-medium max-md:px-2">
-        <span
+        {/*
+          THE NAME IS THE TAP TARGET, and it is the biggest thing on the row —
+          which is what makes this work with a thumb. A chevron on its own at
+          this text size would be a 12px target on a phone; the name gives it
+          the full width of the column and `touch:min-h-11` gives it the 44px
+          height the rest of this app settled on.
+        */}
+        <button
+          type="button"
+          onClick={() => onToggle(row.id)}
+          aria-expanded={expanded}
+          aria-label={`${row.name} — show projected stat breakdown`}
           className={cn(
-            "flex items-center gap-1.5 max-md:text-[13px]",
+            "flex w-full items-center gap-1.5 text-left max-md:text-[13px] touch:min-h-11",
             taken && "text-muted-foreground line-through decoration-2",
           )}
         >
-          <span className="min-w-0 truncate">{row.name}</span>
+          {/*
+            THE STRIKETHROUGH LIVES ON THE NAME ITSELF, not only on the button
+            around it. `text-decoration` paints over descendants, so moving it
+            to the wrapper looked identical on screen — and
+            `verify:cheat-sheet:browser` caught that the name element's own
+            computed style had gone back to `none`. That check exists because
+            "I cannot tell who is gone" is the complaint this page was built to
+            answer, so the one visual signal for it is asserted rather than
+            eyeballed.
+          */}
+          <span
+            className={cn(
+              "min-w-0 truncate",
+              taken && "line-through decoration-2",
+            )}
+          >
+            {row.name}
+          </span>
           {/* The injury flag rides ON THE NAME, at every width, and is the only
               thing added here that a phone does not fold away. It is the one
               fact on the row that can waste a pick outright, so hiding it below
@@ -493,7 +747,17 @@ function PlayerRow({
               {row.injuryStatus}
             </span>
           )}
-        </span>
+          {/* Only where there is something to open. A chevron on a row with no
+              projection would promise a panel that never appears. */}
+          {row.projectedStats && (
+            <ChevronDown
+              className={cn(
+                "text-muted-foreground/50 h-3 w-3 shrink-0 transition-transform",
+                expanded && "rotate-180",
+              )}
+            />
+          )}
+        </button>
         {/* On a phone the narrow columns fold under the name rather than
             sliding off the side — the pattern this table already used. */}
         <span className="text-muted-foreground/70 mt-0.5 hidden flex-wrap items-center gap-x-1.5 font-mono text-[10px] max-md:flex">
@@ -529,6 +793,21 @@ function PlayerRow({
             </span>
           )}
         </span>
+        {/*
+          THE POSITIONALLY RELEVANT COMPONENTS, ON THE ROW, AT EVERY WIDTH.
+
+          He asked to see the categories, and this is the part that does not
+          need a tap: a receiver's receptions, yards and touchdowns; a back's
+          rushing and his catches; a quarterback's passing. Three numbers, not
+          eight columns, which is the only version of this that survives a
+          390px screen. `projectedStatLine` decides which three by position —
+          passing yards on a running back's row would be noise.
+        */}
+        {statLine && (
+          <span className="text-muted-foreground/60 mt-0.5 block font-mono text-[10px] max-md:text-[10px]">
+            {statLine}
+          </span>
+        )}
       </td>
       <td className="px-3 py-2 max-md:hidden">
         <span
@@ -671,5 +950,27 @@ function PlayerRow({
         )}
       </td>
     </tr>
+    {/*
+      THE FULL BREAKDOWN, ON TAP.
+
+      A FULL-WIDTH PANEL RATHER THAN EXTRA COLUMNS, which is the whole reason
+      this shape was chosen: eight numeric columns cannot coexist with a 390px
+      screen, and a panel that spans the row has as much space on a phone as it
+      does on a television. It stacks instead of shrinking.
+
+      IT SHOWS THE ARITHMETIC, NOT JUST THE STATS. Every line carries the
+      projected component, the rate this league pays for it, and the points it
+      contributes — so the tight end premium is visible as a line item doing its
+      work rather than asserted in a footnote. That is the difference between
+      "the app says 260" and "94 catches at a full point each".
+    */}
+    {expanded && (
+      <tr data-breakdown-for={row.id} className="border-border/50 border-b last:border-0">
+        <td colSpan={columns} className="bg-card/60 px-3 py-3 max-md:px-2">
+          <ProjectionPanel row={row} meta={meta} />
+        </td>
+      </tr>
+    )}
+    </>
   );
 }

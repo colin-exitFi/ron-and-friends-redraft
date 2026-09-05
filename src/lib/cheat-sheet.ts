@@ -4,6 +4,7 @@ import { getPlayerPool } from "@/lib/smartdraft";
 import { readProjections } from "@/lib/projections-store";
 import { readCheatSheetExport } from "@/lib/cheatsheet-export";
 import { readLastSeason } from "@/lib/last-season-store";
+import type { ProjectedStats } from "@/lib/projections";
 import { joinKey } from "@/lib/fantasypros/players";
 import { SCORING_FORMAT, SCORING_SPEC } from "@/lib/league-config";
 import type { CheatSheetMeta, CheatSheetRow } from "@/lib/cheat-sheet-view";
@@ -85,6 +86,32 @@ const BLOCKING_DESIGNATIONS = new Set([
   "DOUBTFUL",
 ]);
 
+/**
+ * The stat line, but only when there is genuinely something to break out.
+ *
+ * ============================================================================
+ * `dstPoints` IS A TOTAL WEARING A COMPONENT'S CLOTHES
+ * ============================================================================
+ * A team defence's whole projected line is `{ dstPoints: 120.34 }` — the feed's
+ * own number, passed straight through, because ESPN and FantasyPros both
+ * publish a D/ST total and neither publishes the parts this league scores. The
+ * projections index classifies it as league-scored, which is defensible for a
+ * total that needs no rescoring, and it counts them in `dstPassthroughCount`
+ * for exactly this reason.
+ *
+ * But it is NOT a component, and letting it through here caused the one bug the
+ * breakdown panel must never have: thirty-two rows whose line items summed to
+ * zero against a total of 120. `verify:cheat-sheet` caught it. Stripping it
+ * sends those rows down the panel's "there is nothing to break out, and here is
+ * why" branch, which is the honest presentation — a defence's points here are
+ * mostly a per-game points-allowed ladder no feed projects.
+ */
+function breakableComponents(stats: ProjectedStats | null): ProjectedStats | null {
+  if (!stats) return null;
+  const keys = Object.keys(stats).filter((k) => k !== "dstPoints");
+  return keys.length > 0 ? stats : null;
+}
+
 /** A designation worth a badge, or null. Normalised, never throws. */
 function blockingStatus(status: string | null | undefined): string | null {
   if (!status) return null;
@@ -157,6 +184,12 @@ export function buildCheatSheet(liveAdp?: Map<string, number>): CheatSheet {
       points: projection ? Math.round(projection.points * 10) / 10 : null,
       basis: projection?.basis ?? null,
       pointsPositionRank: null,
+      /*
+       * The components the total was computed from, so the sheet can show the
+       * breakdown the commissioner asked for.
+       */
+      projectedStats: breakableComponents(projection?.stats ?? null),
+      projectedStatsPosition: projection?.position ?? null,
       lastSeasonPoints: prior?.points ?? null,
       lastSeasonPerGame: prior?.perGame ?? null,
       lastSeasonGames: prior?.games ?? null,

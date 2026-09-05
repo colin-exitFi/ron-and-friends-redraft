@@ -266,6 +266,22 @@ export type ScoredProjection = {
   strengthOfSchedule: number | null;
   tier: number | null;
   positionRank: number | null;
+  /**
+   * The RAW COMPONENTS the points were computed from — projected receptions,
+   * yards, touchdowns — or null for a row carried at the vendor's own total.
+   *
+   * Carried through so a caller can show a manager the breakdown BEHIND the
+   * number rather than only the number. That is the difference between "the
+   * app says 260" and "94 catches at a full point each, because this league
+   * pays a tight end premium", and the second one is what changes a pick.
+   *
+   * It is the same object the points were derived from, deliberately, so a
+   * breakdown and a total can never disagree. Anything that re-derived the
+   * components from a second feed would produce a panel whose figures do not
+   * add up to the column beside it, which reads as a bug and destroys trust in
+   * both numbers.
+   */
+  stats: ProjectedStats | null;
 };
 
 /**
@@ -370,6 +386,9 @@ export function indexProjections(snapshot: ProjectionSnapshot): ProjectionIndex 
       strengthOfSchedule: row.strengthOfSchedule,
       tier: row.tier,
       positionRank: row.positionRank,
+      // Only when the points really came from them. A vendor-scored row must
+      // not appear to have a breakdown it does not have.
+      stats: basis === "league" ? row.stats : null,
     });
   }
 

@@ -1,4 +1,6 @@
 import type { DraftRoomView } from "@/lib/draft-types";
+import type { ProjectedStats } from "@/lib/projections";
+import { SCORING_SPEC } from "@/lib/league-config";
 
 /**
  * The client-side half of the cheat sheet: its row shape, and the pure
@@ -51,6 +53,34 @@ export type CheatSheetRow = {
   basis: CheatSheetBasis | null;
   /** Rank within position by projected points — this league's own rank. */
   pointsPositionRank: number | null;
+  /**
+   * THE RAW 2026 COMPONENTS `points` WAS COMPUTED FROM — projected receptions,
+   * receiving yards, touchdowns, rushing and passing.
+   *
+   * This is the same object the total was derived from, which is the property
+   * that makes it safe to show: a breakdown and a total that came from two
+   * different feeds would not add up, and a panel whose figures contradict the
+   * column beside it destroys confidence in both numbers.
+   *
+   * Null for a team defence, which carries the feed's own total and has no
+   * components to break out. See `projectionBreakdown`.
+   */
+  projectedStats: ProjectedStats | null;
+  /**
+   * The position the PROJECTION was scored at, which is not always the position
+   * this row displays.
+   *
+   * THE TWO SOURCES DISAGREE ABOUT A HANDFUL OF PLAYERS. The pool lists Max
+   * Bredeson as a running back and FantasyPros projects him as a tight end;
+   * `pointsFromStats` was therefore given "TE" and paid his catches the premium,
+   * while a breakdown computed from the displayed "RB" paid them half. The two
+   * differed by 2.25 points and `verify:cheat-sheet` failed on it.
+   *
+   * A breakdown exists to explain a total, so it has to be computed from the
+   * total's own inputs. This field carries them. Null falls back to the row's
+   * position, which is right for the 531 players the two feeds agree about.
+   */
+  projectedStatsPosition: string | null;
   /**
    * LAST SEASON'S ACTUAL POINTS, in this league's scoring. Null for a rookie,
    * for a team defence, and for anyone who did not take the field.
@@ -126,6 +156,213 @@ export type CheatSheetMeta = {
   /** Why there are no last-season numbers, when there are none. */
   lastSeasonProblem: string | null;
 };
+
+/**
+ * One category of a projection, with the arithmetic that turned it into points.
+ *
+ * The `rate` and `points` fields are the reason this type exists rather than a
+ * bare stat line. The commissioner's ask was to break the projection out by
+ * category, and the useful version of that is not "94 receptions" — it is "94
+ * receptions, at a full point each here, is 94 points". The second one shows a
+ * manager WHERE the number came from and, incidentally, shows him the tight end
+ * premium doing its work, which is the intuition the display exists to correct.
+ */
+export type ProjectionLine = {
+  label: string;
+  /** The projected component, formatted for display — "94", "991", "6.8". */
+  display: string;
+  /** What this league pays for it — "×1.0 each", "1 pt / 20 yd". */
+  rate: string;
+  /** Points this category contributes. Signed; interceptions are negative. */
+  points: number;
+  /**
+   * True for the tight end reception line only. The UI highlights it, because
+   * it is the single line on the panel that explains why this league's board
+   * disagrees with every public one.
+   */
+  premium?: boolean;
+};
+
+/** Rounds for display without letting `-0` through. */
+function tenth(value: number): number {
+  const rounded = Math.round(value * 10) / 10;
+  return rounded === 0 ? 0 : rounded;
+}
+
+/**
+ * A projection broken out by category, in this league's scoring.
+ *
+ * ============================================================================
+ * WHY THE ORDER DEPENDS ON THE POSITION
+ * ============================================================================
+ * Passing yards on a running back's row are noise, and a receiver's row led by
+ * rushing attempts buries the two numbers that decide his value. So each
+ * position leads with what it is drafted for: a quarterback with passing, a
+ * back with rushing, a receiver and a tight end with receptions. Categories the
+ * player does not register in are omitted entirely rather than printed as
+ * zeroes — a wideout with no passing line should not carry three empty rows.
+ *
+ * PURE, SO THE ARITHMETIC CAN BE VERIFIED WITHOUT A BROWSER. The sum of the
+ * `points` fields must equal the row's total, and `verify:cheat-sheet` asserts
+ * exactly that against every row on the board. A breakdown that does not add up
+ * to the column beside it is the one failure mode of this panel, and it would be
+ * invisible on screen.
+ *
+ * Returns an empty array for a team defence, whose points are the feed's own
+ * total with no components published, and for anyone unprojected. Never throws
+ * on a missing stat: an absent category is simply not a line.
+ */
+export function projectionBreakdown(row: CheatSheetRow): ProjectionLine[] {
+  const s = row.projectedStats;
+  if (!s) return [];
+
+  // The position the POINTS were computed at, not necessarily the one on
+  // screen. See `projectedStatsPosition` for the player who proved it matters.
+  const scoredAt = (row.projectedStatsPosition ?? row.position).toUpperCase();
+  const isTe = scoredAt === "TE";
+  const perReception = isTe ? SCORING_SPEC.ppr + SCORING_SPEC.recTePremium : SCORING_SPEC.ppr;
+
+  const passing: ProjectionLine[] = [
+    s.passYards
+      ? {
+          label: "Passing yards",
+          display: Math.round(s.passYards).toLocaleString(),
+          rate: `1 pt / ${SCORING_SPEC.passYardsPerPoint} yd`,
+          points: s.passYards / SCORING_SPEC.passYardsPerPoint,
+        }
+      : null,
+    s.passTd
+      ? {
+          label: "Passing TD",
+          display: tenth(s.passTd).toString(),
+          // Named as the league's own rate because it is the headline
+          // difference from every four-point board a manager has seen.
+          rate: `×${SCORING_SPEC.passTd} each`,
+          points: s.passTd * SCORING_SPEC.passTd,
+        }
+      : null,
+    s.interceptions
+      ? {
+          label: "Interceptions",
+          display: tenth(s.interceptions).toString(),
+          rate: `×${SCORING_SPEC.interceptionThrown} each`,
+          points: s.interceptions * SCORING_SPEC.interceptionThrown,
+        }
+      : null,
+  ].filter((l): l is ProjectionLine => l !== null);
+
+  const rushing: ProjectionLine[] = [
+    s.rushYards
+      ? {
+          label: "Rushing yards",
+          display: Math.round(s.rushYards).toLocaleString(),
+          rate: `1 pt / ${SCORING_SPEC.rushRecYardsPerPoint} yd`,
+          points: s.rushYards / SCORING_SPEC.rushRecYardsPerPoint,
+        }
+      : null,
+    s.rushTd
+      ? {
+          label: "Rushing TD",
+          display: tenth(s.rushTd).toString(),
+          rate: `×${SCORING_SPEC.rushTd} each`,
+          points: s.rushTd * SCORING_SPEC.rushTd,
+        }
+      : null,
+  ].filter((l): l is ProjectionLine => l !== null);
+
+  const receiving: ProjectionLine[] = [
+    s.receptions
+      ? {
+          label: "Receptions",
+          display: tenth(s.receptions).toString(),
+          rate: isTe
+            ? `×${perReception.toFixed(1)} each — TE premium`
+            : `×${perReception} each`,
+          points: s.receptions * perReception,
+          premium: isTe,
+        }
+      : null,
+    s.recYards
+      ? {
+          label: "Receiving yards",
+          display: Math.round(s.recYards).toLocaleString(),
+          rate: `1 pt / ${SCORING_SPEC.rushRecYardsPerPoint} yd`,
+          points: s.recYards / SCORING_SPEC.rushRecYardsPerPoint,
+        }
+      : null,
+    s.recTd
+      ? {
+          label: "Receiving TD",
+          display: tenth(s.recTd).toString(),
+          rate: `×${SCORING_SPEC.recTd} each`,
+          points: s.recTd * SCORING_SPEC.recTd,
+        }
+      : null,
+  ].filter((l): l is ProjectionLine => l !== null);
+
+  const other: ProjectionLine[] = [
+    s.twoPointConversions
+      ? {
+          label: "2-point conversions",
+          display: tenth(s.twoPointConversions).toString(),
+          rate: `×${SCORING_SPEC.twoPointConversion} each`,
+          points: s.twoPointConversions * SCORING_SPEC.twoPointConversion,
+        }
+      : null,
+    s.fumblesLost
+      ? {
+          label: "Fumbles lost",
+          display: tenth(s.fumblesLost).toString(),
+          rate: `×${SCORING_SPEC.fumbleLost} each`,
+          points: s.fumblesLost * SCORING_SPEC.fumbleLost,
+        }
+      : null,
+  ].filter((l): l is ProjectionLine => l !== null);
+
+  const position = row.position.toUpperCase();
+  if (position === "QB") return [...passing, ...rushing, ...receiving, ...other];
+  if (position === "RB") return [...rushing, ...receiving, ...passing, ...other];
+  // WR, TE and anything unexpected lead with what they are drafted for.
+  return [...receiving, ...rushing, ...passing, ...other];
+}
+
+/**
+ * The two or three projected numbers worth putting ON the row, by position.
+ *
+ * The full breakdown is a tap away; this is what a manager reads while
+ * scrolling. Positional by the same argument as `projectionBreakdown` — a
+ * back's receptions matter and his passing yards do not — and capped at three
+ * so it stays one short line on a 390px screen rather than wrapping into three.
+ *
+ * Null when there is nothing to say, so the UI renders no line at all rather
+ * than an empty one.
+ */
+export function projectedStatLine(row: CheatSheetRow): string | null {
+  const s = row.projectedStats;
+  if (!s) return null;
+
+  const yd = (v: number) => Math.round(v).toLocaleString();
+  const one = (v: number) => tenth(v).toString();
+  const parts: string[] = [];
+  const position = row.position.toUpperCase();
+
+  if (position === "QB") {
+    if (s.passYards) parts.push(`${yd(s.passYards)} pass yd`);
+    if (s.passTd) parts.push(`${one(s.passTd)} pass TD`);
+    // A rushing quarterback is worth flagging; a pocket one gets no clause.
+    if (s.rushYards && s.rushYards >= 150) parts.push(`${yd(s.rushYards)} rush yd`);
+  } else if (position === "RB") {
+    if (s.rushYards) parts.push(`${yd(s.rushYards)} rush yd`);
+    if (s.rushTd) parts.push(`${one(s.rushTd)} rush TD`);
+    if (s.receptions) parts.push(`${one(s.receptions)} rec`);
+  } else {
+    if (s.receptions) parts.push(`${one(s.receptions)} rec`);
+    if (s.recYards) parts.push(`${yd(s.recYards)} rec yd`);
+    if (s.recTd) parts.push(`${one(s.recTd)} rec TD`);
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
 
 /** Who has a player, and at which pick. Keyed by Smart Draft player id. */
 export type DraftedBy = Record<string, { by: string; label: string }>;
