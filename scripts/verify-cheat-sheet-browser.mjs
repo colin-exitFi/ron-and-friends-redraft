@@ -1101,13 +1101,13 @@ const run = async () => {
     section("2. The live indicator tells the truth");
 
     const liveText = await page
-      .locator("text=/Live —|Syncing slowly|Connecting|saving to this machine/")
+      .locator("text=/Live —|Syncing every|Connecting|saving to this machine/")
       .first()
       .innerText();
     console.log(`  · “${liveText.trim()}”`);
     check(
       "the page claims a live connection, because saves are shared here",
-      /Live —|Syncing slowly|Connecting/.test(liveText),
+      /Live —|Syncing every|Connecting/.test(liveText),
       "it thinks the store is a local file — is DRAFT_STORE=database set?",
     );
     // Give the channel a moment to actually subscribe.
@@ -1117,7 +1117,7 @@ const run = async () => {
       .waitFor({ timeout: 20_000 })
       .catch(() => {});
     const settled = await page
-      .locator("text=/Live —|Syncing slowly|Connecting/")
+      .locator("text=/Live —|Syncing every|Connecting/")
       .first()
       .innerText();
     check(

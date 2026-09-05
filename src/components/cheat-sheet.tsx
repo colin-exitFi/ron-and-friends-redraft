@@ -5,6 +5,7 @@ import { ArrowDown, RotateCw, Search, Sigma, WifiOff } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { useDraftLiveSync } from "@/components/use-draft-live-sync";
+import { POLL_SECONDS } from "@/lib/poll-interval.mjs";
 import { cn } from "@/lib/utils";
 import { positionStyle } from "@/lib/positions";
 import { DRAFTABLE_POSITIONS } from "@/lib/board-types";
@@ -97,9 +98,11 @@ const COLUMN_COUNT = 3 + STAT_HEADERS.length + 3;
  * mechanism, so a phone and the television cannot disagree about who is gone.
  *
  * It also inherits that hook's fallbacks for free, which matter more here than
- * anywhere: this runs on phones on a venue's wifi. A dropped socket is retried
- * a few times and then becomes a poll, and the indicator says which is
- * happening rather than showing a reassuring green dot over a dead channel.
+ * anywhere: this runs on phones on a venue's wifi, in pockets, for three hours.
+ * A dropped socket is rebuilt on a backoff, a poll asks every few seconds in
+ * the meantime, and coming back to the page asks at once — and the indicator
+ * says which of those is carrying the picks rather than showing a reassuring
+ * green dot over a dead channel.
  */
 export function CheatSheet({
   rows,
@@ -341,9 +344,11 @@ export function CheatSheet({
 
       {/*
         The live indicator. Says what is actually happening rather than showing
-        a green dot unconditionally — "syncing slowly" is a true and useful
-        thing for a manager to know, and a board that has quietly stopped
-        updating is the failure this page exists to prevent.
+        a green dot unconditionally — which of the three delivery paths is
+        carrying picks right now is a true and useful thing for a manager to
+        know, and a board that has quietly stopped updating is the failure this
+        page exists to prevent. The fallback names its interval, so "not live"
+        reads as a number somebody can judge rather than as a shrug.
       */}
       <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {liveEnabled ? (
@@ -366,7 +371,7 @@ export function CheatSheet({
             {status === "live"
               ? "Live — players disappear as they are picked"
               : status === "polling"
-                ? "Syncing slowly — the socket dropped, so this is checking every few seconds"
+                ? `Syncing every ${POLL_SECONDS}s — the live connection dropped, so this is asking instead`
                 : "Connecting…"}
           </span>
         ) : (
