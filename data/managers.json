@@ -1,105 +1,111 @@
 {
- "note": "Short names come from the live Smart Draft room and Draft Picks 2026.xlsx. Full names come from the KEEPER LIST sheets in 2026 DRAFT.xlsx. Two Kyles and two Scotts: the second of each goes by last name (Witte, Elbe). Franchise names and abbreviations come from the ESPN league (441239) via data/espn/espn-teams-crosswalk.json, joined by person rather than by draft slot. ESPN lists Perpetually Impaired under Ted Buckman; the commissioner ruled that Ted and Zach Rakowski are the same person, so it is Zach's.",
+ "_provenance": "The ten franchises, read from Sleeper league 1394372619427381248 on 2026-09-05 by scripts/sleeper-pull.mjs. Sleeper is authoritative for the draft slot, the Sleeper user id, and the franchise name. It is NOT authoritative for a manager's real name, because the Sleeper API carries no real names at all — only handles and optional team names.",
+
+ "_NEEDS_COMMISSIONER_REVIEW": "Every `shortName` and `fullName` below was DERIVED FROM THE SLEEPER HANDLE and is a guess. `shortName` is what the board prints in a 40px-wide cell, so it is the one the room will read all night. Correct them here and nowhere else — every surface joins on `shortName`, and `npm run build:board` re-stamps the board from this file. Nothing else needs touching.",
+
+ "_shortNameRule": "Short names are the join key for every other source, so they must be unique and they must be short. First names are safe in this league: unlike the previous one, no two managers share one.",
+
  "managers": [
   {
-   "shortName": "Zach",
-   "fullName": "Zach Rakowski",
-   "franchiseName": "Perpetually Impaired",
-   "smartDraftTeamId": "9e0da9f9-cab5-4f66-ab19-35b615097ace",
-   "smartDraftOrderKey": 10,
-   "draftSlot2026": 1,
-   "franchiseAbbrev": "PI",
-   "espnTeamId": 5
+   "shortName": "Steve",
+   "fullName": "Steve",
+   "franchiseName": "Mahomies",
+   "franchiseAbbrev": "MAH",
+   "sleeperUserId": "1394482315228381184",
+   "sleeperHandle": "CuzSteve",
+   "sleeperRosterId": 4,
+   "draftSlot": 1
   },
   {
-   "shortName": "Witte",
-   "fullName": "Kyle Witte",
-   "franchiseName": "The Replacement Team",
-   "smartDraftTeamId": "8ef9267d-0e3d-42a1-a3d8-887fef838da6",
-   "smartDraftOrderKey": 20,
-   "draftSlot2026": 2,
-   "franchiseAbbrev": "DinP",
-   "espnTeamId": 3
+   "shortName": "Dennis",
+   "fullName": "Dennis",
+   "franchiseName": "dennisphinney",
+   "franchiseAbbrev": "DEN",
+   "sleeperUserId": "1395086291325964288",
+   "sleeperHandle": "dennisphinney",
+   "sleeperRosterId": 10,
+   "draftSlot": 2
   },
   {
-   "shortName": "Joe",
-   "fullName": "Joe Murray",
-   "franchiseName": "Fingers are for painting",
-   "smartDraftTeamId": "61fb3616-6862-420f-bb2b-22ebb00964e6",
-   "smartDraftOrderKey": 30,
-   "draftSlot2026": 3,
-   "franchiseAbbrev": "HOJO",
-   "espnTeamId": 9
-  },
-  {
-   "shortName": "Josh",
-   "fullName": "Josh Grainger",
-   "franchiseName": "Teddys Trouser Snake",
-   "smartDraftTeamId": "2a215c13-2fda-47be-a42a-a75cd3474370",
-   "smartDraftOrderKey": 40,
-   "draftSlot2026": 4,
-   "franchiseAbbrev": "TITS",
-   "espnTeamId": 6
-  },
-  {
-   "shortName": "Elbe",
-   "fullName": "Scott Elbe",
-   "franchiseName": "A.D.B. Rombusters II",
-   "smartDraftTeamId": "8f57b971-5b63-46af-9e64-13ad6af4a7c9",
-   "smartDraftOrderKey": 50,
-   "draftSlot2026": 5,
-   "franchiseAbbrev": "ADB",
-   "espnTeamId": 10
-  },
-  {
-   "shortName": "Kyle",
-   "fullName": "Kyle Mertens",
-   "franchiseName": "Tushy Booth Ballers",
-   "smartDraftTeamId": "011792a6-db06-422d-9d30-81abb87f77aa",
-   "smartDraftOrderKey": 60,
-   "draftSlot2026": 6,
-   "franchiseAbbrev": "TBB",
-   "espnTeamId": 1
+   "shortName": "Biff",
+   "fullName": "Biff",
+   "franchiseName": "BigboofieBiff",
+   "franchiseAbbrev": "BIF",
+   "sleeperUserId": "1393416786937925632",
+   "sleeperHandle": "BigboofieBiff",
+   "sleeperRosterId": 8,
+   "draftSlot": 3
   },
   {
    "shortName": "Scott",
-   "fullName": "Scott Johnston",
-   "franchiseName": "DHB Sandmen",
-   "smartDraftTeamId": "01fb92cb-b51d-4622-be2d-1bfea6fc0106",
-   "smartDraftOrderKey": 70,
-   "draftSlot2026": 7,
-   "franchiseAbbrev": "DHB",
-   "espnTeamId": 7
+   "fullName": "Scott",
+   "franchiseName": "ScottBrennanstl",
+   "franchiseAbbrev": "SCO",
+   "sleeperUserId": "1394486368863817728",
+   "sleeperHandle": "ScottBrennanstl",
+   "sleeperRosterId": 5,
+   "draftSlot": 4
   },
   {
-   "shortName": "Stefan",
-   "fullName": "Stefan Albers",
-   "franchiseName": "Mound City Dogs",
-   "smartDraftTeamId": "32dee545-0719-42e3-b490-47a7ec434eab",
-   "smartDraftOrderKey": 80,
-   "draftSlot2026": 8,
-   "franchiseAbbrev": "DOGS",
-   "espnTeamId": 8
+   "shortName": "LeCap",
+   "fullName": "LeCapitalG",
+   "franchiseName": "LeCapitalG",
+   "franchiseAbbrev": "LCG",
+   "sleeperUserId": "1369512244987052032",
+   "sleeperHandle": "LeCapitalG",
+   "sleeperRosterId": 2,
+   "draftSlot": 5
   },
   {
-   "shortName": "Greg",
-   "fullName": "Greg Blome",
-   "franchiseName": "Jimmy's Johnson",
-   "smartDraftTeamId": "fc3936ca-ddad-4459-a3a1-158380a28172",
-   "smartDraftOrderKey": 90,
-   "draftSlot2026": 9,
-   "franchiseAbbrev": "JJ",
-   "espnTeamId": 2
+   "shortName": "Tom",
+   "fullName": "Tom",
+   "franchiseName": "TopNotchTom",
+   "franchiseAbbrev": "TNT",
+   "sleeperUserId": "1371372982882025472",
+   "sleeperHandle": "TopNotchTom",
+   "sleeperRosterId": 9,
+   "draftSlot": 6
   },
   {
    "shortName": "Colin",
    "fullName": "Colin Tracy",
-   "franchiseName": "Flurp McDerp",
-   "smartDraftTeamId": "665bb83a-1d27-4446-b1df-f38252387f81",
-   "smartDraftOrderKey": 100,
-   "draftSlot2026": 10,
-   "franchiseAbbrev": "CT",
-   "espnTeamId": 4
+   "franchiseName": "CullenGPT",
+   "franchiseAbbrev": "CGP",
+   "sleeperUserId": "1394370721353854976",
+   "sleeperHandle": "daddyflurp",
+   "sleeperRosterId": 1,
+   "draftSlot": 7,
+   "commissioner": true
+  },
+  {
+   "shortName": "Chilly",
+   "fullName": "ChillyWonka",
+   "franchiseName": "ChillyWonka",
+   "franchiseAbbrev": "CHW",
+   "sleeperUserId": "1394473780184625152",
+   "sleeperHandle": "ChillyWonka",
+   "sleeperRosterId": 3,
+   "draftSlot": 8
+  },
+  {
+   "shortName": "Jolly",
+   "fullName": "JollyRushers",
+   "franchiseName": "JollyRushers",
+   "franchiseAbbrev": "JOL",
+   "sleeperUserId": "1394742502304514048",
+   "sleeperHandle": "JOLLYrushers",
+   "sleeperRosterId": 7,
+   "draftSlot": 9
+  },
+  {
+   "shortName": "Gizzy",
+   "fullName": "GizzyDillespie",
+   "franchiseName": "GizzyDillespie",
+   "franchiseAbbrev": "GIZ",
+   "sleeperUserId": "1395203014372909056",
+   "sleeperHandle": "GizzyDillespie",
+   "sleeperRosterId": 6,
+   "draftSlot": 10
   }
  ]
 }
